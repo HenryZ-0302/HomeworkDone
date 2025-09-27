@@ -1,0 +1,65 @@
+name: Deploy Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Setup Node.js with pnpm cache enabled
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # Specify Node.js version
+          cache: "pnpm" # Enable caching for pnpm dependencies
+
+      # Setup pnpm CLI
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9 # Specify pnpm version
+
+      # Install project dependencies using pnpm
+      - name: Install dependencies
+        run: pnpm install
+
+      # Build the project using pnpm
+      - name: Build project
+        run: pnpm run build
+
+      # Upload production-ready build files as an artifact
+      - name: Upload production-ready build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-files
+          path: ./dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      # Download the build artifact from the previous job
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: production-files
+          path: ./dist
+
+      # Deploy the build to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
