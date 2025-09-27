@@ -1,4 +1,8 @@
 import { toast } from "sonner";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import Markdown from "react-markdown";
 import { Info } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardTitle } from "../ui/card";
@@ -112,7 +116,14 @@ export default function ScanPage() {
               {
                 problem: "test problem",
                 answer: "it works",
-                explanation: "it just works",
+                explanation: `
+$$
+\\begin{aligned}
+a^2 + b^2 &= c^2 \\
+\\nabla\\cdot\\vec{E} &= \\frac{\\rho}{\\varepsilon_0} \\
+e^{i\\pi}+1 &= 0
+\\end{aligned}
+$$`,
               },
               {
                 problem: "test problem 2",
@@ -360,7 +371,7 @@ export default function ScanPage() {
                                             <div className="text-xs font-semibold">
                                               Problem {i + 1}
                                             </div>
-                                            <div className="line-clamp-2 text-xs opacity-80">
+                                            <div className="line-clamp-2 text-xs opacity-80 overflow-ellipsis">
                                               {p.problem}
                                             </div>
                                           </div>
@@ -379,12 +390,17 @@ export default function ScanPage() {
                                     {entry.solutions.problems.length}
                                   </div>
 
-                                  <h3 className="mb-2 text-base font-semibold">
+                                  <Markdown
+                                    remarkPlugins={[remarkGfm, remarkMath]}
+                                    rehypePlugins={[
+                                      [rehypeKatex, { output: "html" }],
+                                    ]}
+                                  >
                                     {
                                       entry.solutions.problems[selectedProblem]
                                         .problem
                                     }
-                                  </h3>
+                                  </Markdown>
 
                                   <div className="mt-4 space-y-4">
                                     <div>
@@ -392,13 +408,21 @@ export default function ScanPage() {
                                         Answer
                                       </div>
                                       <div className="rounded-lg bg-slate-900/60 p-3 text-sm">
-                                        <pre className="whitespace-pre-wrap break-words">
+                                        <Markdown
+                                          remarkPlugins={[
+                                            remarkGfm,
+                                            remarkMath,
+                                          ]}
+                                          rehypePlugins={[
+                                            [rehypeKatex, { output: "html" }],
+                                          ]}
+                                        >
                                           {
                                             entry.solutions.problems[
                                               selectedProblem
                                             ].answer
                                           }
-                                        </pre>
+                                        </Markdown>
                                       </div>
                                       <div className="mt-2">
                                         <Button
@@ -422,13 +446,21 @@ export default function ScanPage() {
                                         Explanation
                                       </div>
                                       <div className="rounded-lg bg-slate-900/40 p-3 text-sm leading-relaxed">
-                                        <p className="whitespace-pre-wrap">
+                                        <Markdown
+                                          remarkPlugins={[
+                                            remarkGfm,
+                                            remarkMath,
+                                          ]}
+                                          rehypePlugins={[
+                                            [rehypeKatex, { output: "html" }],
+                                          ]}
+                                        >
                                           {
                                             entry.solutions.problems[
                                               selectedProblem
                                             ].explanation
                                           }
-                                        </p>
+                                        </Markdown>
                                       </div>
                                     </div>
 
