@@ -39,7 +39,7 @@ export default function ScanPage() {
   const [selectedProblem, setSelectedProblem] = useState(0);
 
   const geminiModel = useGeminiStore((state) => state.geminiModel);
-  const geminiKey = useGeminiStore((state) => state.geminiKey);
+  // const geminiKey = useGeminiStore((state) => state.geminiKey);
 
   const [isWorking, setWorking] = useState(false);
 
