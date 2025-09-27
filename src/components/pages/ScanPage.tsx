@@ -103,25 +103,25 @@ export default function ScanPage() {
 
     try {
       console.log("Sending images to AI");
-      const targetUrl = selectedImage ?? items[0].url;
-
-      setImageSolutions((prev) => [
-        ...prev,
-        {
-          imageUrl: targetUrl,
-          problems: [
-            {
-              problem: "test problem",
-              answer: "it works",
-              explanation: "it just works",
-            },
-          ],
-        },
-      ]);
-
-      if (selectedImage !== targetUrl) {
-        setSelectedImage(targetUrl);
-        setSelectedProblem(0);
+      for (let item of items) {
+        setImageSolutions((prev) => [
+          ...prev,
+          {
+            imageUrl: item.url,
+            problems: [
+              {
+                problem: "test problem",
+                answer: "it works",
+                explanation: "it just works",
+              },
+              {
+                problem: "test problem 2",
+                answer: "it works 2",
+                explanation: "it just works 2",
+              },
+            ],
+          },
+        ]);
       }
     } catch (e) {
       console.error(e);
@@ -218,6 +218,7 @@ export default function ScanPage() {
       e.preventDefault();
       if (e.shiftKey) goPrevImage();
       else goNextImage();
+      e.currentTarget.focus();
       return;
     }
     // Tab-based navigation
@@ -225,6 +226,7 @@ export default function ScanPage() {
       e.preventDefault();
       if (e.shiftKey) goPrevProblem();
       else goNextProblem();
+      e.currentTarget.focus();
     }
   };
 
