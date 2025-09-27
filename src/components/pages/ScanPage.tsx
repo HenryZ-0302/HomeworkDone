@@ -17,6 +17,9 @@ import {
 } from "../ui/collapsible";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
+import { GeminiAi, SYSTEM_PROMPT } from "@/ai/gemini";
+import { uint8ToBase64 } from "@/utils/encoding";
+import { parseResponse } from "@/ai/response";
 
 export type ImageItem = {
   id: string;
@@ -43,7 +46,7 @@ export default function ScanPage() {
   const [selectedProblem, setSelectedProblem] = useState(0);
 
   const geminiModel = useGeminiStore((state) => state.geminiModel);
-  // const geminiKey = useGeminiStore((state) => state.geminiKey);
+  const geminiKey = useGeminiStore((state) => state.geminiKey);
 
   const [isWorking, setWorking] = useState(false);
 
@@ -91,49 +94,78 @@ export default function ScanPage() {
   };
 
   const startScan = async () => {
-    if (geminiModel.length === 0) {
+    if (!geminiModel || geminiModel.length === 0) {
       toast("You're almost there", {
         description:
           "Please specific a Gemini model to start skidding! For example, `gemini-2.5-pro`",
       });
       return;
     }
+    if (!geminiKey) {
+      toast("You're almost there", {
+        description: "Please set a Gemini token before you scan your homework.",
+      });
+      return;
+    }
+
     toast("Working...", {
       description:
         "Sending your homework to Gemini... Your time is being saved...",
     });
     setWorking(true);
-    // Send images to gemini
 
     try {
-      console.log("Sending images to AI");
-      for (let item of items) {
-        setImageSolutions((prev) => [
-          ...prev,
-          {
-            imageUrl: item.url,
-            problems: [
-              {
-                problem: "test problem",
-                answer: "it works",
-                explanation: `
-$$
-\\begin{aligned}
-a^2 + b^2 &= c^2 \\
-\\nabla\\cdot\\vec{E} &= \\frac{\\rho}{\\varepsilon_0} \\
-e^{i\\pi}+1 &= 0
-\\end{aligned}
-$$`,
-              },
-              {
-                problem: "test problem 2",
-                answer: "it works 2",
-                explanation: "it just works 2",
-              },
-            ],
-          },
-        ]);
-      }
+      const ai = new GeminiAi(geminiKey);
+      ai.setSystemPrompt(SYSTEM_PROMPT);
+
+      const concurrency = 4;
+      const n = items.length;
+
+      setImageSolutions(Array(n).fill(undefined));
+
+      const processOne = async (i: number) => {
+        const item = items[i];
+        try {
+          console.log(`Processing ${item.id}`);
+          const bytes = await item.file.bytes();
+          const resText = await ai.sendImage(uint8ToBase64(bytes));
+          const res = parseResponse(resText);
+
+          setImageSolutions((prev) => {
+            const next = prev.slice();
+            next[i] = {
+              imageUrl: item.url,
+              problems: res?.problems ?? [],
+            };
+            return next;
+          });
+        } catch (err) {
+          console.error(err);
+          setImageSolutions((prev) => {
+            const next = prev.slice();
+            next[i] = {
+              imageUrl: item.url,
+              problems: [],
+            } as any;
+            return next;
+          });
+        }
+      };
+
+      let nextIndex = 0;
+      const worker = async () => {
+        while (true) {
+          const i = nextIndex++;
+          if (i >= n) break;
+          await processOne(i);
+        }
+      };
+
+      const workers = Array(Math.min(concurrency, n))
+        .fill(0)
+        .map(() => worker());
+
+      await Promise.all(workers);
     } catch (e) {
       console.error(e);
     } finally {
@@ -367,11 +399,11 @@ $$`,
                                           className="w-full justify-start whitespace-normal"
                                           onClick={() => setSelectedProblem(i)}
                                         >
-                                          <div className="text-left">
+                                          <div className="text-left min-w-0 flex-1">
                                             <div className="text-xs font-semibold">
                                               Problem {i + 1}
                                             </div>
-                                            <div className="line-clamp-2 text-xs opacity-80 overflow-ellipsis">
+                                            <div className="truncate text-xs opacity-80">
                                               {p.problem}
                                             </div>
                                           </div>
