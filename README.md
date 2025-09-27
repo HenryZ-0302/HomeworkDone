@@ -16,7 +16,7 @@ The open source AI homework solver. A time-saving workground for self-learners
 
 ## Try it
 
-The official instance is available at [https://skid.lunarclient.top]
+The official instance is available at [https://cubewhy.github.io/skid-homework](https://cubewhy.github.io/skid-homework)
 
 You need to request a Gemini API key for AI usage.
 
