@@ -15,18 +15,23 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Setup Node.js with pnpm cache enabled
+      # Install pnpm CLI (ensures pnpm is on PATH)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10 # Pin pnpm version; adjust if needed
+          run_install: false # Do not auto-install deps here
+
+      # Setup Node.js and enable pnpm cache
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20" # Specify Node.js version
-          cache: "pnpm" # Enable caching for pnpm dependencies
+          node-version: "20" # Adjust Node version to your project
+          cache: "pnpm" # Cache based on pnpm-lock.yaml
 
-      # Setup pnpm CLI
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9 # Specify pnpm version
+      # Sanity check that pnpm is available on PATH
+      - name: Check pnpm
+        run: pnpm --version
 
       # Install project dependencies using pnpm
       - name: Install dependencies
