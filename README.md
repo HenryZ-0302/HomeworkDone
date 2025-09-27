@@ -24,7 +24,7 @@ You need to request a Gemini API key for AI usage.
 
 ## I don't have a camera on my computer, please help
 
-The [SkidCamera](https://github.com/cubewhy/SkidCamera/releases/tag/v1.0.0)
+The [SkidCamera](https://github.com/cubewhy/SkidCamera)
 is what you are looking for.
 
 Please follow the guide in the SkidCamera README.
