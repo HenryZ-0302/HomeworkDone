@@ -22,6 +22,13 @@ You need to request a Gemini API key for AI usage.
 
 [Google AI Studio](https://aistudio.google.com/api-keys)
 
+## I don't have a camera on my computer, please help
+
+The [SkidCamera](https://github.com/cubewhy/SkidCamera/releases/tag/v1.0.0)
+is what you are looking for.
+
+Please follow the guide in the SkidCamera README.
+
 ## Why Too Much Homework is bad
 
 - Waste time
