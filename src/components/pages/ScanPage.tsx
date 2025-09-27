@@ -132,7 +132,8 @@ export default function ScanPage() {
         const item = items[i];
         try {
           console.log(`Processing ${item.id}`);
-          const bytes = await item.file.bytes();
+          const buf = await item.file.arrayBuffer();
+          const bytes = new Uint8Array(buf);
           const resText = await ai.sendImage(uint8ToBase64(bytes));
           const res = parseResponse(resText);
 
