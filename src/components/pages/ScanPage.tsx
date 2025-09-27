@@ -121,7 +121,12 @@ export default function ScanPage() {
       const concurrency = 4;
       const n = items.length;
 
-      setImageSolutions(Array(n).fill(undefined));
+      setImageSolutions(
+        Array(n).fill({
+          imageUrl: "",
+          problems: [],
+        }),
+      );
 
       const processOne = async (i: number) => {
         const item = items[i];
@@ -315,7 +320,7 @@ export default function ScanPage() {
                 {/* Empty / working states */}
                 {!orderedSolutions.length ? (
                   <div className="text-sm text-gray-400">
-                    {isWorking
+                    {imageSolutions.length === 0
                       ? "Analyzing... extracting problems and solutions from your images."
                       : "No solutions yet. Add images and click Scan to see results here."}
                   </div>
@@ -341,216 +346,218 @@ export default function ScanPage() {
                         ))}
                       </TabsList>
 
-                      {orderedSolutions.map((entry, idx) => (
-                        <TabsContent
-                          key={entry.item.id}
-                          value={entry.item.url}
-                          className="mt-4"
-                        >
-                          {/* Collapsible preview of current photo */}
-                          <Collapsible defaultOpen>
-                            <div className="flex items-center justify-between">
-                              <div className="text-xs text-slate-400">
-                                Photo {idx + 1} • {entry.item.source}
-                              </div>
-                              <CollapsibleTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-7 px-2"
-                                >
-                                  Toggle Preview
-                                </Button>
-                              </CollapsibleTrigger>
-                            </div>
-                            <CollapsibleContent className="mt-2">
-                              <div className="overflow-hidden rounded-xl border border-slate-700">
-                                <img
-                                  src={entry.item.url}
-                                  alt={`Preview ${entry.item.file.name || idx + 1}`}
-                                  className="block max-h-96 w-full object-contain bg-black/20"
-                                />
-                              </div>
-                            </CollapsibleContent>
-                          </Collapsible>
+                      {orderedSolutions.map((entry, idx) => {
+                        const problemCount = entry.solutions.problems.length;
+                        const safeIndex = Math.min(
+                          Math.max(0, selectedProblem),
+                          Math.max(0, problemCount - 1),
+                        );
+                        const activeProblem =
+                          problemCount > 0
+                            ? entry.solutions.problems[safeIndex]
+                            : null;
 
-                          <Separator className="my-4" />
-
-                          {/* Problems list + detail */}
-                          {entry.solutions.problems.length === 0 ? (
-                            <div className="text-sm text-slate-400">
-                              No problems detected for this image.
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                              {/* Left: Problems index */}
-                              <aside className="md:col-span-1">
-                                <ul className="space-y-2">
-                                  {entry.solutions.problems.map((p, i) => {
-                                    const isActive =
-                                      selectedImage === entry.item.url &&
-                                      i === selectedProblem;
-                                    return (
-                                      <li key={i}>
-                                        <Button
-                                          variant={
-                                            isActive ? "secondary" : "outline"
-                                          }
-                                          className="w-full justify-start whitespace-normal"
-                                          onClick={() => setSelectedProblem(i)}
-                                        >
-                                          <div className="text-left min-w-0 flex-1">
-                                            <div className="text-xs font-semibold">
-                                              Problem {i + 1}
-                                            </div>
-                                            <div className="truncate text-xs opacity-80">
-                                              {p.problem}
-                                            </div>
-                                          </div>
-                                        </Button>
-                                      </li>
-                                    );
-                                  })}
-                                </ul>
-                              </aside>
-
-                              {/* Right: Problem detail */}
-                              <section className="md:col-span-2">
-                                <div className="rounded-xl border border-slate-700 p-4">
-                                  <div className="mb-2 text-xs uppercase tracking-wide text-slate-400">
-                                    Problem {selectedProblem + 1} of{" "}
-                                    {entry.solutions.problems.length}
-                                  </div>
-
-                                  <Markdown
-                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                    rehypePlugins={[
-                                      [rehypeKatex, { output: "html" }],
-                                    ]}
-                                  >
-                                    {
-                                      entry.solutions.problems[selectedProblem]
-                                        .problem
-                                    }
-                                  </Markdown>
-
-                                  <div className="mt-4 space-y-4">
-                                    <div>
-                                      <div className="mb-1 text-sm font-medium text-slate-300">
-                                        Answer
-                                      </div>
-                                      <div className="rounded-lg bg-slate-900/60 p-3 text-sm">
-                                        <Markdown
-                                          remarkPlugins={[
-                                            remarkGfm,
-                                            remarkMath,
-                                          ]}
-                                          rehypePlugins={[
-                                            [rehypeKatex, { output: "html" }],
-                                          ]}
-                                        >
-                                          {
-                                            entry.solutions.problems[
-                                              selectedProblem
-                                            ].answer
-                                          }
-                                        </Markdown>
-                                      </div>
-                                      <div className="mt-2">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() =>
-                                            copyToClipboard(
-                                              entry.solutions.problems[
-                                                selectedProblem
-                                              ].answer,
-                                            )
-                                          }
-                                        >
-                                          Copy answer
-                                        </Button>
-                                      </div>
-                                    </div>
-
-                                    <div>
-                                      <div className="mb-1 text-sm font-medium text-slate-300">
-                                        Explanation
-                                      </div>
-                                      <div className="rounded-lg bg-slate-900/40 p-3 text-sm leading-relaxed">
-                                        <Markdown
-                                          remarkPlugins={[
-                                            remarkGfm,
-                                            remarkMath,
-                                          ]}
-                                          rehypePlugins={[
-                                            [rehypeKatex, { output: "html" }],
-                                          ]}
-                                        >
-                                          {
-                                            entry.solutions.problems[
-                                              selectedProblem
-                                            ].explanation
-                                          }
-                                        </Markdown>
-                                      </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between pt-2">
-                                      <div className="text-xs text-slate-500">
-                                        Source image:&nbsp;
-                                        <a
-                                          href={entry.item.url}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className="underline decoration-dotted"
-                                        >
-                                          open preview
-                                        </a>
-                                      </div>
-                                      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={goPrevProblem}
-                                          disabled={selectedProblem === 0}
-                                        >
-                                          Prev (Shift+Tab)
-                                        </Button>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={goNextProblem}
-                                          disabled={
-                                            selectedProblem >=
-                                            entry.solutions.problems.length - 1
-                                          }
-                                        >
-                                          Next (Tab)
-                                        </Button>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={goPrevImage}
-                                        >
-                                          ⟵ Image (Shift+Space)
-                                        </Button>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={goNextImage}
-                                        >
-                                          Image ⟶ (Space)
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </div>
+                        return (
+                          <TabsContent
+                            key={entry.item.id}
+                            value={entry.item.url}
+                            className="mt-4"
+                          >
+                            {/* Collapsible preview of current photo */}
+                            <Collapsible defaultOpen>
+                              <div className="flex items-center justify-between">
+                                <div className="text-xs text-slate-400">
+                                  Photo {idx + 1} • {entry.item.source}
                                 </div>
-                              </section>
-                            </div>
-                          )}
-                        </TabsContent>
-                      ))}
+                                <CollapsibleTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 px-2"
+                                  >
+                                    Toggle Preview
+                                  </Button>
+                                </CollapsibleTrigger>
+                              </div>
+                              <CollapsibleContent className="mt-2">
+                                <div className="overflow-hidden rounded-xl border border-slate-700">
+                                  <img
+                                    src={entry.item.url}
+                                    alt={`Preview ${entry.item.file.name || idx + 1}`}
+                                    className="block max-h-96 w-full object-contain bg-black/20"
+                                  />
+                                </div>
+                              </CollapsibleContent>
+                            </Collapsible>
+
+                            <Separator className="my-4" />
+
+                            {/* Problems list + detail */}
+                            {entry.solutions.problems.length === 0 ? (
+                              <div className="text-sm text-slate-400">
+                                No problems detected for this image.
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                {/* Left: Problems index */}
+                                <aside className="md:col-span-1">
+                                  <ul className="space-y-2">
+                                    {entry.solutions.problems.map((p, i) => {
+                                      const isActive =
+                                        selectedImage === entry.item.url &&
+                                        i === selectedProblem;
+                                      return (
+                                        <li key={i}>
+                                          <Button
+                                            variant={
+                                              isActive ? "secondary" : "outline"
+                                            }
+                                            className="w-full justify-start whitespace-normal"
+                                            onClick={() =>
+                                              setSelectedProblem(i)
+                                            }
+                                          >
+                                            <div className="text-left min-w-0 flex-1">
+                                              <div className="text-xs font-semibold">
+                                                Problem {i + 1}
+                                              </div>
+                                              <div className="truncate text-xs opacity-80">
+                                                {p.problem}
+                                              </div>
+                                            </div>
+                                          </Button>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </aside>
+
+                                {/* Right: Problem detail */}
+                                <section className="md:col-span-2">
+                                  <div className="rounded-xl border border-slate-700 p-4">
+                                    <div className="mb-2 text-xs uppercase tracking-wide text-slate-400">
+                                      Problem {selectedProblem + 1} of{" "}
+                                      {entry.solutions.problems.length}
+                                    </div>
+
+                                    <Markdown
+                                      remarkPlugins={[remarkGfm, remarkMath]}
+                                      rehypePlugins={[
+                                        [rehypeKatex, { output: "html" }],
+                                      ]}
+                                    >
+                                      {activeProblem?.problem ?? ""}
+                                    </Markdown>
+
+                                    <div className="mt-4 space-y-4">
+                                      <div>
+                                        <div className="mb-1 text-sm font-medium text-slate-300">
+                                          Answer
+                                        </div>
+                                        <div className="rounded-lg bg-slate-900/60 p-3 text-sm">
+                                          <Markdown
+                                            remarkPlugins={[
+                                              remarkGfm,
+                                              remarkMath,
+                                            ]}
+                                            rehypePlugins={[
+                                              [rehypeKatex, { output: "html" }],
+                                            ]}
+                                          >
+                                            {activeProblem?.answer ?? ""}
+                                          </Markdown>
+                                        </div>
+                                        <div className="mt-2">
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                              copyToClipboard(
+                                                activeProblem?.answer ?? "",
+                                              )
+                                            }
+                                          >
+                                            Copy answer
+                                          </Button>
+                                        </div>
+                                      </div>
+
+                                      <div>
+                                        <div className="mb-1 text-sm font-medium text-slate-300">
+                                          Explanation
+                                        </div>
+                                        <div className="rounded-lg bg-slate-900/40 p-3 text-sm leading-relaxed">
+                                          <Markdown
+                                            remarkPlugins={[
+                                              remarkGfm,
+                                              remarkMath,
+                                            ]}
+                                            rehypePlugins={[
+                                              [rehypeKatex, { output: "html" }],
+                                            ]}
+                                          >
+                                            {activeProblem?.explanation ?? ""}
+                                          </Markdown>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-between pt-2">
+                                        <div className="text-xs text-slate-500">
+                                          Source image:&nbsp;
+                                          <a
+                                            href={entry.item.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="underline decoration-dotted"
+                                          >
+                                            open preview
+                                          </a>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={goPrevProblem}
+                                            disabled={selectedProblem === 0}
+                                          >
+                                            Prev (Shift+Tab)
+                                          </Button>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={goNextProblem}
+                                            disabled={
+                                              selectedProblem >=
+                                              entry.solutions.problems.length -
+                                                1
+                                            }
+                                          >
+                                            Next (Tab)
+                                          </Button>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={goPrevImage}
+                                          >
+                                            ⟵ Image (Shift+Space)
+                                          </Button>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={goNextImage}
+                                          >
+                                            Image ⟶ (Space)
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </section>
+                              </div>
+                            )}
+                          </TabsContent>
+                        );
+                      })}
                     </Tabs>
                   </div>
                 )}
