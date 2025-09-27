@@ -21,6 +21,8 @@ import { GeminiAi, SYSTEM_PROMPT } from "@/ai/gemini";
 import { uint8ToBase64 } from "@/utils/encoding";
 import { parseResponse } from "@/ai/response";
 
+import "katex/dist/katex.min.css";
+
 export type ImageItem = {
   id: string;
   file: File;
