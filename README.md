@@ -1,58 +1,62 @@
-# SkidHomework Platform
+# 打滑作业平台
 
-> Students' hobby & life matter.
+[ENGLISH README](/README-EN.md)
 
-The open source AI homework solver. A time-saving workground for self-learners
+> 学生们的兴趣 & 日常生活 很重要
 
-## Why SkidHomework
+开源 AI 家庭作业解答器, 为自学者节省时间的学习平台
 
-- Save time
-- No telemetry
-- Open source, no black-box
-- No spamming calls
-- No phone number required
-- Can access from your computer, tablet or mobile phone
-- Ergonomics
+## 为什么用 打滑作业
 
-## Try it
+- 节省时间
+- 无需遥测
+- 开源，无黑盒
+- 无垃圾电话
+- 无需电话号码
+- 可通过电脑、平板电脑或手机访问
+- 人体工程学设计
 
-The official instance is available at [https://cubewhy.github.io/skid-homework](https://cubewhy.github.io/skid-homework)
+## 现在尝试
 
-You need to request a Gemini API key for AI usage.
+官方实例部署在 [https://cubewhy.github.io/skid-homework](https://cubewhy.github.io/skid-homework)
+
+您需要申请一个 Gemini API 密钥才能访问 AI。
 
 [Google AI Studio](https://aistudio.google.com/api-keys)
 
-## I don't have a camera on my computer, please help
+## Star 历史记录
 
-The [SkidCamera](https://github.com/cubewhy/SkidCamera)
-is what you are looking for.
+如果这个项目节省了你的时间, 请务必献上一个 Star!
 
-Please follow the guide in the SkidCamera README.
+[![Star History Chart](https://api.star-history.com/svg?repos=cubewhy/skid-homework&type=Date)](https://www.star-history.com/#cubewhy/skid-homework&Date)
 
-## Why Too Much Homework is bad
+### 我的电脑上没有摄像头, 请帮帮我
 
-- Waste time
-- Inefficiency
-- Affects sleep quality
-- Affects mental health
+[SkidCamera](https://github.com/cubewhy/SkidCamera) 正是您想要的。
 
-## Thinking this is violation of ethics?
+为自学者设计的符合人体工程学的相机软件
 
-If you think so, please do not use it.
+请参照 SkidCamera README 中的步骤来使用
 
-Homework is designed to help students to understand the knowledge,
-not used to control students.
+## 为什么太多作业不好
 
-I personally use Khan Academy and Wikipedia to learn things,
-that's time-saving and efficiency.
+- 浪费时间
+- 效率低下
+- 影响睡眠质量
+- 影响心理健康
 
-But schools may ask me to submission the homework...
-This platform is just a workaround for this.
+## 觉得这违反了道德规范?
 
-### How to Escape
+如果您这么认为，请不要使用它。
 
-- Use Khan Academy, Wikipedia or other self-learning resources
-- Leave school at 6:30
+家庭作业旨在帮助学生理解知识，
+而不是用来控制学生。
+
+我个人使用可汗学院和维基百科来学习，
+既省时又高效。
+
+但学校可能会要求我提交作业...
+这个平台只是解决这个问题的一个变通方法。
 
 ## License
 
