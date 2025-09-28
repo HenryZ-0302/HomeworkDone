@@ -49,6 +49,7 @@ export default function ScanPage() {
 
   const geminiModel = useGeminiStore((state) => state.geminiModel);
   const geminiKey = useGeminiStore((state) => state.geminiKey);
+  const geminiBaseUrl = useGeminiStore((state) => state.geminiBaseUrl);
 
   const [isWorking, setWorking] = useState(false);
 
@@ -117,7 +118,7 @@ export default function ScanPage() {
     setWorking(true);
 
     try {
-      const ai = new GeminiAi(geminiKey);
+      const ai = new GeminiAi(geminiKey, geminiBaseUrl);
       ai.setSystemPrompt(SYSTEM_PROMPT);
 
       const concurrency = 4;

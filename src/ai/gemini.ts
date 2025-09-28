@@ -13,9 +13,12 @@ export class GeminiAi {
   private systemPrompt?: string;
   private config: GeminiConfig;
 
-  constructor(key: string, config?: GeminiConfig) {
+  constructor(key: string, baseUrl?: string, config?: GeminiConfig) {
     this.ai = new GoogleGenAI({
       apiKey: key,
+      httpOptions: {
+        baseUrl: baseUrl,
+      },
     });
 
     this.config = {

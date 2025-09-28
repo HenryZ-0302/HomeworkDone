@@ -2,6 +2,10 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface GeminiState {
+  geminiBaseUrl?: string;
+  setGeminiBaseUrl: (url: string) => void;
+  clearGeminiBaseUrl: () => void;
+
   geminiKey: string | null;
   setGeminiKey: (key: string) => void;
   clearGeminiKey: () => void;
@@ -14,6 +18,10 @@ export interface GeminiState {
 export const useGeminiStore = create<GeminiState>()(
   persist(
     (set, get) => ({
+      geminiBaseUrl: "https://generativelanguage.googleapis.com",
+      setGeminiBaseUrl: (url) => set({ geminiBaseUrl: url }),
+      clearGeminiBaseUrl: () => set({ geminiBaseUrl: undefined }),
+
       geminiKey: null,
       setGeminiKey: (key) => set({ geminiKey: key.trim() || null }),
       clearGeminiKey: () => set({ geminiKey: null }),

@@ -5,16 +5,33 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useGeminiStore } from "@/store/gemini-store";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
+import { Label } from "../ui/label";
 
 export default function InitPage() {
   const [key, setKey] = useState("");
   const setGeminiKey = useGeminiStore((s) => s.setGeminiKey);
+  const geminiBaseUrl = useGeminiStore((s) => s.geminiBaseUrl);
+  const setGeminiBaseUrl = useGeminiStore((s) => s.setGeminiBaseUrl);
+  const [baseUrl, setBaseUrl] = useState<string | undefined>(geminiBaseUrl);
+
   const navigate = useNavigate();
   const location = useLocation() as { state?: { from?: Location } };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!key.trim()) return;
+    if (!baseUrl) {
+      // use default url if the custom url inputbox is empty
+      setGeminiBaseUrl("https://generativelanguage.googleapis.com");
+    } else {
+      setGeminiBaseUrl(baseUrl);
+    }
     setGeminiKey(key.trim());
     const to = location.state?.from?.pathname ?? "/";
     navigate(to, { replace: true });
@@ -105,23 +122,58 @@ export default function InitPage() {
               </li>
             </motion.ul>
 
+            {/* Main form for API key submission */}
             <motion.form
               onSubmit={handleSubmit}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.24 }}
-              className="mt-8 flex w-full max-w-md items-center gap-3"
+              className="mt-8"
             >
-              <Input
-                type="password"
-                placeholder="Gemini API Key"
-                value={key}
-                onChange={(e) => setKey(e.target.value)}
-                className="h-11 flex-1 bg-slate-900/60 placeholder:text-slate-500 focus-visible:ring-indigo-500"
-              />
-              <Button type="submit" className="h-11 px-5">
-                Get My Time Back!
-              </Button>
+              <div className="flex w-full max-w-md items-center gap-3">
+                <Input
+                  type="password"
+                  placeholder="Gemini API Key"
+                  value={key}
+                  onChange={(e) => setKey(e.target.value)}
+                  className="h-11 flex-1 bg-slate-900/60 placeholder:text-slate-500 focus-visible:ring-indigo-500"
+                />
+                <Button type="submit" className="h-11 px-5">
+                  Get My Time Back!
+                </Button>
+              </div>
+
+              {/* START: Advanced settings section, collapsible */}
+              <Accordion type="single" collapsible className="w-full max-w-md">
+                <AccordionItem value="advanced-settings" className="border-b-0">
+                  <AccordionTrigger className="text-sm text-slate-400 hover:no-underline">
+                    Advanced
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-2">
+                      {/* Input for custom Gemini API Base URL */}
+                      <Label
+                        htmlFor="base-url"
+                        className="text-xs text-slate-400"
+                      >
+                        Gemini API Base URL (Optional)
+                      </Label>
+                      <Input
+                        id="base-url"
+                        type="url"
+                        placeholder="https://generativelanguage.googleapis.com"
+                        value={baseUrl ?? ""}
+                        onChange={(e) => setBaseUrl(e.target.value)}
+                        className="bg-slate-900/60 placeholder:text-slate-500 focus-visible:ring-indigo-500"
+                      />
+                      <p className="text-xs text-slate-500">
+                        Leave blank to use the default Google API endpoint.
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+              {/* END: Advanced settings section */}
             </motion.form>
             <p className="mt-3 text-xs text-slate-400">
               Get an API Key at{" "}
