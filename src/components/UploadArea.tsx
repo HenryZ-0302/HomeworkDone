@@ -35,7 +35,7 @@ export default function UploadArea({
 
   const handleCameraBtnClicked = () => {
     if (isWorking) return;
-    cameraBtnRef.current?.click();
+    cameraInputRef.current?.click();
   };
 
   // Add keybindings
