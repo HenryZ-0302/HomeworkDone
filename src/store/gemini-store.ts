@@ -17,6 +17,9 @@ export interface GeminiState {
   traits?: string;
   setTraits: (traits: string) => void;
   clearTraits: () => void;
+
+  thinkingBudget: number;
+  setThinkingBudget: (thinkBudget: number) => void;
 }
 
 export const useGeminiStore = create<GeminiState>()(
@@ -37,6 +40,9 @@ export const useGeminiStore = create<GeminiState>()(
       traits: undefined,
       setTraits: (traits) => set({ traits }),
       clearTraits: () => set({ traits: undefined }),
+
+      thinkingBudget: 8192,
+      setThinkingBudget: (thinkingBudget) => set({ thinkingBudget }),
     }),
     {
       name: "gemini-storage",
@@ -46,6 +52,7 @@ export const useGeminiStore = create<GeminiState>()(
         geminiBaseUrl: state.geminiBaseUrl,
         geminiModel: state.geminiModel,
         traits: state.traits,
+        thinkingBudget: state.thinkingBudget,
       }),
       version: 1,
     },

@@ -38,6 +38,10 @@ export default function SettingsPage() {
   const setTraits = useGeminiStore((s) => s.setTraits);
   const clearTraits = useGeminiStore((s) => s.clearTraits);
 
+  // TODO: allow customize thinking budget
+  // const thinkingBudget = useGeminiStore((s) => s.thinkingBudget);
+  // const setThinkBudget = useGeminiStore((s) => s.setThinkingBudget);
+
   const navigate = useNavigate();
 
   const handleBack = () => {
