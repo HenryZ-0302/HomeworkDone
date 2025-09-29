@@ -41,7 +41,12 @@ export const useGeminiStore = create<GeminiState>()(
     {
       name: "gemini-storage",
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ geminiKey: state.geminiKey }),
+      partialize: (state) => ({
+        geminiKey: state.geminiKey,
+        geminiBaseUrl: state.geminiBaseUrl,
+        geminiModel: state.geminiModel,
+        traits: state.traits,
+      }),
       version: 1,
     },
   ),
