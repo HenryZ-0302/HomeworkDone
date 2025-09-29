@@ -109,7 +109,7 @@ export default function ScanPage() {
   const retryAsyncOperation = async (
     asyncFn: () => Promise<any>,
     maxRetries: number = 5,
-    initialDelayMs: number = 1000,
+    initialDelayMs: number = 5000,
   ): Promise<any> => {
     let lastError: Error | undefined;
     let delay = initialDelayMs;
