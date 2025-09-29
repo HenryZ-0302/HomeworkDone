@@ -26,26 +26,20 @@ import { useProblemsStore, type ImageItem } from "@/store/problems-store";
 
 export default function ScanPage() {
   // State for holding the list of uploaded image items.
-  const [items, setItems] = useProblemsStore((s) => [
-    s.imageItems,
-    s.setImageItems,
-  ]);
+  const items = useProblemsStore((s) => s.imageItems);
+  const setItems = useProblemsStore((s) => s.setImageItems);
 
   // State for storing the solutions returned by the AI.
-  const [imageSolutions, setImageSolutions] = useProblemsStore((s) => [
-    s.imageSolutions,
-    s.setImageSolutions,
-  ]);
+  const imageSolutions = useProblemsStore((s) => s.imageSolutions);
+  const setImageSolutions = useProblemsStore((s) => s.setImageSolutions);
+
   // State for tracking the currently selected image tab in the solutions view.
-  const [selectedImage, setSelectedImage] = useProblemsStore((s) => [
-    s.selectedImage,
-    s.setSelectedImage,
-  ]);
+  const selectedImage = useProblemsStore((s) => s.selectedImage);
+  const setSelectedImage = useProblemsStore((s) => s.setSelectedImage);
+
   // State for tracking the currently selected problem within an image's solution set.
-  const [selectedProblem, setSelectedProblem] = useProblemsStore((s) => [
-    s.selectedProblem,
-    s.setSelectedProblem,
-  ]);
+  const selectedProblem = useProblemsStore((s) => s.selectedProblem);
+  const setSelectedProblem = useProblemsStore((s) => s.setSelectedProblem);
   // Zustand store for Gemini API configuration.
   const geminiModel = useGeminiStore((state) => state.geminiModel);
   const geminiKey = useGeminiStore((state) => state.geminiKey);
