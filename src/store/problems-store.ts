@@ -6,7 +6,6 @@ export type ImageItem = {
   file: File; // The actual image file
   url: string; // Object URL for client-side preview
   source: "upload" | "camera"; // Origin of the image
-  // Requirement 1: Status for visual feedback (e.g., colored borders).
   status: "success" | "pending" | "failed";
 };
 
@@ -24,32 +23,100 @@ export type ProblemSolution = {
   explanation: string;
 };
 
+// The new interface for our store's state and actions.
 export interface ProblemsState {
+  // --- STATE ---
   imageItems: ImageItem[];
-  setImageItems: (imageItems: ImageItem[]) => void;
-
   imageSolutions: ImageSolution[];
-  setImageSolutions: (imageSolutions: ImageSolution[]) => void;
-
   selectedImage?: string;
-  setSelectedImage: (image?: string) => void;
-  clearSelectedImage: () => void;
-
   selectedProblem: number;
+
+  // --- ACTIONS ---
+
+  // Actions for managing image items
+  addImageItems: (items: ImageItem[]) => void;
+  updateItemStatus: (id: string, status: ImageItem["status"]) => void;
+  removeImageItem: (id: string) => void;
+  clearAllItems: () => void;
+
+  // Actions for managing image solutions
+  addImageSolution: (solution: ImageSolution) => void;
+  removeSolutionsByUrls: (urls: Set<string>) => void;
+  clearAllSolutions: () => void;
+
+  // Actions for managing selection state
+  setSelectedImage: (image?: string) => void;
   setSelectedProblem: (index: number) => void;
 }
 
 export const useProblemsStore = create<ProblemsState>((set) => ({
+  // --- INITIAL STATE ---
   imageItems: [],
-  setImageItems: (imageItems) => set({ imageItems }),
-
   imageSolutions: [],
-  setImageSolutions: (imageSolutions) => set({ imageSolutions }),
-
   selectedImage: undefined,
-  setSelectedImage: (selectedImage) => set({ selectedImage }),
-  clearSelectedImage: () => set({ selectedImage: undefined }),
-
   selectedProblem: 0,
+
+  // --- ACTION IMPLEMENTATIONS ---
+
+  /**
+   * Adds new image items to the list.
+   * This uses the functional form of `set` to prevent race conditions
+   * when adding items from multiple sources.
+   */
+  addImageItems: (newItems) =>
+    set((state) => ({ imageItems: [...state.imageItems, ...newItems] })),
+
+  /**
+   * Updates the status of a specific image item.
+   * This is concurrency-safe because it operates on the latest state.
+   */
+  updateItemStatus: (id, status) =>
+    set((state) => ({
+      imageItems: state.imageItems.map((item) =>
+        item.id === id ? { ...item, status } : item,
+      ),
+    })),
+
+  /**
+   * Removes a single image item by its ID.
+   */
+  removeImageItem: (id) =>
+    set((state) => ({
+      imageItems: state.imageItems.filter((item) => item.id !== id),
+    })),
+
+  /**
+   * Clears all image items from the state.
+   */
+  clearAllItems: () => set({ imageItems: [] }),
+
+  /**
+   * Adds a new image solution to the list.
+   * This is the core fix for the concurrency issue. By appending to the previous state
+   * within the `set` function, we ensure no solution overwrites another.
+   */
+  addImageSolution: (newSolution) =>
+    set((state) => ({
+      imageSolutions: [...state.imageSolutions, newSolution],
+    })),
+
+  /**
+   * Removes solutions associated with a given set of image URLs.
+   * Useful for reprocessing failed items without creating duplicates.
+   */
+  removeSolutionsByUrls: (urlsToRemove) =>
+    set((state) => ({
+      imageSolutions: state.imageSolutions.filter(
+        (sol) => !urlsToRemove.has(sol.imageUrl),
+      ),
+    })),
+
+  /**
+   * Clears all solutions from the state.
+   */
+  clearAllSolutions: () => set({ imageSolutions: [] }),
+
+  // Simple setters for selection state
+  setSelectedImage: (selectedImage) => set({ selectedImage }),
   setSelectedProblem: (selectedProblem) => set({ selectedProblem }),
 }));

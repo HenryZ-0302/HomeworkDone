@@ -22,24 +22,31 @@ import { uint8ToBase64 } from "@/utils/encoding";
 import { parseResponse } from "@/ai/response";
 
 import "katex/dist/katex.min.css";
-import { useProblemsStore, type ImageItem } from "@/store/problems-store";
+// Import the new set of actions and state from the updated store
+import {
+  useProblemsStore,
+  type ImageItem,
+  type ProblemSolution,
+} from "@/store/problems-store";
 
 export default function ScanPage() {
-  // State for holding the list of uploaded image items.
-  const items = useProblemsStore((s) => s.imageItems);
-  const setItems = useProblemsStore((s) => s.setImageItems);
+  // Destructure all necessary state and new semantic actions from the store.
+  const {
+    imageItems: items,
+    imageSolutions,
+    selectedImage,
+    selectedProblem,
+    addImageItems,
+    updateItemStatus,
+    removeImageItem, // Rename to avoid conflict with local function
+    clearAllItems,
+    addImageSolution,
+    removeSolutionsByUrls,
+    clearAllSolutions,
+    setSelectedImage,
+    setSelectedProblem,
+  } = useProblemsStore((s) => s);
 
-  // State for storing the solutions returned by the AI.
-  const imageSolutions = useProblemsStore((s) => s.imageSolutions);
-  const setImageSolutions = useProblemsStore((s) => s.setImageSolutions);
-
-  // State for tracking the currently selected image tab in the solutions view.
-  const selectedImage = useProblemsStore((s) => s.selectedImage);
-  const setSelectedImage = useProblemsStore((s) => s.setSelectedImage);
-
-  // State for tracking the currently selected problem within an image's solution set.
-  const selectedProblem = useProblemsStore((s) => s.selectedProblem);
-  const setSelectedProblem = useProblemsStore((s) => s.setSelectedProblem);
   // Zustand store for Gemini API configuration.
   const geminiModel = useGeminiStore((state) => state.geminiModel);
   const geminiKey = useGeminiStore((state) => state.geminiKey);
@@ -50,7 +57,6 @@ export default function ScanPage() {
   const [isWorking, setWorking] = useState(false);
 
   // Effect hook to clean up object URLs when the component unmounts or items change.
-  // This prevents memory leaks.
   useEffect(() => {
     return () => {
       items.forEach((it) => URL.revokeObjectURL(it.url));
@@ -63,7 +69,7 @@ export default function ScanPage() {
     [items],
   );
 
-  // Callback to add new files to the items list.
+  // Callback to add new files to the items list using the store action.
   const appendFiles = useCallback(
     (files: File[] | FileList, source: ImageItem["source"]) => {
       // Filter for image files only.
@@ -78,23 +84,25 @@ export default function ScanPage() {
         url: URL.createObjectURL(file), // Create a temporary URL for preview.
         source,
       }));
-      setItems([...items, ...next]);
+      // Use the semantic action to add items safely.
+      addImageItems(next);
     },
-    [],
+    [addImageItems],
   );
 
   // Function to remove a specific item from the list by its ID.
   const removeItem = (id: string) => {
     const target = items.find((i) => i.id === id);
     if (target) URL.revokeObjectURL(target.url); // Clean up the object URL.
-    setItems(items.filter((i) => i.id !== id));
+    // Use the semantic action to remove the item.
+    removeImageItem(id);
   };
 
-  // Function to clear all uploaded items.
+  // Function to clear all uploaded items and solutions.
   const clearAll = () => {
     items.forEach((i) => URL.revokeObjectURL(i.url)); // Clean up all object URLs.
-    setItems([]);
-    setImageSolutions([]); // Also clear the solutions.
+    clearAllItems();
+    clearAllSolutions(); // Use the semantic action to clear solutions.
   };
 
   // Utility function to retry an async operation with exponential backoff.
@@ -128,10 +136,10 @@ export default function ScanPage() {
 
   /**
    * Main function to start the scanning process.
-   * It sends images to the Gemini AI and processes the results.
+   * It sends images to the Gemini AI and processes the results concurrently.
    */
   const startScan = async () => {
-    // Validate Gemini configuration before proceeding.
+    // Validation checks... (omitted for brevity, assume they pass)
     if (!geminiModel || geminiModel.length === 0) {
       toast("You're almost there", {
         description:
@@ -147,7 +155,6 @@ export default function ScanPage() {
       return;
     }
 
-    // Requirement 2: Only submit 'pending' and 'failed' images.
     // Filter the items list to get only the images that need processing.
     const itemsToProcess = items.filter(
       (item) => item.status === "pending" || item.status === "failed",
@@ -186,11 +193,11 @@ ${geminiTraits}
       const concurrency = 4;
       const n = itemsToProcess.length;
 
-      // Before processing, remove any old solutions for the images that are about to be re-processed.
+      // Prepare to remove existing solutions for images that are being re-processed.
       const urlsToProcess = new Set(itemsToProcess.map((item) => item.url));
-      setImageSolutions(
-        imageSolutions.filter((sol) => !urlsToProcess.has(sol.imageUrl)),
-      );
+
+      // Use the store action to safely filter out existing solutions.
+      removeSolutionsByUrls(urlsToProcess);
 
       /**
        * Processes a single image item.
@@ -209,54 +216,37 @@ ${geminiTraits}
 
           const res = parseResponse(resText);
 
-          // Add the new solution to the state.
-          setImageSolutions([
-            ...imageSolutions,
-            {
-              imageUrl: item.url,
-              success: true,
-              problems: res?.problems ?? [],
-            },
-          ]);
+          // FIX: Use addImageSolution action. This action uses a functional update
+          // internally, ensuring safe concurrent state modification.
+          addImageSolution({
+            imageUrl: item.url,
+            success: true,
+            problems: res?.problems ?? [],
+          });
 
-          // Requirement 3: Set status to 'success' after a successful response.
-          setItems(
-            items.map((prevItem) =>
-              prevItem.id === item.id
-                ? { ...prevItem, status: "success" }
-                : prevItem,
-            ),
-          );
+          // FIX: Use updateItemStatus action for thread-safe item status update.
+          updateItemStatus(item.id, "success");
         } catch (err) {
           console.error(
             `Failed to process ${item.id} after multiple retries:`,
             err,
           );
 
-          // Add a failed solution entry for user feedback.
-          setImageSolutions([
-            ...imageSolutions,
-            {
-              imageUrl: item.url,
-              success: false,
-              problems: [
-                {
-                  problem: "Processing failed after multiple retries.",
-                  answer: "Please check the console for errors and try again.",
-                  explanation: String(err),
-                },
-              ],
-            },
-          ]);
+          const failureProblem: ProblemSolution = {
+            problem: "Processing failed after multiple retries.",
+            answer: "Please check the console for errors and try again.",
+            explanation: String(err),
+          };
 
-          // Requirement 3: Set status to 'failed' after an error.
-          setItems(
-            items.map((prevItem) =>
-              prevItem.id === item.id
-                ? { ...prevItem, status: "failed" }
-                : prevItem,
-            ),
-          );
+          // FIX: Add failure entry safely using the store action.
+          addImageSolution({
+            imageUrl: item.url,
+            success: false,
+            problems: [failureProblem],
+          });
+
+          // FIX: Update status to 'failed' safely.
+          updateItemStatus(item.id, "failed");
         }
       };
 
@@ -298,7 +288,7 @@ ${geminiTraits}
         item: it,
         solutions: byUrl.get(it.url)!,
       }));
-  }, [items, imageSolutions]);
+  }, [items, imageSolutions]); // Dependencies remain correct
 
   // Derive the index of the currently selected image.
   const currentImageIdx = useMemo(() => {
