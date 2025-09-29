@@ -61,6 +61,7 @@ export default function ScanPage() {
   const geminiModel = useGeminiStore((state) => state.geminiModel);
   const geminiKey = useGeminiStore((state) => state.geminiKey);
   const geminiBaseUrl = useGeminiStore((state) => state.geminiBaseUrl);
+  const geminiTraits = useGeminiStore((state) => state.traits);
 
   // State to track if the AI is currently processing images.
   const [isWorking, setWorking] = useState(false);
@@ -187,7 +188,20 @@ export default function ScanPage() {
 
     try {
       const ai = new GeminiAi(geminiKey, geminiBaseUrl);
-      ai.setSystemPrompt(SYSTEM_PROMPT);
+
+      if (geminiTraits) {
+        // inject traits into prompt
+        ai.setSystemPrompt(
+          SYSTEM_PROMPT +
+            `\nUser defined traits:
+<traits>
+${geminiTraits}
+</traits>
+`,
+        );
+      } else {
+        ai.setSystemPrompt(SYSTEM_PROMPT);
+      }
 
       // Concurrency limit for processing images.
       const concurrency = 4;
