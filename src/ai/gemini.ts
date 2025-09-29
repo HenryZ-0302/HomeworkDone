@@ -22,7 +22,7 @@ export class GeminiAi {
     });
 
     this.config = {
-      thinkingBudget: config?.thinkingBudget ?? 128,
+      thinkingBudget: config?.thinkingBudget ?? -1,
       safetySettings: config?.safetySettings ?? [
         {
           category: HarmCategory.HARM_CATEGORY_HARASSMENT,
