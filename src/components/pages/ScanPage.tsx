@@ -23,18 +23,24 @@ import { parseResponse } from "@/ai/response";
 
 import "katex/dist/katex.min.css";
 
+// Type definition for an image item in the upload list.
 export type ImageItem = {
-  id: string;
-  file: File;
-  url: string; // object URL for preview
-  source: "upload" | "camera";
+  id: string; // Unique identifier for each item
+  file: File; // The actual image file
+  url: string; // Object URL for client-side preview
+  source: "upload" | "camera"; // Origin of the image
+  // Requirement 1: Status for visual feedback (e.g., colored borders).
+  status: "success" | "pending" | "failed";
 };
 
+// Type definition for the solution set of a single image.
 export type ImageSolution = {
-  imageUrl: string;
-  problems: ProblemSolution[];
+  imageUrl: string; // URL of the source image, used as a key
+  success: boolean; // Whether the AI processing was successful
+  problems: ProblemSolution[]; // Array of problems found in the image
 };
 
+// Type definition for a single problem's solution.
 export type ProblemSolution = {
   problem: string;
   answer: string;
@@ -42,38 +48,50 @@ export type ProblemSolution = {
 };
 
 export default function ScanPage() {
+  // State for holding the list of uploaded image items.
   const [items, setItems] = useState<ImageItem[]>([]);
+  // State for storing the solutions returned by the AI.
   const [imageSolutions, setImageSolutions] = useState<ImageSolution[]>([]);
+  // State for tracking the currently selected image tab in the solutions view.
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  // State for tracking the currently selected problem within an image's solution set.
   const [selectedProblem, setSelectedProblem] = useState(0);
 
+  // Zustand store for Gemini API configuration.
   const geminiModel = useGeminiStore((state) => state.geminiModel);
   const geminiKey = useGeminiStore((state) => state.geminiKey);
   const geminiBaseUrl = useGeminiStore((state) => state.geminiBaseUrl);
 
+  // State to track if the AI is currently processing images.
   const [isWorking, setWorking] = useState(false);
 
-  // Cleanup object URLs on unmount
+  // Effect hook to clean up object URLs when the component unmounts or items change.
+  // This prevents memory leaks.
   useEffect(() => {
     return () => {
       items.forEach((it) => URL.revokeObjectURL(it.url));
     };
   }, [items]);
 
+  // Memoized calculation of the total size of all uploaded files.
   const totalBytes = useMemo(
     () => items.reduce((sum, it) => sum + it.file.size, 0),
     [items],
   );
 
+  // Callback to add new files to the items list.
   const appendFiles = useCallback(
     (files: File[] | FileList, source: ImageItem["source"]) => {
+      // Filter for image files only.
       const arr = Array.from(files).filter((f) => f.type.startsWith("image/"));
       if (arr.length === 0) return;
 
+      // Create new ImageItem objects for each valid file.
       const next: ImageItem[] = arr.map((file) => ({
         id: crypto.randomUUID(),
         file,
-        url: URL.createObjectURL(file),
+        status: "pending", // All new images start with a 'pending' status.
+        url: URL.createObjectURL(file), // Create a temporary URL for preview.
         source,
       }));
       setItems((prev) => [...prev, ...next]);
@@ -81,39 +99,89 @@ export default function ScanPage() {
     [],
   );
 
+  // Function to remove a specific item from the list by its ID.
   const removeItem = (id: string) => {
     setItems((prev) => {
       const target = prev.find((i) => i.id === id);
-      if (target) URL.revokeObjectURL(target.url);
+      if (target) URL.revokeObjectURL(target.url); // Clean up the object URL.
       return prev.filter((i) => i.id !== id);
     });
   };
 
+  // Function to clear all uploaded items.
   const clearAll = () => {
     setItems((prev) => {
-      prev.forEach((i) => URL.revokeObjectURL(i.url));
+      prev.forEach((i) => URL.revokeObjectURL(i.url)); // Clean up all object URLs.
       return [];
     });
+    setImageSolutions([]); // Also clear the solutions.
   };
 
+  // Utility function to retry an async operation with exponential backoff.
+  const retryAsyncOperation = async (
+    asyncFn: () => Promise<any>,
+    maxRetries: number = 5,
+    initialDelayMs: number = 1000,
+  ): Promise<any> => {
+    let lastError: Error | undefined;
+    let delay = initialDelayMs;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await asyncFn(); // Attempt the operation.
+      } catch (error) {
+        lastError = error as Error;
+        console.log(
+          `Attempt ${attempt} failed. Retrying in ${delay / 1000}s...`,
+        );
+
+        if (attempt < maxRetries) {
+          // Wait for the delay period before the next attempt.
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          delay *= 2; // Double the delay for the next retry (exponential backoff).
+        }
+      }
+    }
+    // If all retries fail, throw the last captured error.
+    throw lastError;
+  };
+
+  /**
+   * Main function to start the scanning process.
+   * It sends images to the Gemini AI and processes the results.
+   */
   const startScan = async () => {
+    // Validate Gemini configuration before proceeding.
     if (!geminiModel || geminiModel.length === 0) {
       toast("You're almost there", {
         description:
-          "Please specific a Gemini model to start skidding! For example, `gemini-2.5-pro`",
+          "Please specific a Gemini model to start skidding! For example, `gemini-1.5-pro-latest`",
       });
       return;
     }
     if (!geminiKey) {
       toast("You're almost there", {
-        description: "Please set a Gemini token before you scan your homework.",
+        description:
+          "Please set a Gemini API key before you scan your homework.",
+      });
+      return;
+    }
+
+    // Requirement 2: Only submit 'pending' and 'failed' images.
+    // Filter the items list to get only the images that need processing.
+    const itemsToProcess = items.filter(
+      (item) => item.status === "pending" || item.status === "failed",
+    );
+
+    if (itemsToProcess.length === 0) {
+      toast("All images processed", {
+        description: "There are no pending or failed images to scan.",
       });
       return;
     }
 
     toast("Working...", {
-      description:
-        "Sending your homework to Gemini... Your time is being saved...",
+      description: `Sending ${itemsToProcess.length} image(s) to Gemini... Your time is being saved...`,
     });
     setWorking(true);
 
@@ -121,52 +189,91 @@ export default function ScanPage() {
       const ai = new GeminiAi(geminiKey, geminiBaseUrl);
       ai.setSystemPrompt(SYSTEM_PROMPT);
 
+      // Concurrency limit for processing images.
       const concurrency = 4;
-      const n = items.length;
+      const n = itemsToProcess.length;
 
-      setImageSolutions(
-        Array(n).fill({
-          imageUrl: "",
-          problems: [],
-        }),
+      // Before processing, remove any old solutions for the images that are about to be re-processed.
+      const urlsToProcess = new Set(itemsToProcess.map((item) => item.url));
+      setImageSolutions((prev) =>
+        prev.filter((sol) => !urlsToProcess.has(sol.imageUrl)),
       );
 
-      const processOne = async (i: number) => {
-        const item = items[i];
+      /**
+       * Processes a single image item.
+       * @param item The ImageItem to process.
+       */
+      const processOne = async (item: ImageItem) => {
         try {
           console.log(`Processing ${item.id}`);
           const buf = await item.file.arrayBuffer();
           const bytes = new Uint8Array(buf);
-          const resText = await ai.sendImage(uint8ToBase64(bytes));
+
+          // Send image to AI with retry logic.
+          const resText = await retryAsyncOperation(() =>
+            ai.sendImage(uint8ToBase64(bytes)),
+          );
+
           const res = parseResponse(resText);
 
-          setImageSolutions((prev) => {
-            const next = prev.slice();
-            next[i] = {
+          // Add the new solution to the state.
+          setImageSolutions((prev) => [
+            ...prev,
+            {
               imageUrl: item.url,
+              success: true,
               problems: res?.problems ?? [],
-            };
-            return next;
-          });
+            },
+          ]);
+
+          // Requirement 3: Set status to 'success' after a successful response.
+          setItems((prevItems) =>
+            prevItems.map((prevItem) =>
+              prevItem.id === item.id
+                ? { ...prevItem, status: "success" }
+                : prevItem,
+            ),
+          );
         } catch (err) {
-          console.error(err);
-          setImageSolutions((prev) => {
-            const next = prev.slice();
-            next[i] = {
+          console.error(
+            `Failed to process ${item.id} after multiple retries:`,
+            err,
+          );
+
+          // Add a failed solution entry for user feedback.
+          setImageSolutions((prev) => [
+            ...prev,
+            {
               imageUrl: item.url,
-              problems: [],
-            } as any;
-            return next;
-          });
+              success: false,
+              problems: [
+                {
+                  problem: "Processing failed after multiple retries.",
+                  answer: "Please check the console for errors and try again.",
+                  explanation: String(err),
+                },
+              ],
+            },
+          ]);
+
+          // Requirement 3: Set status to 'failed' after an error.
+          setItems((prevItems) =>
+            prevItems.map((prevItem) =>
+              prevItem.id === item.id
+                ? { ...prevItem, status: "failed" }
+                : prevItem,
+            ),
+          );
         }
       };
 
+      // Create a worker pool to process images concurrently.
       let nextIndex = 0;
       const worker = async () => {
         while (true) {
           const i = nextIndex++;
           if (i >= n) break;
-          await processOne(i);
+          await processOne(itemsToProcess[i]);
         }
       };
 
@@ -177,32 +284,38 @@ export default function ScanPage() {
       await Promise.all(workers);
     } catch (e) {
       console.error(e);
+      toast("An unexpected error occurred", {
+        description:
+          "Something went wrong during the process. Please check the console.",
+      });
     } finally {
+      toast("All done!", {
+        description: "Your homework has been processed.",
+      });
       setWorking(false);
     }
   };
 
-  // Build a solutions list in the same visual order as the uploaded items.
-  // Each entry pairs the item (image) with its solutions by imageUrl.
+  // Build a solutions list that matches the visual order of the uploaded items.
   const orderedSolutions = useMemo(() => {
     const byUrl = new Map(imageSolutions.map((s) => [s.imageUrl, s]));
     return items
-      .filter((it) => byUrl.has(it.url))
+      .filter((it) => byUrl.has(it.url)) // Only include items that have a solution entry.
       .map((it) => ({
         item: it,
         solutions: byUrl.get(it.url)!,
       }));
   }, [items, imageSolutions]);
 
-  // Current image index is derived from selectedImage (stores image URL).
+  // Derive the index of the currently selected image.
   const currentImageIdx = useMemo(() => {
     if (!orderedSolutions.length) return -1;
     if (!selectedImage) return 0;
     const idx = orderedSolutions.findIndex((e) => e.item.url === selectedImage);
-    return idx === -1 ? 0 : idx;
+    return idx === -1 ? 0 : idx; // Default to the first image if not found.
   }, [orderedSolutions, selectedImage]);
 
-  // Keep selectedImage consistent if data changes
+  // Effect to keep the selectedImage state consistent if the data changes.
   useEffect(() => {
     if (!orderedSolutions.length) {
       if (selectedImage !== null) setSelectedImage(null);
@@ -212,14 +325,14 @@ export default function ScanPage() {
     const url = orderedSolutions[safeIdx].item.url;
     if (selectedImage !== url) setSelectedImage(url);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderedSolutions.length]);
+  }, [orderedSolutions.length, currentImageIdx]); // Depend on length and index
 
-  // Access current problems
+  // Get the current solution bundle (image + its problems).
   const currentBundle =
     currentImageIdx >= 0 ? orderedSolutions[currentImageIdx] : null;
   const problems = currentBundle?.solutions.problems ?? [];
 
-  // Clamp selectedProblem when switching images / data updates
+  // Effect to clamp the selectedProblem index to a valid range when data changes.
   useEffect(() => {
     if (!problems.length) {
       if (selectedProblem !== 0) setSelectedProblem(0);
@@ -228,9 +341,9 @@ export default function ScanPage() {
     const clamped = Math.min(selectedProblem, problems.length - 1);
     if (clamped !== selectedProblem) setSelectedProblem(clamped);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentImageIdx, problems.length]);
+  }, [currentImageIdx, problems.length]); // Re-run when image or problems change.
 
-  // Navigation helpers
+  // Navigation helpers for problems and images.
   const goNextProblem = () =>
     setSelectedProblem((i) =>
       Math.min(i + 1, Math.max(0, problems.length - 1)),
@@ -241,16 +354,17 @@ export default function ScanPage() {
     if (!orderedSolutions.length) return;
     const next = (currentImageIdx + 1) % orderedSolutions.length;
     setSelectedImage(orderedSolutions[next].item.url);
-    setSelectedProblem(0);
+    setSelectedProblem(0); // Reset problem index when changing images.
   };
   const goPrevImage = () => {
     if (!orderedSolutions.length) return;
     const prev =
       (currentImageIdx - 1 + orderedSolutions.length) % orderedSolutions.length;
     setSelectedImage(orderedSolutions[prev].item.url);
-    setSelectedProblem(0);
+    setSelectedProblem(0); // Reset problem index.
   };
 
+  // Utility to copy text to the clipboard.
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -260,12 +374,11 @@ export default function ScanPage() {
     }
   };
 
-  // Keyboard shortcuts: Tab/Shift+Tab for problems; Space/Shift+Space for images.
-  // Bind on a focusable container to avoid hijacking global page focus/scroll.
+  // Keyboard shortcuts handler for navigating solutions.
   const onKeyDownSolutions: React.KeyboardEventHandler<HTMLDivElement> = (
     e,
   ) => {
-    // Space-based navigation
+    // Space/Shift+Space for image navigation.
     if (e.code === "Space") {
       e.preventDefault();
       if (e.shiftKey) goPrevImage();
@@ -273,7 +386,7 @@ export default function ScanPage() {
       e.currentTarget.focus();
       return;
     }
-    // Tab-based navigation
+    // Tab/Shift+Tab for problem navigation.
     if (e.key === "Tab") {
       e.preventDefault();
       if (e.shiftKey) goPrevProblem();
@@ -296,7 +409,7 @@ export default function ScanPage() {
         </header>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* Left: Uploader / Actions */}
+          {/* Left panel: Upload controls and actions. */}
           <ActionsCard
             isWorking={isWorking}
             appendFiles={appendFiles}
@@ -306,36 +419,36 @@ export default function ScanPage() {
             items={items}
           />
 
-          {/* Right: Preview Grid */}
           <PreviewCard removeItem={removeItem} items={items} />
         </div>
 
+        {/* Solutions Section */}
         <div className="mt-6">
           <Card className="rounded-2xl p-4 shadow">
             <CardTitle>Solutions</CardTitle>
             <CardContent>
-              {/* Focusable region to capture keyboard shortcuts */}
+              {/* Focusable region to capture keyboard shortcuts for navigation. */}
               <div
                 tabIndex={0}
                 onKeyDown={onKeyDownSolutions}
                 className="outline-none"
                 aria-label="Solutions keyboard focus region (Tab/Shift+Tab for problems, Space/Shift+Space for images)"
               >
-                {/* Empty / working states */}
+                {/* Conditional rendering based on whether solutions are available. */}
                 {!orderedSolutions.length ? (
                   <div className="text-sm text-gray-400">
-                    {imageSolutions.length === 0
+                    {isWorking
                       ? "Analyzing... extracting problems and solutions from your images."
-                      : "No solutions yet. Add images and click Scan to see results here."}
+                      : 'No solutions yet. Add images and click "Let\'s Skid" to see results here.'}
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {/* Image Tabs (switch photos) */}
+                    {/* Image Tabs for switching between different photos' solutions. */}
                     <Tabs
                       value={selectedImage ?? undefined}
                       onValueChange={(v) => {
                         setSelectedImage(v);
-                        setSelectedProblem(0);
+                        setSelectedProblem(0); // Reset problem index on tab change.
                       }}
                       className="w-full"
                     >
@@ -350,6 +463,7 @@ export default function ScanPage() {
                         ))}
                       </TabsList>
 
+                      {/* Content for each image tab. */}
                       {orderedSolutions.map((entry, idx) => {
                         const problemCount = entry.solutions.problems.length;
                         const safeIndex = Math.min(
@@ -367,7 +481,7 @@ export default function ScanPage() {
                             value={entry.item.url}
                             className="mt-4"
                           >
-                            {/* Collapsible preview of current photo */}
+                            {/* Collapsible preview of the current photo. */}
                             <Collapsible defaultOpen>
                               <div className="flex items-center justify-between">
                                 <div className="text-xs text-slate-400">
@@ -396,47 +510,44 @@ export default function ScanPage() {
 
                             <Separator className="my-4" />
 
-                            {/* Problems list + detail */}
+                            {/* Display problems or a message if none were found. */}
                             {entry.solutions.problems.length === 0 ? (
                               <div className="text-sm text-slate-400">
-                                No problems detected for this image.
+                                {entry.solutions.success
+                                  ? "No problems detected for this image."
+                                  : "Failed to process this image. Please try again."}
                               </div>
                             ) : (
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                {/* Left: Problems index */}
+                                {/* Left: List of problems for the current image. */}
                                 <aside className="md:col-span-1">
                                   <ul className="space-y-2">
-                                    {entry.solutions.problems.map((p, i) => {
-                                      const isActive =
-                                        selectedImage === entry.item.url &&
-                                        i === selectedProblem;
-                                      return (
-                                        <li key={i}>
-                                          <Button
-                                            variant={
-                                              isActive ? "secondary" : "outline"
-                                            }
-                                            className="w-full justify-start whitespace-normal"
-                                            onClick={() =>
-                                              setSelectedProblem(i)
-                                            }
-                                          >
-                                            <div className="text-left min-w-0 flex-1">
-                                              <div className="text-xs font-semibold">
-                                                Problem {i + 1}
-                                              </div>
-                                              <div className="truncate text-xs opacity-80">
-                                                {p.problem}
-                                              </div>
+                                    {entry.solutions.problems.map((p, i) => (
+                                      <li key={i}>
+                                        <Button
+                                          variant={
+                                            i === selectedProblem
+                                              ? "secondary"
+                                              : "outline"
+                                          }
+                                          className="w-full justify-start whitespace-normal text-left"
+                                          onClick={() => setSelectedProblem(i)}
+                                        >
+                                          <div className="min-w-0 flex-1">
+                                            <div className="text-xs font-semibold">
+                                              Problem {i + 1}
                                             </div>
-                                          </Button>
-                                        </li>
-                                      );
-                                    })}
+                                            <div className="truncate text-xs opacity-80">
+                                              {p.problem}
+                                            </div>
+                                          </div>
+                                        </Button>
+                                      </li>
+                                    ))}
                                   </ul>
                                 </aside>
 
-                                {/* Right: Problem detail */}
+                                {/* Right: Detailed view of the selected problem. */}
                                 <section className="md:col-span-2">
                                   <div className="rounded-xl border border-slate-700 p-4">
                                     <div className="mb-2 text-xs uppercase tracking-wide text-slate-400">
@@ -444,6 +555,7 @@ export default function ScanPage() {
                                       {entry.solutions.problems.length}
                                     </div>
 
+                                    {/* Markdown renderer for problem, answer, and explanation. */}
                                     <Markdown
                                       remarkPlugins={[remarkGfm, remarkMath]}
                                       rehypePlugins={[
@@ -505,6 +617,7 @@ export default function ScanPage() {
                                         </div>
                                       </div>
 
+                                      {/* Navigation controls for problems and images. */}
                                       <div className="flex items-center justify-between pt-2">
                                         <div className="text-xs text-slate-500">
                                           Source image:&nbsp;

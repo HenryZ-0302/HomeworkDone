@@ -3,11 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
 import { Badge } from "./ui/badge";
 import type { ImageItem } from "./pages/ScanPage";
+import { twMerge } from "tailwind-merge";
 
 export type PreviewCardProps = {
   items: ImageItem[];
   removeItem: (id: string) => void;
 };
+
+function getColorClassByStatus(status: "success" | "failed" | "pending") {
+  switch (status) {
+    case "success":
+      return "border-green-500";
+    case "failed":
+      return "border-red-500";
+    case "pending":
+      return "border-amber-500";
+  }
+}
 
 export default function PreviewCard({ items, removeItem }: PreviewCardProps) {
   return (
@@ -29,7 +41,10 @@ export default function PreviewCard({ items, removeItem }: PreviewCardProps) {
               {items.map((it) => (
                 <figure
                   key={it.id}
-                  className="group relative overflow-hidden rounded-xl border border-white/10"
+                  className={twMerge(
+                    "group relative overflow-hidden rounded-xl border border-white/10",
+                    getColorClassByStatus(it.status),
+                  )}
                 >
                   <img
                     src={it.url}
