@@ -13,6 +13,10 @@ export interface GeminiState {
 
   geminiModel: string;
   setGeminiModel: (model: string) => void;
+
+  traits?: string;
+  setTraits: (traits: string) => void;
+  clearTraits: () => void;
 }
 
 export const useGeminiStore = create<GeminiState>()(
@@ -29,6 +33,10 @@ export const useGeminiStore = create<GeminiState>()(
 
       geminiModel: "gemini-2.5-pro",
       setGeminiModel: (model) => set({ geminiModel: model }),
+
+      traits: undefined,
+      setTraits: (traits) => set({ traits }),
+      clearTraits: () => set({ traits: undefined }),
     }),
     {
       name: "gemini-storage",
