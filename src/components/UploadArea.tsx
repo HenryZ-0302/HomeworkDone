@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { useHotkeys } from "react-hotkeys-hook";
-import type { ImageItem } from "./pages/ScanPage";
+import type { ImageItem } from "@/store/problems-store";
 
 export type UploadAreaProps = {
   isWorking: boolean;

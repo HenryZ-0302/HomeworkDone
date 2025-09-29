@@ -2,8 +2,8 @@ import { ImageIcon, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
 import { Badge } from "./ui/badge";
-import type { ImageItem } from "./pages/ScanPage";
 import { twMerge } from "tailwind-merge";
+import type { ImageItem } from "@/store/problems-store";
 
 export type PreviewCardProps = {
   items: ImageItem[];

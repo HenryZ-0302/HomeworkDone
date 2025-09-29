@@ -22,41 +22,30 @@ import { uint8ToBase64 } from "@/utils/encoding";
 import { parseResponse } from "@/ai/response";
 
 import "katex/dist/katex.min.css";
-
-// Type definition for an image item in the upload list.
-export type ImageItem = {
-  id: string; // Unique identifier for each item
-  file: File; // The actual image file
-  url: string; // Object URL for client-side preview
-  source: "upload" | "camera"; // Origin of the image
-  // Requirement 1: Status for visual feedback (e.g., colored borders).
-  status: "success" | "pending" | "failed";
-};
-
-// Type definition for the solution set of a single image.
-export type ImageSolution = {
-  imageUrl: string; // URL of the source image, used as a key
-  success: boolean; // Whether the AI processing was successful
-  problems: ProblemSolution[]; // Array of problems found in the image
-};
-
-// Type definition for a single problem's solution.
-export type ProblemSolution = {
-  problem: string;
-  answer: string;
-  explanation: string;
-};
+import { useProblemsStore, type ImageItem } from "@/store/problems-store";
 
 export default function ScanPage() {
   // State for holding the list of uploaded image items.
-  const [items, setItems] = useState<ImageItem[]>([]);
-  // State for storing the solutions returned by the AI.
-  const [imageSolutions, setImageSolutions] = useState<ImageSolution[]>([]);
-  // State for tracking the currently selected image tab in the solutions view.
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  // State for tracking the currently selected problem within an image's solution set.
-  const [selectedProblem, setSelectedProblem] = useState(0);
+  const [items, setItems] = useProblemsStore((s) => [
+    s.imageItems,
+    s.setImageItems,
+  ]);
 
+  // State for storing the solutions returned by the AI.
+  const [imageSolutions, setImageSolutions] = useProblemsStore((s) => [
+    s.imageSolutions,
+    s.setImageSolutions,
+  ]);
+  // State for tracking the currently selected image tab in the solutions view.
+  const [selectedImage, setSelectedImage] = useProblemsStore((s) => [
+    s.selectedImage,
+    s.setSelectedImage,
+  ]);
+  // State for tracking the currently selected problem within an image's solution set.
+  const [selectedProblem, setSelectedProblem] = useProblemsStore((s) => [
+    s.selectedProblem,
+    s.setSelectedProblem,
+  ]);
   // Zustand store for Gemini API configuration.
   const geminiModel = useGeminiStore((state) => state.geminiModel);
   const geminiKey = useGeminiStore((state) => state.geminiKey);
@@ -95,26 +84,22 @@ export default function ScanPage() {
         url: URL.createObjectURL(file), // Create a temporary URL for preview.
         source,
       }));
-      setItems((prev) => [...prev, ...next]);
+      setItems([...items, ...next]);
     },
     [],
   );
 
   // Function to remove a specific item from the list by its ID.
   const removeItem = (id: string) => {
-    setItems((prev) => {
-      const target = prev.find((i) => i.id === id);
-      if (target) URL.revokeObjectURL(target.url); // Clean up the object URL.
-      return prev.filter((i) => i.id !== id);
-    });
+    const target = items.find((i) => i.id === id);
+    if (target) URL.revokeObjectURL(target.url); // Clean up the object URL.
+    setItems(items.filter((i) => i.id !== id));
   };
 
   // Function to clear all uploaded items.
   const clearAll = () => {
-    setItems((prev) => {
-      prev.forEach((i) => URL.revokeObjectURL(i.url)); // Clean up all object URLs.
-      return [];
-    });
+    items.forEach((i) => URL.revokeObjectURL(i.url)); // Clean up all object URLs.
+    setItems([]);
     setImageSolutions([]); // Also clear the solutions.
   };
 
@@ -209,8 +194,8 @@ ${geminiTraits}
 
       // Before processing, remove any old solutions for the images that are about to be re-processed.
       const urlsToProcess = new Set(itemsToProcess.map((item) => item.url));
-      setImageSolutions((prev) =>
-        prev.filter((sol) => !urlsToProcess.has(sol.imageUrl)),
+      setImageSolutions(
+        imageSolutions.filter((sol) => !urlsToProcess.has(sol.imageUrl)),
       );
 
       /**
@@ -231,8 +216,8 @@ ${geminiTraits}
           const res = parseResponse(resText);
 
           // Add the new solution to the state.
-          setImageSolutions((prev) => [
-            ...prev,
+          setImageSolutions([
+            ...imageSolutions,
             {
               imageUrl: item.url,
               success: true,
@@ -241,8 +226,8 @@ ${geminiTraits}
           ]);
 
           // Requirement 3: Set status to 'success' after a successful response.
-          setItems((prevItems) =>
-            prevItems.map((prevItem) =>
+          setItems(
+            items.map((prevItem) =>
               prevItem.id === item.id
                 ? { ...prevItem, status: "success" }
                 : prevItem,
@@ -255,8 +240,8 @@ ${geminiTraits}
           );
 
           // Add a failed solution entry for user feedback.
-          setImageSolutions((prev) => [
-            ...prev,
+          setImageSolutions([
+            ...imageSolutions,
             {
               imageUrl: item.url,
               success: false,
@@ -271,8 +256,8 @@ ${geminiTraits}
           ]);
 
           // Requirement 3: Set status to 'failed' after an error.
-          setItems((prevItems) =>
-            prevItems.map((prevItem) =>
+          setItems(
+            items.map((prevItem) =>
               prevItem.id === item.id
                 ? { ...prevItem, status: "failed" }
                 : prevItem,
@@ -332,7 +317,7 @@ ${geminiTraits}
   // Effect to keep the selectedImage state consistent if the data changes.
   useEffect(() => {
     if (!orderedSolutions.length) {
-      if (selectedImage !== null) setSelectedImage(null);
+      if (selectedImage !== null) setSelectedImage(undefined);
       return;
     }
     const safeIdx = currentImageIdx === -1 ? 0 : currentImageIdx;
@@ -359,10 +344,11 @@ ${geminiTraits}
 
   // Navigation helpers for problems and images.
   const goNextProblem = () =>
-    setSelectedProblem((i) =>
-      Math.min(i + 1, Math.max(0, problems.length - 1)),
+    setSelectedProblem(
+      Math.min(selectedProblem + 1, Math.max(0, problems.length - 1)),
     );
-  const goPrevProblem = () => setSelectedProblem((i) => Math.max(i - 1, 0));
+  const goPrevProblem = () =>
+    setSelectedProblem(Math.max(selectedProblem - 1, 0));
 
   const goNextImage = () => {
     if (!orderedSolutions.length) return;

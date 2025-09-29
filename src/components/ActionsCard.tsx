@@ -1,10 +1,10 @@
+import type { ImageItem } from "@/store/problems-store";
 import ActionsArea from "./ActionsArea";
 import InfoArea from "./InfoArea";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Separator } from "./ui/separator";
 import UploadArea from "./UploadArea";
-import type { ImageItem } from "./pages/ScanPage";
 import { useNavigate } from "react-router-dom";
 
 export type ActionsCardProps = {

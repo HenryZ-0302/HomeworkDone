@@ -1,4 +1,4 @@
-import type { ProblemSolution } from "@/components/pages/ScanPage";
+import type { ProblemSolution } from "@/store/problems-store";
 
 interface SolveResponse {
   problems: ProblemSolution[];
