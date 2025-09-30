@@ -363,7 +363,7 @@ ${geminiTraits}
     e,
   ) => {
     // Tab/Shift+Tab for image navigation.
-    if (e.code === "Tab") {
+    if (e.key === "Tab") {
       e.preventDefault();
       if (e.shiftKey) goPrevImage();
       else goNextImage();
@@ -371,7 +371,7 @@ ${geminiTraits}
       return;
     }
     // Space/Shift+Space for problem navigation.
-    if (e.key === "Space") {
+    if (e.code === "Space") {
       e.preventDefault();
       if (e.shiftKey) goPrevProblem();
       else goNextProblem();
