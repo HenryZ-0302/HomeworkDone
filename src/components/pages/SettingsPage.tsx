@@ -11,6 +11,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useNavigate } from "react-router-dom";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export default function SettingsPage() {
   // --- State Management ---
@@ -47,6 +48,8 @@ export default function SettingsPage() {
   const handleBack = () => {
     navigate("/");
   };
+
+  useHotkeys("esc", handleBack);
 
   // --- Render Logic ---
   return (
