@@ -63,7 +63,7 @@ export default function SettingsPage() {
       </div>
 
       <Button className="w-full" onClick={handleBack}>
-        Back
+        Back (ESC)
       </Button>
       {/* Card for API Credentials */}
       <Card>
@@ -184,7 +184,7 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
       <Button className="w-full" onClick={handleBack}>
-        Back
+        Back (ESC)
       </Button>
     </div>
   );
