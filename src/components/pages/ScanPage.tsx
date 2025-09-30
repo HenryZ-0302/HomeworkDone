@@ -535,8 +535,11 @@ ${geminiTraits}
                                 <section className="md:col-span-2">
                                   <div className="rounded-xl border border-slate-700 p-4">
                                     <div className="mb-2 text-xs uppercase tracking-wide text-slate-400">
-                                      Problem {selectedProblem + 1} of{" "}
-                                      {entry.solutions.problems.length}
+                                      Problem{" "}
+                                      <label className="font-extrabold text-amber-500">
+                                        {selectedProblem + 1}
+                                      </label>{" "}
+                                      of {entry.solutions.problems.length}
                                     </div>
 
                                     {/* Markdown renderer for problem, answer, and explanation. */}
