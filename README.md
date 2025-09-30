@@ -24,13 +24,30 @@
 
 [Google AI Studio](https://aistudio.google.com/api-keys)
 
+### 为什么如此之慢
+
+站点默认使用 Gemini 2.5 pro, 这个模型会一直思考, 如果你介意时间可以换为 `gemini-2.5-flash`
+
+同时, 如果不需要详细的解析可以尝试如下prompt
+
+```text
+用中文输出答案
+只需要输出答案即可，选择题不需要输出解析(留白即可)
+```
+
+### 为什么总是失败
+
+- 检查你的IP 是否被Google 拉黑
+- 检查API Key 是否有效
+- 尝试使用 `gemini-2.5-flash` 模型
+
 ## Star 历史记录
 
 如果这个项目节省了你的时间, 请务必献上一个 Star!
 
 [![Star History Chart](https://api.star-history.com/svg?repos=cubewhy/skid-homework&type=Date)](https://www.star-history.com/#cubewhy/skid-homework&Date)
 
-### 我的电脑上没有摄像头, 请帮帮我
+## 我的电脑上没有摄像头, 请帮帮我
 
 [SkidCamera](https://github.com/cubewhy/SkidCamera) 正是您想要的。
 
