@@ -211,7 +211,7 @@ ${geminiTraits}
 
           // Send image to AI with retry logic.
           const resText = await retryAsyncOperation(() =>
-            ai.sendImage(uint8ToBase64(bytes)),
+            ai.sendImage(uint8ToBase64(bytes), undefined, geminiModel),
           );
 
           const res = parseResponse(resText);
