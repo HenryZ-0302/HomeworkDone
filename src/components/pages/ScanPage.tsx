@@ -362,16 +362,16 @@ ${geminiTraits}
   const onKeyDownSolutions: React.KeyboardEventHandler<HTMLDivElement> = (
     e,
   ) => {
-    // Space/Shift+Space for image navigation.
-    if (e.code === "Space") {
+    // Tab/Shift+Tab for image navigation.
+    if (e.code === "Tab") {
       e.preventDefault();
       if (e.shiftKey) goPrevImage();
       else goNextImage();
       e.currentTarget.focus();
       return;
     }
-    // Tab/Shift+Tab for problem navigation.
-    if (e.key === "Tab") {
+    // Space/Shift+Space for problem navigation.
+    if (e.key === "Space") {
       e.preventDefault();
       if (e.shiftKey) goPrevProblem();
       else goNextProblem();
@@ -624,7 +624,7 @@ ${geminiTraits}
                                             onClick={goPrevProblem}
                                             disabled={selectedProblem === 0}
                                           >
-                                            Prev (Shift+Tab)
+                                            Prev (Shift+Space)
                                           </Button>
                                           <Button
                                             variant="outline"
@@ -636,21 +636,21 @@ ${geminiTraits}
                                                 1
                                             }
                                           >
-                                            Next (Tab)
+                                            Next (Space)
                                           </Button>
                                           <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={goPrevImage}
                                           >
-                                            ⟵ Image (Shift+Space)
+                                            ⟵ Image (Shift+Tab)
                                           </Button>
                                           <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={goNextImage}
                                           >
-                                            Image ⟶ (Space)
+                                            Image ⟶ (Tab)
                                           </Button>
                                         </div>
                                       </div>
