@@ -16,7 +16,6 @@ export type ImageSolution = {
   problems: ProblemSolution[]; // Array of problems found in the image
 };
 
-// Type definition for a single problem's solution.
 export type ProblemSolution = {
   problem: string;
   answer: string;
