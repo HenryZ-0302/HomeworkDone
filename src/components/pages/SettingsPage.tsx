@@ -95,12 +95,9 @@ export default function SettingsPage() {
   return (
     // Main container for the settings page with padding and max-width for better layout.
     <div className="mx-auto max-w-3xl space-y-8 p-4 md:p-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Gemini Settings</h1>
-        <p className="text-muted-foreground">
-          Configure your connection to the Gemini API.
-        </p>
-      </div>
+      <h1 className="text-2xl font-bold tracking-tight">
+        SkidHomework Settings
+      </h1>
 
       <Button className="w-full" onClick={handleBack}>
         Back (ESC)
