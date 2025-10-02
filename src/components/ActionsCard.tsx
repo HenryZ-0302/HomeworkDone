@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Separator } from "./ui/separator";
 import UploadArea from "./UploadArea";
 import { useNavigate } from "react-router-dom";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export type ActionsCardProps = {
   items: ImageItem[];
@@ -29,6 +30,8 @@ export default function ActionsCard({
   const handleSettingsBtnClick = () => {
     navigate("/settings");
   };
+
+  useHotkeys("ctrl+5", handleSettingsBtnClick);
 
   return (
     <Card className="md:col-span-1 border-white/10 backdrop-blur">
@@ -54,7 +57,7 @@ export default function ActionsCard({
           variant="secondary"
           onClick={handleSettingsBtnClick}
         >
-          Settings
+          Settings (Ctrl+5)
         </Button>
       </CardContent>
     </Card>
