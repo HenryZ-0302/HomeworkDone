@@ -41,19 +41,19 @@
 - 检查API Key 是否有效
 - 尝试使用 `gemini-2.5-flash` 模型
 
-## Star 历史记录
-
-如果这个项目节省了你的时间, 请务必献上一个 Star!
-
-[![Star History Chart](https://api.star-history.com/svg?repos=cubewhy/skid-homework&type=Date)](https://www.star-history.com/#cubewhy/skid-homework&Date)
-
-## 我的电脑上没有摄像头, 请帮帮我
+### 我的电脑上没有摄像头, 请帮帮我
 
 [SkidCamera](https://github.com/cubewhy/SkidCamera) 正是您想要的。
 
 为自学者设计的符合人体工程学的相机软件
 
 请参照 SkidCamera README 中的步骤来使用
+
+## Star 历史记录
+
+如果这个项目节省了你的时间, 请务必献上一个 Star!
+
+[![Star History Chart](https://api.star-history.com/svg?repos=cubewhy/skid-homework&type=Date)](https://www.star-history.com/#cubewhy/skid-homework&Date)
 
 ## 为什么太多作业不好
 
@@ -74,6 +74,20 @@
 
 但学校可能会要求我提交作业...
 这个平台只是解决这个问题的一个变通方法。
+
+### 免责声明
+
+本项目鼓励用户遵守学术诚信.
+
+本项目使用 GPLv3 授权, 开发者无权控制软件的分发.
+
+## 开发
+
+- Clone 本存储库
+- 运行 `pnpm i`
+- 运行 `pnpm run dev` 来预览
+
+欢迎PR
 
 ## License
 
