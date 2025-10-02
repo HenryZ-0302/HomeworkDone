@@ -143,7 +143,7 @@ export default function ScanPage() {
     if (!geminiModel || geminiModel.length === 0) {
       toast("You're almost there", {
         description:
-          "Please specific a Gemini model to start skidding! For example, `gemini-1.5-pro-latest`",
+          "Please specific a Gemini model in settings to start skidding!",
       });
       return;
     }
