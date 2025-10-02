@@ -168,7 +168,7 @@ export default function SettingsPage() {
                       )?.displayName ??
                       (availableModels.length === 0
                         ? geminiModel
-                        : "Unknown Model"))
+                        : `Unknown Model (${geminiModel})`))
                     : "Select model..."}
                   <ChevronsUpDown className="opacity-50" />
                 </Button>
