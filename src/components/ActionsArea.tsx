@@ -28,7 +28,7 @@ export default function ActionsArea({
   useHotkeys("ctrl+4", () => clearAllBtnRef.current?.click());
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-wrap">
       <Button
         ref={clearAllBtnRef}
         variant="destructive"
@@ -36,6 +36,7 @@ export default function ActionsArea({
         disabled={itemsLength === 0 || isWorking}
         onClick={clearAll}
       >
+        {/* TODO: confirm before delete */}
         <Trash2 className="mr-2 h-4 w-4" /> Clear All (Ctrl+4)
       </Button>
       <Button
