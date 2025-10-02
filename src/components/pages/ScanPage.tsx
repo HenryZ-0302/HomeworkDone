@@ -107,10 +107,10 @@ export default function ScanPage() {
 
   // Utility function to retry an async operation with exponential backoff.
   const retryAsyncOperation = async (
-    asyncFn: () => Promise<any>,
+    asyncFn: () => Promise<string>,
     maxRetries: number = 5,
     initialDelayMs: number = 5000,
-  ): Promise<any> => {
+  ): Promise<string> => {
     let lastError: Error | undefined;
     let delay = initialDelayMs;
 

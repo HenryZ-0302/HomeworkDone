@@ -96,6 +96,7 @@ export class GeminiAi {
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parts: any[] = [];
     if (prompt) {
       parts.push({ text: prompt });
@@ -171,7 +172,7 @@ export const SYSTEM_PROMPT = String.raw`
   <problems>
     <problem>
       <problem_text>这里是OCR识别出的完整问题文本。</problem_text>
-      <answer>这里是问题的最终答案。</answer>
+      <answer><![CDATA[这里是问题的最终答案。]]</answer>
       <explanation><![CDATA[这里是问题的详细解题步骤。]]></explanation>
     </problem>
     <!-- 如果有多个问题，在此处继续添加 <problem> 标签 -->
@@ -182,7 +183,7 @@ export const SYSTEM_PROMPT = String.raw`
 #### 格式化指南
 1.  **LaTeX语法**: 所有数学公式、符号和方程都必须使用LaTeX语法，并用 \`$$ ... $$\` 包裹。
     *   例如: \`$$ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} $$\`
-2.  **Markdown与CDATA**: \`explanation\` 字段内可以使用Markdown语法（如列表、加粗）来提高可读性。为了确保XML解析的正确性，**explanation的内容必须被包裹在 \`<![CDATA[...]]>\` 块中**。客户端渲染器支持 remarkGfm 和 \`\${"\`"}remarkMath\${"\`"}\`。
+2.  **Markdown与CDATA**: \`explanation\` 字段内可以使用Markdown语法（如列表、加粗）来提高可读性。为了确保XML解析的正确性，**markdown内容必须被包裹在 \`<![CDATA[...]]>\` 块中**。客户端渲染器支持 remarkGfm 和 \`\${"\`"}remarkMath\${"\`"}\`。
 3.  **标签规范**: 保持XML标签的整洁和规范性，确保所有标签都正确闭合。
 
 #### <traits> 行为准则
