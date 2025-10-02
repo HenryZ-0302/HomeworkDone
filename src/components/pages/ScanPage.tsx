@@ -381,7 +381,7 @@ ${geminiTraits}
 
   return (
     <div className="min-h-screen text-slate-100">
-      <div className="mx-auto max-w-6xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-6 py-8">
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">
             Scan your homework
