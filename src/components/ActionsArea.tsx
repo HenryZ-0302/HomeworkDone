@@ -39,13 +39,14 @@ export default function ActionsArea({
   };
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
+    if (!confirmedClear) return; // do not modify the variable if it is already false
+    const timeoutId = setTimeout(() => {
       setConfirmedClear(false);
     }, 3000);
     return () => {
-      clearInterval(intervalId);
+      clearTimeout(timeoutId);
     };
-  }, [confirmedClear]);
+  }, [confirmedClear, setConfirmedClear]);
 
   return (
     <div className="flex gap-2 flex-wrap">
