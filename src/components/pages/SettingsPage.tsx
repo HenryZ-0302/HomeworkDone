@@ -12,13 +12,9 @@ import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { useHotkeys } from "react-hotkeys-hook";
+import { Slider } from "../ui/slider";
 
 export default function SettingsPage() {
-  // --- State Management ---
-  // Retrieve state and action functions from the Gemini Zustand store.
-  // Using selectors (e.g., `(s) => s.geminiKey`) ensures the component only
-  // re-renders when the specific piece of state it uses changes.
-
   // API Key state and actions
   const geminiKey = useGeminiStore((s) => s.geminiKey);
   const setGeminiKey = useGeminiStore((s) => s.setGeminiKey);
@@ -39,9 +35,9 @@ export default function SettingsPage() {
   const setTraits = useGeminiStore((s) => s.setTraits);
   const clearTraits = useGeminiStore((s) => s.clearTraits);
 
-  // TODO: allow customize thinking budget
-  // const thinkingBudget = useGeminiStore((s) => s.thinkingBudget);
-  // const setThinkBudget = useGeminiStore((s) => s.setThinkingBudget);
+  // AI Thinking budget
+  const thinkingBudget = useGeminiStore((s) => s.thinkingBudget);
+  const setThinkBudget = useGeminiStore((s) => s.setThinkingBudget);
 
   const navigate = useNavigate();
 
@@ -120,6 +116,40 @@ export default function SettingsPage() {
               value={geminiModel}
               onChange={(e) => setGeminiModel(e.target.value)}
             />
+          </div>
+
+          {/* Thinking budget */}
+          <div className="space-y-2">
+            <Label>Thinking Budget</Label>
+            <span className="text-sm text-muted-foreground">
+              Default: 8192 Tokens
+            </span>
+            <div className="w-full flex items-center gap-2">
+              {/* Slider container takes up all available space */}
+              <div className="flex-1">
+                <Slider
+                  value={[thinkingBudget]}
+                  onValueChange={(nums) => setThinkBudget(nums[0])}
+                  min={128}
+                  max={24576}
+                  step={1}
+                />
+              </div>
+
+              {/* Input and Label container, fixed width based on content */}
+              <span className="w-fit text-nowrap flex flex-row items-center gap-1">
+                <Input
+                  // Added w-24 (or similar fixed width) to ensure the input field holds numbers consistently
+                  className="w-24"
+                  value={thinkingBudget}
+                  min={128}
+                  max={24576}
+                  onChange={(e) => setThinkBudget(parseInt(e.target.value))}
+                  type="number"
+                />{" "}
+                Tokens
+              </span>
+            </div>
           </div>
 
           {/* AI Traits / System Prompt Textarea */}
