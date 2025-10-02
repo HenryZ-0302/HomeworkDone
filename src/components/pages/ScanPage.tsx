@@ -216,15 +216,12 @@ ${geminiTraits}
 
           const res = parseResponse(resText);
 
-          // FIX: Use addImageSolution action. This action uses a functional update
-          // internally, ensuring safe concurrent state modification.
           addImageSolution({
             imageUrl: item.url,
             success: true,
             problems: res?.problems ?? [],
           });
 
-          // FIX: Use updateItemStatus action for thread-safe item status update.
           updateItemStatus(item.id, "success");
         } catch (err) {
           console.error(
@@ -238,14 +235,12 @@ ${geminiTraits}
             explanation: String(err),
           };
 
-          // FIX: Add failure entry safely using the store action.
           addImageSolution({
             imageUrl: item.url,
             success: false,
             problems: [failureProblem],
           });
 
-          // FIX: Update status to 'failed' safely.
           updateItemStatus(item.id, "failed");
         }
       };

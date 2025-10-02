@@ -230,7 +230,6 @@ export default function SettingsPage() {
               {/* Input and Label container, fixed width based on content */}
               <span className="w-fit text-nowrap flex flex-row items-center gap-1">
                 <Input
-                  // Added w-24 (or similar fixed width) to ensure the input field holds numbers consistently
                   className="w-24"
                   value={thinkingBudget}
                   min={128}

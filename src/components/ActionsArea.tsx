@@ -1,6 +1,6 @@
 import { Loader2Icon, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 export type ActionsAreaProps = {
@@ -24,8 +24,28 @@ export default function ActionsArea({
   const clearAllBtnRef = useRef<HTMLButtonElement | null>(null);
   const skidBtnRef = useRef<HTMLButtonElement | null>(null);
 
+  const [confirmedClear, setConfirmedClear] = useState(false);
+
   useHotkeys("ctrl+3", () => skidBtnRef.current?.click());
   useHotkeys("ctrl+4", () => clearAllBtnRef.current?.click());
+
+  const handleClearAll = () => {
+    if (confirmedClear) {
+      clearAll();
+      setConfirmedClear(false);
+    } else {
+      setConfirmedClear(true);
+    }
+  };
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setConfirmedClear(false);
+    }, 3000);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [confirmedClear]);
 
   return (
     <div className="flex gap-2 flex-wrap">
@@ -34,10 +54,15 @@ export default function ActionsArea({
         variant="destructive"
         className="flex-1"
         disabled={itemsLength === 0 || isWorking}
-        onClick={clearAll}
+        onClick={handleClearAll}
       >
-        {/* TODO: confirm before delete */}
-        <Trash2 className="mr-2 h-4 w-4" /> Clear All (Ctrl+4)
+        <Trash2 className="mr-2 h-4 w-4" />
+        {!confirmedClear ? (
+          <label>Clear All</label>
+        ) : (
+          <label>Click again to confirm</label>
+        )}{" "}
+        (Ctrl+4)
       </Button>
       <Button
         ref={skidBtnRef}
