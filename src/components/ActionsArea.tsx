@@ -21,19 +21,22 @@ export default function ActionsArea({
     startScan();
   };
 
+  const clearAllBtnRef = useRef<HTMLButtonElement | null>(null);
   const skidBtnRef = useRef<HTMLButtonElement | null>(null);
 
-  useHotkeys("Ctrl+3", () => skidBtnRef.current?.click());
+  useHotkeys("ctrl+3", () => skidBtnRef.current?.click());
+  useHotkeys("ctrl+4", () => clearAllBtnRef.current?.click());
 
   return (
     <div className="flex gap-2">
       <Button
+        ref={clearAllBtnRef}
         variant="destructive"
         className="flex-1"
         disabled={itemsLength === 0 || isWorking}
         onClick={clearAll}
       >
-        <Trash2 className="mr-2 h-4 w-4" /> Clear All
+        <Trash2 className="mr-2 h-4 w-4" /> Clear All (Ctrl+4)
       </Button>
       <Button
         ref={skidBtnRef}
