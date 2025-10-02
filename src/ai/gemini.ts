@@ -1,6 +1,11 @@
 import { GoogleGenAI, HarmBlockThreshold, HarmCategory } from "@google/genai";
 
-interface GeminiConfig {
+export interface GeminiModel {
+  name: string;
+  displayName: string;
+}
+
+export interface GeminiConfig {
   thinkingBudget?: number;
   safetySettings?: Array<{
     category: HarmCategory;
@@ -133,6 +138,14 @@ export class GeminiAi {
       }
     }
     return result;
+  }
+
+  async getAvailableModels(): Promise<GeminiModel[]> {
+    const models = await this.ai.models.list();
+    return models.page.map((it) => ({
+      name: it.name!,
+      displayName: it.displayName ?? it.name!,
+    }));
   }
 }
 

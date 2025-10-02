@@ -13,6 +13,19 @@ import { Textarea } from "../ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Slider } from "../ui/slider";
+import { useEffect, useState } from "react";
+import { GeminiAi, type GeminiModel } from "@/ai/gemini";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "../ui/command";
+import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
   // API Key state and actions
@@ -38,6 +51,37 @@ export default function SettingsPage() {
   // AI Thinking budget
   const thinkingBudget = useGeminiStore((s) => s.thinkingBudget);
   const setThinkBudget = useGeminiStore((s) => s.setThinkingBudget);
+
+  // input box states
+  const [localGeminiKey, setLocalGeminiKey] = useState(geminiKey);
+  const [localGeminiBaseUrl, setLocalGeminiBaseUrl] = useState(geminiBaseUrl);
+
+  useEffect(() => {
+    setLocalGeminiKey(geminiKey);
+  }, [geminiKey]);
+
+  useEffect(() => {
+    setLocalGeminiBaseUrl(geminiBaseUrl);
+  }, [geminiBaseUrl]);
+
+  const [availableModels, setAvailableModels] = useState<GeminiModel[]>([]);
+  const [modelPopoverOpen, setModelPopoverOpen] = useState(false);
+
+  useEffect(() => {
+    if (!geminiKey) return;
+    const gemini = new GeminiAi(geminiKey, geminiBaseUrl);
+    gemini.getAvailableModels().then((models) => {
+      setAvailableModels(models.map((it) => it));
+    });
+  }, [geminiKey, geminiBaseUrl]);
+
+  const applyGeminiBaseUrl = () => {
+    setGeminiBaseUrl(localGeminiBaseUrl ?? "");
+  };
+
+  const applyGeminiKey = () => {
+    setGeminiKey(localGeminiKey ?? "");
+  };
 
   const navigate = useNavigate();
 
@@ -79,8 +123,9 @@ export default function SettingsPage() {
                 type="password"
                 placeholder="Enter your API key here"
                 // Use `geminiKey || ''` to ensure the input is always a controlled component.
-                value={geminiKey || ""}
-                onChange={(e) => setGeminiKey(e.target.value)}
+                value={localGeminiKey || ""}
+                onBlur={applyGeminiKey}
+                onChange={(e) => setLocalGeminiKey(e.target.value)}
               />
               {/* Button to clear the API key, disabled if no key is present. */}
               <Button
@@ -112,10 +157,59 @@ export default function SettingsPage() {
           {/* Model Selection Dropdown */}
           <div className="space-y-2">
             <Label htmlFor="gemini-model">Model</Label>
-            <Input
-              value={geminiModel}
-              onChange={(e) => setGeminiModel(e.target.value)}
-            />
+            <Popover open={modelPopoverOpen} onOpenChange={setModelPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={modelPopoverOpen}
+                  className="w-full justify-between"
+                >
+                  {geminiModel
+                    ? availableModels.find(
+                        (model) => model.name === geminiModel,
+                      )?.displayName
+                    : "Select model..."}
+                  <ChevronsUpDown className="opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search model..." className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>No model available</CommandEmpty>
+                    <CommandGroup>
+                      {availableModels.map((model) => (
+                        <CommandItem
+                          key={model.name}
+                          value={model.name}
+                          onSelect={(currentValue) => {
+                            setGeminiModel(
+                              currentValue === geminiModel ? "" : currentValue,
+                            );
+                            setModelPopoverOpen(false);
+                          }}
+                        >
+                          {model.displayName}
+                          <Check
+                            className={cn(
+                              "ml-auto",
+                              geminiModel === model.name
+                                ? "opacity-100"
+                                : "opacity-0",
+                            )}
+                          />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {/* <Input */}
+            {/*   value={geminiModel} */}
+            {/*   onChange={(e) => setGeminiModel(e.target.value)} */}
+            {/* /> */}
           </div>
 
           {/* Thinking budget */}
@@ -199,8 +293,9 @@ export default function SettingsPage() {
                 id="base-url"
                 type="text"
                 placeholder="https://generativelanguage.googleapis.com"
-                value={geminiBaseUrl || ""}
-                onChange={(e) => setGeminiBaseUrl(e.target.value)}
+                value={localGeminiBaseUrl || ""}
+                onBlur={applyGeminiBaseUrl}
+                onChange={(e) => setLocalGeminiBaseUrl(e.target.value)}
               />
               <Button
                 variant="outline"
