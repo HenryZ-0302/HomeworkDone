@@ -34,7 +34,7 @@ export const useGeminiStore = create<GeminiState>()(
       clearGeminiKey: () => set({ geminiKey: null }),
       hasKey: () => Boolean(get().geminiKey),
 
-      geminiModel: "gemini-2.5-pro",
+      geminiModel: "models/gemini-2.5-flash",
       setGeminiModel: (model) => set({ geminiModel: model }),
 
       traits: undefined,
