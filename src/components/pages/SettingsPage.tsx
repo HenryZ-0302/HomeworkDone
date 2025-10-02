@@ -163,9 +163,12 @@ export default function SettingsPage() {
                   className="w-full justify-between"
                 >
                   {geminiModel
-                    ? availableModels.find(
+                    ? (availableModels.find(
                         (model) => model.name === geminiModel,
-                      )?.displayName
+                      )?.displayName ??
+                      (availableModels.length === 0
+                        ? geminiModel
+                        : "Unknown Model"))
                     : "Select model..."}
                   <ChevronsUpDown className="opacity-50" />
                 </Button>
