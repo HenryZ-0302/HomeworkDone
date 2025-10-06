@@ -29,6 +29,7 @@ export interface ProblemsState {
   imageSolutions: ImageSolution[];
   selectedImage?: string;
   selectedProblem: number;
+  isWorking: boolean;
 
   // --- ACTIONS ---
 
@@ -46,6 +47,9 @@ export interface ProblemsState {
   // Actions for managing selection state
   setSelectedImage: (image?: string) => void;
   setSelectedProblem: (index: number) => void;
+
+  // Actions to update is working
+  setWorking: (isWorking: boolean) => void;
 }
 
 export const useProblemsStore = create<ProblemsState>((set) => ({
@@ -54,6 +58,7 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
   imageSolutions: [],
   selectedImage: undefined,
   selectedProblem: 0,
+  isWorking: false,
 
   // --- ACTION IMPLEMENTATIONS ---
 
@@ -118,4 +123,6 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
   // Simple setters for selection state
   setSelectedImage: (selectedImage) => set({ selectedImage }),
   setSelectedProblem: (selectedProblem) => set({ selectedProblem }),
+
+  setWorking: (isWorking) => set({ isWorking }),
 }));

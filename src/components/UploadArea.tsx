@@ -9,17 +9,14 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { useHotkeys } from "react-hotkeys-hook";
-import type { ImageItem } from "@/store/problems-store";
+import { useProblemsStore, type ImageItem } from "@/store/problems-store";
 
 export type UploadAreaProps = {
-  isWorking: boolean;
   appendFiles: (files: File[] | FileList, source: ImageItem["source"]) => void;
 };
 
-export default function UploadArea({
-  isWorking,
-  appendFiles,
-}: UploadAreaProps) {
+export default function UploadArea({ appendFiles }: UploadAreaProps) {
+  const isWorking = useProblemsStore((s) => s.isWorking);
   const [isDragging, setIsDragging] = useState(false);
   const [cameraTipOpen, setCameraTipOpen] = useState(false);
 
@@ -48,7 +45,6 @@ export default function UploadArea({
       setIsDragging(false);
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         appendFiles(e.dataTransfer.files, "upload");
-        e.dataTransfer.clearData();
       }
     },
     [appendFiles],

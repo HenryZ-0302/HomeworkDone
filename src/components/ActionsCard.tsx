@@ -11,7 +11,6 @@ import { useHotkeys } from "react-hotkeys-hook";
 export type ActionsCardProps = {
   items: ImageItem[];
   appendFiles: (files: File[] | FileList, source: ImageItem["source"]) => void;
-  isWorking: boolean;
   totalBytes: number;
   clearAll: () => void;
   startScan: () => Promise<void>;
@@ -20,7 +19,6 @@ export type ActionsCardProps = {
 export default function ActionsCard({
   items,
   appendFiles,
-  isWorking,
   totalBytes,
   clearAll,
   startScan,
@@ -39,7 +37,7 @@ export default function ActionsCard({
         <CardTitle className="text-base">Add Images</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <UploadArea appendFiles={appendFiles} isWorking={isWorking} />
+        <UploadArea appendFiles={appendFiles} />
 
         <Separator className="my-2" />
 
@@ -47,7 +45,6 @@ export default function ActionsCard({
 
         <ActionsArea
           itemsLength={items.length}
-          isWorking={isWorking}
           clearAll={clearAll}
           startScan={startScan}
         />

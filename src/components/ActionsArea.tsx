@@ -2,20 +2,20 @@ import { Loader2Icon, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useProblemsStore } from "@/store/problems-store";
 
 export type ActionsAreaProps = {
-  isWorking: boolean;
   startScan: () => Promise<void>;
   clearAll: () => void;
   itemsLength: number;
 };
 
 export default function ActionsArea({
-  isWorking,
   startScan,
   itemsLength,
   clearAll,
 }: ActionsAreaProps) {
+  const isWorking = useProblemsStore((s) => s.isWorking);
   const handleSkidBtnClicked = () => {
     if (isWorking) return;
     startScan();
