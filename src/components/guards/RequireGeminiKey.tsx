@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useHasGeminiKey } from "../store/gemini-store";
+import { useHasGeminiKey } from "../../store/gemini-store";
 import type { PropsWithChildren } from "react";
 
 type RequireGeminiKeyProps = PropsWithChildren<{

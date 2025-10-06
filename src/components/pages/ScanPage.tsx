@@ -2,8 +2,8 @@ import { toast } from "sonner";
 import { Info } from "lucide-react";
 import { useEffect, useMemo, useCallback } from "react";
 import { useGeminiStore } from "@/store/gemini-store";
-import ActionsCard from "../ActionsCard";
-import PreviewCard from "../PreviewCard";
+import ActionsCard from "../cards/ActionsCard";
+import PreviewCard from "../cards/PreviewCard";
 import { GeminiAi, SYSTEM_PROMPT } from "@/ai/gemini";
 import { uint8ToBase64 } from "@/utils/encoding";
 import { parseResponse } from "@/ai/response";
@@ -15,7 +15,7 @@ import {
   type ImageItem,
   type ProblemSolution,
 } from "@/store/problems-store";
-import SolutionsArea from "../SolutionsArea";
+import SolutionsArea from "../areas/SolutionsArea";
 
 export default function ScanPage() {
   // Destructure all necessary state and new semantic actions from the store.

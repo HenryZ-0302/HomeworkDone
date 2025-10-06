@@ -1,5 +1,5 @@
 import { Loader2Icon, Trash2 } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useProblemsStore } from "@/store/problems-store";

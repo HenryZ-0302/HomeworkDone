@@ -1,5 +1,5 @@
 import { Camera, ImageIcon, Info, Upload } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { useCallback, useRef, useState } from "react";
 import {
   Dialog,
@@ -7,7 +7,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "./ui/dialog";
+} from "../ui/dialog";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useProblemsStore, type ImageItem } from "@/store/problems-store";
 
