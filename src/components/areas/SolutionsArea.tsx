@@ -16,6 +16,7 @@ import {
 } from "@/store/problems-store";
 import ProblemList from "../ProblemList";
 import SolutionViewer from "../SolutionViewer";
+import type { ImproveResponse } from "@/ai/response";
 
 export interface OrderedSolution {
   item: ImageItem;
@@ -30,6 +31,7 @@ export default function SolutionsArea() {
     selectedProblem,
     setSelectedImage,
     setSelectedProblem,
+    updateProblem,
     isWorking,
   } = useProblemsStore((s) => s);
   // Build a solutions list that matches the visual order of the uploaded items.
@@ -100,6 +102,19 @@ export default function SolutionsArea() {
     if (clamped !== selectedProblem) setSelectedProblem(clamped);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentImageIdx, problems.length]); // Re-run when image or problems change.
+
+  const updateSolution = (
+    entry: OrderedSolution,
+    solutionIdx: number,
+    res: ImproveResponse,
+  ) => {
+    updateProblem(
+      entry.item.url,
+      solutionIdx,
+      res.improved_answer,
+      res.improved_explanation,
+    );
+  };
 
   return (
     <>
@@ -194,6 +209,9 @@ export default function SolutionsArea() {
                               goPrevImage={goPrevImage}
                               goNextProblem={goNextProblem}
                               goPrevProblem={goPrevProblem}
+                              updateSolution={(res) =>
+                                updateSolution(entry, selectedProblem, res)
+                              }
                             />
                           </div>
                         )}

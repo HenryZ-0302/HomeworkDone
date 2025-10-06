@@ -37,6 +37,12 @@ export interface ProblemsState {
   addImageItems: (items: ImageItem[]) => void;
   updateItemStatus: (id: string, status: ImageItem["status"]) => void;
   removeImageItem: (id: string) => void;
+  updateProblem: (
+    imageUrl: string,
+    problemIndex: number,
+    newAnswer: string,
+    newExplanation: string,
+  ) => void;
   clearAllItems: () => void;
 
   // Actions for managing image solutions
@@ -87,6 +93,29 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
   removeImageItem: (id) =>
     set((state) => ({
       imageItems: state.imageItems.filter((item) => item.id !== id),
+    })),
+
+  updateProblem: (
+    imageUrl: string,
+    problemIndex: number,
+    newAnswer: string,
+    newExplanation: string,
+  ) =>
+    set((state) => ({
+      imageSolutions: state.imageSolutions.map((solution) => {
+        if (solution.imageUrl === imageUrl) {
+          const updatedProblems = [...solution.problems];
+
+          updatedProblems[problemIndex] = {
+            ...updatedProblems[problemIndex],
+            answer: newAnswer,
+            explanation: newExplanation,
+          };
+
+          return { ...solution, problems: updatedProblems };
+        }
+        return solution;
+      }),
     })),
 
   /**

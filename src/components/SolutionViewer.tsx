@@ -22,6 +22,8 @@ import { useProblemsStore } from "@/store/problems-store";
 import { toast } from "sonner";
 import { useGeminiStore } from "@/store/gemini-store";
 import { uint8ToBase64 } from "@/utils/encoding";
+import { parseImproveResponse, type ImproveResponse } from "@/ai/response";
+import { IMPROVE_SYSTEM_PROMPT } from "@/ai/prompts";
 
 export type SolutionViewerProps = {
   entry: OrderedSolution;
@@ -29,6 +31,8 @@ export type SolutionViewerProps = {
   goNextImage: () => void;
   goNextProblem: () => void;
   goPrevProblem: () => void;
+
+  updateSolution: (solution: ImproveResponse) => void;
 } & ComponentProps<"section">;
 
 export default function SolutionViewer({
@@ -38,6 +42,7 @@ export default function SolutionViewer({
   goPrevImage,
   goNextProblem,
   goPrevProblem,
+  updateSolution,
   ...props
 }: SolutionViewerProps) {
   const getGemini = useGeminiStore((s) => s.getGemini);
@@ -69,27 +74,42 @@ export default function SolutionViewer({
   const handleImproveSolution = async () => {
     const ai = getGemini();
     if (!ai) {
-      // TODO: make a toast
+      toast("You're almost there", {
+        description: "You need to set your API key in settings to use the AI.",
+      });
       return;
     }
 
     // apply system prompt
-    ai.setSystemPrompt("");
+    ai.setSystemPrompt(IMPROVE_SYSTEM_PROMPT);
 
     const buf = await entry.item.file.arrayBuffer();
     const bytes = new Uint8Array(buf);
 
-    const prompt = ""; // TODO: render prompt
-    const resText = await ai?.sendImage(
-      uint8ToBase64(bytes),
-      prompt,
-      geminiModel,
-    );
+    const prompt = "";
 
-    console.log(resText);
+    try {
+      const resText = await ai?.sendImage(
+        uint8ToBase64(bytes),
+        prompt,
+        geminiModel,
+      );
 
-    // const res = parseImproveResponse(resText);
-    // TODO: replace the current answer
+      const res = parseImproveResponse(resText);
+      if (!res) {
+        toast("Failed to improve your solution", {
+          description:
+            "Failed to parse response, see the developer tools for more details.",
+        });
+        return;
+      }
+      updateSolution(res);
+    } catch (e) {
+      toast("Failed to improve your solution", {
+        description: `Something went wrong: ${e}`,
+      });
+      return;
+    }
   };
 
   const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
