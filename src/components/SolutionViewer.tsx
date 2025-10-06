@@ -1,3 +1,4 @@
+import "katex/dist/katex.min.css";
 import { useState, type ComponentProps } from "react";
 import Markdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
@@ -19,6 +20,8 @@ import { cn } from "@/lib/utils";
 import type { OrderedSolution } from "./areas/SolutionsArea";
 import { useProblemsStore } from "@/store/problems-store";
 import { toast } from "sonner";
+import { useGeminiStore } from "@/store/gemini-store";
+import { uint8ToBase64 } from "@/utils/encoding";
 
 export type SolutionViewerProps = {
   entry: OrderedSolution;
@@ -37,6 +40,9 @@ export default function SolutionViewer({
   goPrevProblem,
   ...props
 }: SolutionViewerProps) {
+  const getGemini = useGeminiStore((s) => s.getGemini);
+  // const geminiTraits = useGeminiStore((s) => s.traits);
+  const geminiModel = useGeminiStore((s) => s.geminiModel);
   const { selectedProblem } = useProblemsStore((s) => s);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -60,13 +66,39 @@ export default function SolutionViewer({
     }
   };
 
+  const handleImproveSolution = async () => {
+    const ai = getGemini();
+    if (!ai) {
+      // TODO: make a toast
+      return;
+    }
+
+    // apply system prompt
+    ai.setSystemPrompt("");
+
+    const buf = await entry.item.file.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+
+    const prompt = ""; // TODO: render prompt
+    const resText = await ai?.sendImage(
+      uint8ToBase64(bytes),
+      prompt,
+      geminiModel,
+    );
+
+    console.log(resText);
+
+    // const res = parseImproveResponse(resText);
+    // TODO: replace the current answer
+  };
+
   const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (dialogOpen) {
       // handle Ctrl+Enter to submit the prompt
       if (e.ctrlKey && e.key === "Enter") {
         console.log("submit prompt!");
         setDialogOpen(false);
-        // handleImprove();
+        handleImproveSolution();
       }
       return;
     } else {
@@ -182,7 +214,11 @@ export default function SolutionViewer({
 
               <DialogFooter className="sm:justify-start">
                 <DialogClose asChild>
-                  <Button variant="outline" disabled={!improveSolutionPrompt}>
+                  <Button
+                    variant="outline"
+                    disabled={!improveSolutionPrompt}
+                    onClick={handleImproveSolution}
+                  >
                     Submit (Ctrl+Enter)
                   </Button>
                 </DialogClose>

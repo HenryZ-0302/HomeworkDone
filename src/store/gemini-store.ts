@@ -1,3 +1,4 @@
+import { GeminiAi } from "@/ai/gemini";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -20,6 +21,8 @@ export interface GeminiState {
 
   thinkingBudget: number;
   setThinkingBudget: (thinkBudget: number) => void;
+
+  getGemini: () => GeminiAi | null;
 }
 
 export const useGeminiStore = create<GeminiState>()(
@@ -43,6 +46,13 @@ export const useGeminiStore = create<GeminiState>()(
 
       thinkingBudget: 8192,
       setThinkingBudget: (thinkingBudget) => set({ thinkingBudget }),
+
+      getGemini: () => {
+        const { geminiKey, geminiBaseUrl } = get();
+        if (!geminiKey) return null;
+
+        return new GeminiAi(geminiKey, geminiBaseUrl);
+      },
     }),
     {
       name: "gemini-storage",

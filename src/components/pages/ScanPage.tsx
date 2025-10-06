@@ -4,12 +4,11 @@ import { useEffect, useMemo, useCallback } from "react";
 import { useGeminiStore } from "@/store/gemini-store";
 import ActionsCard from "../cards/ActionsCard";
 import PreviewCard from "../cards/PreviewCard";
-import { GeminiAi, SYSTEM_PROMPT } from "@/ai/gemini";
+import { GeminiAi } from "@/ai/gemini";
+import { SOLVE_SYSTEM_PROMPT } from "@/ai/prompts";
 import { uint8ToBase64 } from "@/utils/encoding";
-import { parseResponse } from "@/ai/response";
+import { parseSolveResponse } from "@/ai/response";
 
-import "katex/dist/katex.min.css";
-// Import the new set of actions and state from the updated store
 import {
   useProblemsStore,
   type ImageItem,
@@ -161,7 +160,7 @@ export default function ScanPage() {
       if (geminiTraits) {
         // inject traits into prompt
         ai.setSystemPrompt(
-          SYSTEM_PROMPT +
+          SOLVE_SYSTEM_PROMPT +
             `\nUser defined traits:
 <traits>
 ${geminiTraits}
@@ -169,7 +168,7 @@ ${geminiTraits}
 `,
         );
       } else {
-        ai.setSystemPrompt(SYSTEM_PROMPT);
+        ai.setSystemPrompt(SOLVE_SYSTEM_PROMPT);
       }
 
       // Concurrency limit for processing images.
@@ -197,7 +196,7 @@ ${geminiTraits}
             ai.sendImage(uint8ToBase64(bytes), undefined, geminiModel),
           );
 
-          const res = parseResponse(resText);
+          const res = parseSolveResponse(resText);
 
           addImageSolution({
             imageUrl: item.url,

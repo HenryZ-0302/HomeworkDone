@@ -1,100 +1,47 @@
 import type { ProblemSolution } from "@/store/problems-store";
 
+// SECTION: Type Definitions
+
 export interface SolveResponse {
   problems: ProblemSolution[];
 }
 
+export interface ImproveResponse {
+  improved_answer: string;
+  improved_explanation: string;
+}
+
+// SECTION: Shared Utilities
+
 /**
- * Parses a string response from the AI, which could be in JSON or XML format.
- * It handles both raw responses and responses wrapped in markdown code blocks.
- * @param response The raw string response from the AI.
- * @returns A SolveResponse object if parsing is successful, otherwise null.
+ * Trims markdown code fences (e.g., ```xml) from a string.
+ * @param content The string which may be wrapped in a markdown code block.
+ * @returns The unwrapped, trimmed content.
  */
-export function parseResponse(response: string): SolveResponse | null {
-  if (response.startsWith("```json")) {
-    // The response is a JSON object inside a markdown block.
-    // Strip the markdown fence before parsing.
-    const trimmed = response
-      .replace(/^```json\s*/, "")
-      .replace(/```$/, "")
-      .trim();
-    try {
-      return JSON.parse(trimmed) as SolveResponse;
-    } catch (e) {
-      console.error("Failed to parse JSON from markdown block:", e, trimmed);
-      return null;
-    }
-  } else if (response.startsWith("{")) {
-    // The response appears to be a raw JSON object.
-    try {
-      return JSON.parse(response) as SolveResponse;
-    } catch (e) {
-      console.error("Failed to parse raw JSON:", e, response);
-      return null;
-    }
-  } else if (response.startsWith("```xml")) {
-    // The response is an XML document inside a markdown block.
-    // Strip the markdown fence before parsing.
-    const trimmed = response
-      .replace(/^```xml\s*/, "")
-      .replace(/```$/, "")
-      .trim();
-    return parseXmlToSolveResponse(trimmed);
-  } else if (response.startsWith("<")) {
-    // The response appears to be a raw XML document.
-    return parseXmlToSolveResponse(response);
-  } else {
-    // The response format is unknown or not supported.
-    console.error("Failed to parse response due to unknown format:", response);
-    return null;
-  }
+function trimMarkdownFence(content: string): string {
+  const regex = /^```(?:\w+\s*)?\n?([\s\S]*)\n?```$/;
+  const match = content.trim().match(regex);
+
+  return match ? match[1].trim() : content.trim();
 }
 
 /**
- * Helper function to parse an XML string into a SolveResponse object.
- * This implementation uses the browser's built-in DOMParser.
- * For Node.js environments, a library like 'fast-xml-parser' or 'jsdom' would be needed.
+ * Parses an XML string using the browser's DOMParser and checks for parsing errors.
  * @param xmlString The XML string to parse.
- * @returns A SolveResponse object if parsing is successful, otherwise null.
+ * @returns The parsed XMLDocument or null if an error occurs.
  */
-function parseXmlToSolveResponse(xmlString: string): SolveResponse | null {
+function parseXmlString(xmlString: string): Document | null {
   try {
-    // Use the native browser DOMParser to parse the XML string.
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-
-    // DOMParser does not throw an error for malformed XML.
-    // Instead, it returns a document with a <parsererror> node.
     const parseError = xmlDoc.getElementsByTagName("parsererror");
     if (parseError.length > 0) {
-      console.error("Failed to parse XML:", parseError[0].textContent);
+      // Access the first error element to get its content.
+      console.error("Failed to parse XML: ", parseError);
       return null;
     }
-
-    // Find all <problem> elements in the document.
-    const problemNodes = Array.from(xmlDoc.getElementsByTagName("problem"));
-
-    // Map each <problem> XML node to a ProblemSolution object.
-    const problems: ProblemSolution[] = problemNodes.map((node) => {
-      // Helper function to safely get text content from a child element.
-      const getTextContent = (tagName: string): string => {
-        const element = node.getElementsByTagName(tagName)[0];
-        // Return the text content or an empty string if the element is not found.
-        // This handles CDATA sections in <explanation> correctly.
-        return element?.textContent ?? "";
-      };
-
-      return {
-        problem: getTextContent("problem_text"),
-        answer: getTextContent("answer"),
-        explanation: getTextContent("explanation"),
-      };
-    });
-
-    // Return the final structured object.
-    return { problems };
+    return xmlDoc;
   } catch (e) {
-    // Catch any other unexpected errors during the process.
     console.error(
       "An unexpected error occurred during XML parsing:",
       e,
@@ -102,4 +49,111 @@ function parseXmlToSolveResponse(xmlString: string): SolveResponse | null {
     );
     return null;
   }
+}
+
+/**
+ * Safely gets text content from the first child element with a given tag name.
+ * @param node The parent XML element.
+ * @param tagName The tag name of the child element to find.
+ * @returns The text content or an empty string if the element is not found.
+ */
+function getXmlTextContent(node: Element, tagName: string): string {
+  const elements = node.getElementsByTagName(tagName);
+  // Correctly access the FIRST element in the collection (at index 0)
+  // before getting its textContent. If no element is found, it will be undefined.
+  return elements[0]?.textContent ?? "";
+}
+
+// SECTION: Solve Response Parsing (Refactored)
+
+/**
+ * Helper function to parse an XML string into a SolveResponse object.
+ * @param xmlString The XML string to parse.
+ * @returns A SolveResponse object if parsing is successful, otherwise null.
+ */
+function parseXmlToSolveResponse(xmlString: string): SolveResponse | null {
+  const xmlDoc = parseXmlString(xmlString);
+  if (!xmlDoc) {
+    return null;
+  }
+
+  const problemNodes = Array.from(xmlDoc.getElementsByTagName("problem"));
+  const problems: ProblemSolution[] = problemNodes.map((node) => ({
+    problem: getXmlTextContent(node, "problem_text"),
+    answer: getXmlTextContent(node, "answer"),
+    explanation: getXmlTextContent(node, "explanation"),
+  }));
+
+  return { problems };
+}
+
+/**
+ * Parses a string response from the AI for a "solve" request.
+ * It handles JSON or XML, either raw or wrapped in a markdown code block.
+ * @param response The raw string response from the AI.
+ * @returns A SolveResponse object if parsing is successful, otherwise null.
+ */
+export function parseSolveResponse(response: string): SolveResponse | null {
+  const content = trimMarkdownFence(response);
+
+  if (content.startsWith("{")) {
+    try {
+      return JSON.parse(content) as SolveResponse;
+    } catch (e) {
+      console.error("Failed to parse JSON:", e, content);
+      return null;
+    }
+  }
+
+  if (content.startsWith("<")) {
+    return parseXmlToSolveResponse(content);
+  }
+
+  console.error("Failed to parse response due to unknown format:", response);
+  return null;
+}
+
+// SECTION: Improve Response Parsing (New)
+
+/**
+ * Helper function to parse an XML string into an ImproveResponse object.
+ * @param xmlString The XML string to parse.
+ * @returns An ImproveResponse object if parsing is successful, otherwise null.
+ */
+function parseXmlToImproveResponse(xmlString: string): ImproveResponse | null {
+  const xmlDoc = parseXmlString(xmlString);
+  if (!xmlDoc) {
+    return null;
+  }
+
+  const solutionNode = xmlDoc.getElementsByTagName("solution").item(0);
+  if (!solutionNode) {
+    console.error("Root <solution> tag not found in XML response.");
+    return null;
+  }
+
+  return {
+    improved_answer: getXmlTextContent(solutionNode, "improved_answer"),
+    improved_explanation: getXmlTextContent(
+      solutionNode,
+      "improved_explanation",
+    ),
+  };
+}
+
+/**
+ * Parses a string response from the AI for an "improve" request.
+ * The expected format is XML, either raw or wrapped in a markdown code block.
+ * @param response The raw string response from the AI.
+ * @returns An ImproveResponse object if parsing is successful, otherwise null.
+ */
+export function parseImproveResponse(response: string): ImproveResponse | null {
+  const content = trimMarkdownFence(response);
+
+  if (content.startsWith("<")) {
+    return parseXmlToImproveResponse(content);
+  }
+
+  console.error("Failed to parse response: XML format expected.", response);
+  return null;
 }
