@@ -43,8 +43,12 @@ export const IMPROVE_SYSTEM_PROMPT = String.raw`
 
 \`\`\`xml
 <solution>
-  <improved_answer><![CDATA[这里是改进之后的答案]]></improved_answer>
-  <improved_explanation><![CDATA[这里是改进之后的解析]]></improved_explanation>
+  <improved_answer>
+    <![CDATA[这里是改进之后的答案]]>
+  </improved_answer>
+  <improved_explanation>
+    <![CDATA[这里是改进之后的解析]]>
+  </improved_explanation>
 </solution>
 \`\`\`
 
@@ -57,6 +61,8 @@ export const IMPROVE_SYSTEM_PROMPT = String.raw`
     *   例如: \`$$ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} $$\`
 3.  **CDATA封装**: \`improved_answer\` 和 \`improved_explanation\` 字段内的所有内容（包括使用Markdown和LaTeX的部分）都**必须**被包裹在 \`<![CDATA[...]]>\` 块中，以防止XML解析错误。
 4.  **Markdown使用**: 在 \`improved_explanation\` 内部可以使用Markdown语法（如列表、加粗）来提高可读性。
+5. 不要模仿用户输入的语法, 用户输入的语法是经过encode 的, 输出之后无法渲染
+6. 务必使用正确的语法
 `;
 
 export const SOLVE_SYSTEM_PROMPT = String.raw`
