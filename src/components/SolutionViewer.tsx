@@ -24,6 +24,8 @@ import { useGeminiStore } from "@/store/gemini-store";
 import { uint8ToBase64 } from "@/utils/encoding";
 import { parseImproveResponse, type ImproveResponse } from "@/ai/response";
 import { IMPROVE_SYSTEM_PROMPT } from "@/ai/prompts";
+import { renderImproveXml } from "@/ai/request";
+import { Loader2 } from "lucide-react";
 
 export type SolutionViewerProps = {
   entry: OrderedSolution;
@@ -53,6 +55,8 @@ export default function SolutionViewer({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [improveSolutionPrompt, setImproveSolutionPrompt] = useState("");
 
+  const [isImproving, setImproving] = useState(false);
+
   const problemCount = entry.solutions.problems.length;
   const safeIndex = Math.min(
     Math.max(0, selectedProblem),
@@ -72,6 +76,7 @@ export default function SolutionViewer({
   };
 
   const handleImproveSolution = async () => {
+    if (!activeProblem) return;
     const ai = getGemini();
     if (!ai) {
       toast("You're almost there", {
@@ -86,9 +91,19 @@ export default function SolutionViewer({
     const buf = await entry.item.file.arrayBuffer();
     const bytes = new Uint8Array(buf);
 
-    const prompt = "";
+    const prompt = renderImproveXml({
+      user_suggestion: improveSolutionPrompt,
+      answer: activeProblem.answer,
+      explanation: activeProblem.explanation,
+      problem: activeProblem.problem,
+    });
 
     try {
+      toast("Processing", {
+        description:
+          "Improving your solution with AI...Please wait for a white...",
+      });
+      setImproving(true);
       const resText = await ai?.sendImage(
         uint8ToBase64(bytes),
         prompt,
@@ -109,6 +124,8 @@ export default function SolutionViewer({
         description: `Something went wrong: ${e}`,
       });
       return;
+    } finally {
+      setImproving(false);
     }
   };
 
@@ -116,7 +133,6 @@ export default function SolutionViewer({
     if (dialogOpen) {
       // handle Ctrl+Enter to submit the prompt
       if (e.ctrlKey && e.key === "Enter") {
-        console.log("submit prompt!");
         setDialogOpen(false);
         handleImproveSolution();
       }
@@ -213,7 +229,11 @@ export default function SolutionViewer({
             onOpenChange={(state) => setDialogOpen(state)}
           >
             <DialogTrigger asChild>
-              <Button variant="outline">Improve the Solution (/)</Button>
+              <Button variant="outline" disabled={isImproving}>
+                {" "}
+                {isImproving && <Loader2 className="animate-spin" />} Improve
+                the Solution (/)
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
