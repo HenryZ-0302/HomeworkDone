@@ -40,6 +40,7 @@ export default function SolutionViewer({
   const { selectedProblem } = useProblemsStore((s) => s);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [improveSolutionPrompt, setImproveSolutionPrompt] = useState("");
 
   const problemCount = entry.solutions.problems.length;
   const safeIndex = Math.min(
@@ -172,6 +173,8 @@ export default function SolutionViewer({
               </DialogHeader>
               <div className="flex flex-col items-center gap-2">
                 <Textarea
+                  value={improveSolutionPrompt}
+                  onChange={(e) => setImproveSolutionPrompt(e.target.value)}
                   className="h-40"
                   placeholder="Make it more detailed..."
                 />
@@ -179,8 +182,9 @@ export default function SolutionViewer({
 
               <DialogFooter className="sm:justify-start">
                 <DialogClose asChild>
-                  {/* TODO: submit the prompt to ai */}
-                  <Button variant="outline">Submit (Ctrl+Enter)</Button>
+                  <Button variant="outline" disabled={!improveSolutionPrompt}>
+                    Submit (Ctrl+Enter)
+                  </Button>
                 </DialogClose>
               </DialogFooter>
             </DialogContent>
