@@ -101,7 +101,7 @@ export default function SolutionViewer({
     try {
       toast("Processing", {
         description:
-          "Improving your solution with AI...Please wait for a white...",
+          "Improving your solution with AI...Please wait for a while...",
       });
       setImproving(true);
       const resText = await ai?.sendImage(
@@ -109,8 +109,11 @@ export default function SolutionViewer({
         prompt,
         geminiModel,
       );
+      // console.log(resText);
 
       const res = parseImproveResponse(resText);
+
+      // console.log(res);
       if (!res) {
         toast("Failed to improve your solution", {
           description:

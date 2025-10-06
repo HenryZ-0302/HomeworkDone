@@ -43,12 +43,8 @@ export const IMPROVE_SYSTEM_PROMPT = String.raw`
 
 \`\`\`xml
 <solution>
-  <improved_answer>
-    <![CDATA[这里是改进之后的答案]]>
-  </improved_answer>
-  <improved_explanation>
-    <![CDATA[这里是改进之后的解析]]>
-  </improved_explanation>
+  <improved_answer><![CDATA[这里是改进之后的答案]]></improved_answer>
+  <improved_explanation><![CDATA[这里是改进之后的解析]]></improved_explanation>
 </solution>
 \`\`\`
 
