@@ -153,7 +153,7 @@ export default function ScanPage() {
     }
 
     toast("Working...", {
-      description: `Sending ${itemsToProcess.length} image(s) to Gemini... Your time is being saved...`,
+      description: `Sending ${itemsToProcess.length} file(s) to Gemini... Your time is being saved...`,
     });
     setWorking(true);
 

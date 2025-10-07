@@ -149,7 +149,7 @@ export default function SolutionsArea() {
                   <TabsList className="flex flex-wrap gap-2">
                     {orderedSolutions.map((entry, idx) => (
                       <TabsTrigger key={entry.item.id} value={entry.item.url}>
-                        {entry.item.file.name || `Image ${idx + 1}`}
+                        {entry.item.file.name || `File ${idx + 1}`}
                       </TabsTrigger>
                     ))}
                   </TabsList>
