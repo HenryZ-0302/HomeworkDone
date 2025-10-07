@@ -259,11 +259,11 @@ export default function SolutionViewer({
               <DialogFooter className="sm:justify-start">
                 <DialogClose asChild>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     disabled={!improveSolutionPrompt}
                     onClick={handleImproveSolution}
                   >
-                    Submit (Ctrl+Enter)
+                    Submit <Kbd>Ctrl+Enter</Kbd>
                   </Button>
                 </DialogClose>
               </DialogFooter>
