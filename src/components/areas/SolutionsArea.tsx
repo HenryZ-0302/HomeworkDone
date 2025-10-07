@@ -163,35 +163,37 @@ export default function SolutionsArea() {
                         className="mt-4"
                       >
                         {/* Collapsible preview of the current photo. */}
-                        <Collapsible defaultOpen>
-                          <div className="flex items-center justify-between">
-                            <div className="text-xs text-slate-400">
-                              Photo {idx + 1} • {entry.item.source}
+                        {entry.item.mimeType.startsWith("image/") && (
+                          <Collapsible defaultOpen>
+                            <div className="flex items-center justify-between">
+                              <div className="text-xs text-slate-400">
+                                Photo {idx + 1} • {entry.item.source}
+                              </div>
+                              <CollapsibleTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 px-2"
+                                >
+                                  Toggle Preview
+                                </Button>
+                              </CollapsibleTrigger>
                             </div>
-                            <CollapsibleTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 px-2"
-                              >
-                                Toggle Preview
-                              </Button>
-                            </CollapsibleTrigger>
-                          </div>
-                          <CollapsibleContent className="mt-2">
-                            <div className="overflow-hidden rounded-xl border border-slate-700">
-                              <PhotoProvider>
-                                <PhotoView src={entry.item.url}>
-                                  <img
-                                    src={entry.item.url}
-                                    alt={`Preview ${entry.item.file.name || idx + 1}`}
-                                    className="block max-h-96 w-full object-contain bg-black/20 cursor-pointer"
-                                  />
-                                </PhotoView>
-                              </PhotoProvider>
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
+                            <CollapsibleContent className="mt-2">
+                              <div className="overflow-hidden rounded-xl border border-slate-700">
+                                <PhotoProvider>
+                                  <PhotoView src={entry.item.url}>
+                                    <img
+                                      src={entry.item.url}
+                                      alt={`Preview ${entry.item.file.name || idx + 1}`}
+                                      className="block max-h-96 w-full object-contain bg-black/20 cursor-pointer"
+                                    />
+                                  </PhotoView>
+                                </PhotoProvider>
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        )}
 
                         <Separator className="my-4" />
 

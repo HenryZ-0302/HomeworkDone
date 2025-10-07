@@ -95,13 +95,23 @@ export default function PreviewCard({
                       getColorClassByStatus(it.status),
                     )}
                   >
-                    <PhotoView src={it.url}>
-                      <img
-                        src={it.url}
-                        alt="homework"
-                        className="h-40 w-full object-cover cursor-pointer"
-                      />
-                    </PhotoView>
+                    {it.mimeType.startsWith("image/") ? (
+                      <PhotoView src={it.url}>
+                        <img
+                          src={it.url}
+                          alt="homework"
+                          className="h-40 w-full object-cover cursor-pointer"
+                        />
+                      </PhotoView>
+                    ) : (
+                      <div className="h-40 w-full object-cover flex items-center justify-center select-none">
+                        {it.mimeType === "application/pdf" ? (
+                          <>PDF</>
+                        ) : (
+                          <>Unknown Type</>
+                        )}
+                      </div>
+                    )}
                     <figcaption className="flex items-center justify-between px-3 py-2 text-xs text-slate-300">
                       <span className="truncate" title={it.file.name}>
                         {it.file.name}
