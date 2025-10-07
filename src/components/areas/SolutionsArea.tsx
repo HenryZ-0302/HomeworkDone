@@ -11,8 +11,8 @@ import { Separator } from "../ui/separator";
 import { useEffect, useMemo } from "react";
 import {
   useProblemsStore,
-  type ImageItem,
-  type ImageSolution,
+  type FileItem,
+  type Solution,
 } from "@/store/problems-store";
 import ProblemList from "../ProblemList";
 import SolutionViewer from "../SolutionViewer";
@@ -20,8 +20,8 @@ import type { ImproveResponse } from "@/ai/response";
 import { PhotoProvider, PhotoView } from "react-photo-view";
 
 export interface OrderedSolution {
-  item: ImageItem;
-  solutions: ImageSolution;
+  item: FileItem;
+  solutions: Solution;
 }
 
 export default function SolutionsArea() {

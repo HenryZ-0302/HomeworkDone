@@ -9,11 +9,11 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useProblemsStore, type ImageItem } from "@/store/problems-store";
+import { useProblemsStore, type FileItem } from "@/store/problems-store";
 import { Kbd } from "../ui/kbd";
 
 export type UploadAreaProps = {
-  appendFiles: (files: File[] | FileList, source: ImageItem["source"]) => void;
+  appendFiles: (files: File[] | FileList, source: FileItem["source"]) => void;
 };
 
 export default function UploadArea({ appendFiles }: UploadAreaProps) {
@@ -90,7 +90,7 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
           disabled={isWorking}
           onClick={handleUploadBtnClicked}
         >
-          <Upload className="mr-2 h-4 w-4" /> Upload Images <Kbd>Ctrl+1</Kbd>
+          <Upload className="mr-2 h-4 w-4" /> Upload Files <Kbd>Ctrl+1</Kbd>
         </Button>
       </div>
       <div className="flex gap-2">

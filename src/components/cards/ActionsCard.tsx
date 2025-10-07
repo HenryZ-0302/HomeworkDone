@@ -1,4 +1,4 @@
-import type { ImageItem } from "@/store/problems-store";
+import type { FileItem } from "@/store/problems-store";
 import ActionsArea from "../areas/ActionsArea";
 import InfoArea from "../UploadsInfo";
 import { Button } from "../ui/button";
@@ -10,8 +10,8 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { Kbd } from "../ui/kbd";
 
 export type ActionsCardProps = {
-  items: ImageItem[];
-  appendFiles: (files: File[] | FileList, source: ImageItem["source"]) => void;
+  items: FileItem[];
+  appendFiles: (files: File[] | FileList, source: FileItem["source"]) => void;
   totalBytes: number;
   clearAll: () => void;
   startScan: () => Promise<void>;

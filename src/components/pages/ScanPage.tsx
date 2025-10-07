@@ -11,22 +11,20 @@ import { parseSolveResponse } from "@/ai/response";
 
 import {
   useProblemsStore,
-  type ImageItem,
+  type FileItem as FileItem,
   type ProblemSolution,
 } from "@/store/problems-store";
 import SolutionsArea from "../areas/SolutionsArea";
-import { Button } from "../ui/button";
-import { Link } from "react-router-dom";
 
 export default function ScanPage() {
   // Destructure all necessary state and new semantic actions from the store.
   const {
     imageItems: items,
-    addImageItems,
+    addFileItems: addImageItems,
     updateItemStatus,
     removeImageItem, // Rename to avoid conflict with local function
     clearAllItems,
-    addImageSolution,
+    addSolution: addImageSolution,
     removeSolutionsByUrls,
     clearAllSolutions,
   } = useProblemsStore((s) => s);
@@ -55,15 +53,18 @@ export default function ScanPage() {
 
   // Callback to add new files to the items list using the store action.
   const appendFiles = useCallback(
-    (files: File[] | FileList, source: ImageItem["source"]) => {
+    (files: File[] | FileList, source: FileItem["source"]) => {
       // Filter for image files only.
-      const arr = Array.from(files).filter((f) => f.type.startsWith("image/"));
+      const arr = Array.from(files).filter((f) => {
+        return f.type.startsWith("image/") || f.type === "application/pdf";
+      });
       if (arr.length === 0) return;
 
       // Create new ImageItem objects for each valid file.
-      const next: ImageItem[] = arr.map((file) => ({
+      const next: FileItem[] = arr.map((file) => ({
         id: crypto.randomUUID(),
         file,
+        mimeType: file.type,
         status: "pending", // All new images start with a 'pending' status.
         url: URL.createObjectURL(file), // Create a temporary URL for preview.
         source,
@@ -187,15 +188,20 @@ ${geminiTraits}
        * Processes a single image item.
        * @param item The ImageItem to process.
        */
-      const processOne = async (item: ImageItem) => {
+      const processOne = async (item: FileItem) => {
         try {
           console.log(`Processing ${item.id}`);
           const buf = await item.file.arrayBuffer();
           const bytes = new Uint8Array(buf);
 
-          // Send image to AI with retry logic.
+          // Send file to AI with retry logic.
           const resText = await retryAsyncOperation(() =>
-            ai.sendImage(uint8ToBase64(bytes), undefined, geminiModel),
+            ai.sendMedia(
+              uint8ToBase64(bytes),
+              item.mimeType,
+              undefined,
+              geminiModel,
+            ),
           );
 
           const res = parseSolveResponse(resText);
@@ -304,9 +310,10 @@ ${geminiTraits}
               Source code
             </a>
           </p>
-          <Button variant="link" asChild>
-            <Link to="/help">Help</Link>
-          </Button>
+          {/* TODO: Add help page */}
+          {/* <Button variant="link" asChild> */}
+          {/*   <Link to="/help">Help</Link> */}
+          {/* </Button> */}
         </footer>
       </div>
     </div>

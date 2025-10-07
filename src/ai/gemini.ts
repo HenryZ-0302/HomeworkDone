@@ -86,7 +86,12 @@ export class GeminiAi {
     return result;
   }
 
-  async sendImage(image: string, prompt?: string, model = "gemini-2.5-pro") {
+  async sendMedia(
+    media: string,
+    mimeType: string,
+    prompt?: string,
+    model = "gemini-2.5-pro",
+  ) {
     const contents = [];
 
     if (this.systemPrompt) {
@@ -102,18 +107,18 @@ export class GeminiAi {
       parts.push({ text: prompt });
     }
 
-    if (image.startsWith("http")) {
+    if (media.startsWith("http")) {
       parts.push({
         fileData: {
-          mimeType: "image/png",
-          fileUri: image,
+          mimeType,
+          fileUri: media,
         },
       });
     } else {
       parts.push({
         inlineData: {
-          mimeType: "image/png",
-          data: image, // base64
+          mimeType,
+          data: media, // base64
         },
       });
     }

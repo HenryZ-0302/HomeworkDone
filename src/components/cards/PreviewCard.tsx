@@ -5,13 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { Badge } from "../ui/badge";
 import { twMerge } from "tailwind-merge";
-import type { ImageItem } from "@/store/problems-store";
+import type { FileItem } from "@/store/problems-store";
 import { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export type PreviewCardProps = {
-  items: ImageItem[];
-  appendFiles: (files: File[] | FileList, source: ImageItem["source"]) => void;
+  items: FileItem[];
+  appendFiles: (files: File[] | FileList, source: FileItem["source"]) => void;
   removeItem: (id: string) => void;
 };
 

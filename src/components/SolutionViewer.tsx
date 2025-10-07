@@ -105,8 +105,9 @@ export default function SolutionViewer({
           "Improving your solution with AI...Please wait for a while...",
       });
       setImproving(true);
-      const resText = await ai?.sendImage(
+      const resText = await ai?.sendMedia(
         uint8ToBase64(bytes),
+        entry.item.mimeType,
         prompt,
         geminiModel,
       );

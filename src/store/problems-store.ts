@@ -1,16 +1,17 @@
 import { create } from "zustand";
 
 // Type definition for an image item in the upload list.
-export type ImageItem = {
+export type FileItem = {
   id: string; // Unique identifier for each item
   file: File; // The actual image file
+  mimeType: string;
   url: string; // Object URL for client-side preview
   source: "upload" | "camera"; // Origin of the image
   status: "success" | "pending" | "failed";
 };
 
 // Type definition for the solution set of a single image.
-export type ImageSolution = {
+export type Solution = {
   imageUrl: string; // URL of the source image, used as a key
   success: boolean; // Whether the AI processing was successful
   problems: ProblemSolution[]; // Array of problems found in the image
@@ -25,8 +26,8 @@ export type ProblemSolution = {
 // The new interface for our store's state and actions.
 export interface ProblemsState {
   // --- STATE ---
-  imageItems: ImageItem[];
-  imageSolutions: ImageSolution[];
+  imageItems: FileItem[];
+  imageSolutions: Solution[];
   selectedImage?: string;
   selectedProblem: number;
   isWorking: boolean;
@@ -34,8 +35,8 @@ export interface ProblemsState {
   // --- ACTIONS ---
 
   // Actions for managing image items
-  addImageItems: (items: ImageItem[]) => void;
-  updateItemStatus: (id: string, status: ImageItem["status"]) => void;
+  addFileItems: (items: FileItem[]) => void;
+  updateItemStatus: (id: string, status: FileItem["status"]) => void;
   removeImageItem: (id: string) => void;
   updateProblem: (
     imageUrl: string,
@@ -46,7 +47,7 @@ export interface ProblemsState {
   clearAllItems: () => void;
 
   // Actions for managing image solutions
-  addImageSolution: (solution: ImageSolution) => void;
+  addSolution: (solution: Solution) => void;
   removeSolutionsByUrls: (urls: Set<string>) => void;
   clearAllSolutions: () => void;
 
@@ -73,7 +74,7 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
    * This uses the functional form of `set` to prevent race conditions
    * when adding items from multiple sources.
    */
-  addImageItems: (newItems) =>
+  addFileItems: (newItems) =>
     set((state) => ({ imageItems: [...state.imageItems, ...newItems] })),
 
   /**
@@ -128,7 +129,7 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
    * This is the core fix for the concurrency issue. By appending to the previous state
    * within the `set` function, we ensure no solution overwrites another.
    */
-  addImageSolution: (newSolution) =>
+  addSolution: (newSolution) =>
     set((state) => ({
       imageSolutions: [...state.imageSolutions, newSolution],
     })),
