@@ -53,29 +53,12 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
 
   return (
     <>
-      <p className="text-sm">
-        Looking for the drag & drop area? It was moved to the right panel!
-      </p>
-      {/* <div */}
-      {/*   onDragOver={(e) => { */}
-      {/*     e.preventDefault(); */}
-      {/*     setIsDragging(true); */}
-      {/*   }} */}
-      {/*   onDragLeave={() => setIsDragging(false)} */}
-      {/*   onDrop={onDrop} */}
-      {/*   className={`rounded-xl border border-dashed p-6 text-center transition ${ */}
-      {/*     isDragging ? "border-indigo-400 bg-indigo-500/10" : "border-white/15" */}
-      {/*   }`} */}
-      {/* > */}
-      {/*   <ImageIcon className="mx-auto mb-2 h-6 w-6 opacity-80" /> */}
-      {/*   <p className="text-sm">Drag & drop images here</p> */}
-      {/*   <p className="text-xs text-slate-400">PNG, JPG, HEIC…</p> */}
-      {/* </div> */}
+      <p className="text-sm">PDF & Image files are supported</p>
       <div className="flex gap-2">
         <input
           ref={uploadInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*, application/pdf"
           multiple
           className="hidden"
           onChange={(e) => {
@@ -98,7 +81,7 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
           ref={cameraInputRef}
           disabled={isWorking}
           type="file"
-          accept="image/*"
+          accept="image/*, application/pdf"
           capture="environment"
           className="hidden"
           onChange={(e) => {
