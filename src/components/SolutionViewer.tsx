@@ -163,6 +163,11 @@ export default function SolutionViewer({
         e.preventDefault();
         setDialogOpen(true);
       }
+      if (e.ctrlKey && e.shiftKey && e.key === "C") {
+        if (!activeProblem) return;
+        e.preventDefault();
+        copyToClipboard(activeProblem.answer);
+      }
     }
   };
 
@@ -209,7 +214,7 @@ export default function SolutionViewer({
                 size="sm"
                 onClick={() => copyToClipboard(activeProblem?.answer ?? "")}
               >
-                Copy answer
+                Copy answer <Kbd>Ctrl+⇧+C</Kbd>
               </Button>
             </div>
           </div>
