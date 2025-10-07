@@ -17,6 +17,7 @@ import {
 import ProblemList from "../ProblemList";
 import SolutionViewer from "../SolutionViewer";
 import type { ImproveResponse } from "@/ai/response";
+import { PhotoProvider, PhotoView } from "react-photo-view";
 
 export interface OrderedSolution {
   item: ImageItem;
@@ -179,11 +180,15 @@ export default function SolutionsArea() {
                           </div>
                           <CollapsibleContent className="mt-2">
                             <div className="overflow-hidden rounded-xl border border-slate-700">
-                              <img
-                                src={entry.item.url}
-                                alt={`Preview ${entry.item.file.name || idx + 1}`}
-                                className="block max-h-96 w-full object-contain bg-black/20"
-                              />
+                              <PhotoProvider>
+                                <PhotoView src={entry.item.url}>
+                                  <img
+                                    src={entry.item.url}
+                                    alt={`Preview ${entry.item.file.name || idx + 1}`}
+                                    className="block max-h-96 w-full object-contain bg-black/20 cursor-pointer"
+                                  />
+                                </PhotoView>
+                              </PhotoProvider>
                             </div>
                           </CollapsibleContent>
                         </Collapsible>
