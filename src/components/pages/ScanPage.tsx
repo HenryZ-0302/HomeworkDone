@@ -281,7 +281,11 @@ ${geminiTraits}
             items={items}
           />
 
-          <PreviewCard removeItem={removeItem} items={items} />
+          <PreviewCard
+            appendFiles={appendFiles}
+            removeItem={removeItem}
+            items={items}
+          />
         </div>
 
         {/* Solutions Section */}

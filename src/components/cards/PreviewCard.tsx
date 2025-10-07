@@ -4,9 +4,12 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Badge } from "../ui/badge";
 import { twMerge } from "tailwind-merge";
 import type { ImageItem } from "@/store/problems-store";
+import { useCallback, useState } from "react";
+import { cn } from "@/lib/utils";
 
 export type PreviewCardProps = {
   items: ImageItem[];
+  appendFiles: (files: File[] | FileList, source: ImageItem["source"]) => void;
   removeItem: (id: string) => void;
 };
 
@@ -21,7 +24,24 @@ function getColorClassByStatus(status: "success" | "failed" | "pending") {
   }
 }
 
-export default function PreviewCard({ items, removeItem }: PreviewCardProps) {
+export default function PreviewCard({
+  items,
+  removeItem,
+  appendFiles,
+}: PreviewCardProps) {
+  const [isDragging, setIsDragging] = useState(false);
+
+  const onDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      setIsDragging(false);
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        appendFiles(e.dataTransfer.files, "upload");
+      }
+    },
+    [appendFiles],
+  );
+
   return (
     <Card className="md:col-span-2 border-white/10 backdrop-blur">
       <CardHeader>
@@ -29,7 +49,20 @@ export default function PreviewCard({ items, removeItem }: PreviewCardProps) {
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <div className="flex h-64 flex-col items-center justify-center rounded-lg border border-dashed border-white/10 text-slate-400">
+          <div
+            className={cn(
+              "flex h-64 flex-col items-center justify-center rounded-lg border border-dashed border-white/10 text-slate-400",
+              isDragging
+                ? "border-indigo-400 bg-indigo-500/10"
+                : "border-white/15",
+            )}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={onDrop}
+          >
             <ImageIcon className="mb-2 h-6 w-6" />
             <p className="text-sm">
               No images yet. Upload or take a photo to begin.
@@ -37,7 +70,20 @@ export default function PreviewCard({ items, removeItem }: PreviewCardProps) {
           </div>
         ) : (
           <ScrollArea className="h-[520px] rounded-lg">
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            <div
+              className={cn(
+                "grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4",
+                isDragging
+                  ? "border-indigo-400 bg-indigo-500/10"
+                  : "border-white/15",
+              )}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={onDrop}
+            >
               {items.map((it) => (
                 <figure
                   key={it.id}
