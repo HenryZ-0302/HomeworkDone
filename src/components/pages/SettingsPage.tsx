@@ -26,6 +26,7 @@ import {
   CommandList,
 } from "../ui/command";
 import { cn } from "@/lib/utils";
+import { Kbd } from "../ui/kbd";
 
 export default function SettingsPage() {
   // API Key state and actions
@@ -100,7 +101,7 @@ export default function SettingsPage() {
       </h1>
 
       <Button className="w-full" onClick={handleBack}>
-        Back (ESC)
+        Back <Kbd>ESC</Kbd>
       </Button>
       {/* Card for API Credentials */}
       <Card>
@@ -308,7 +309,7 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
       <Button className="w-full" onClick={handleBack}>
-        Back (ESC)
+        Back <Kbd>ESC</Kbd>
       </Button>
     </div>
   );

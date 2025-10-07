@@ -7,6 +7,7 @@ import { Separator } from "../ui/separator";
 import UploadArea from "../areas/UploadArea";
 import { useNavigate } from "react-router-dom";
 import { useHotkeys } from "react-hotkeys-hook";
+import { Kbd } from "../ui/kbd";
 
 export type ActionsCardProps = {
   items: ImageItem[];
@@ -54,7 +55,7 @@ export default function ActionsCard({
           variant="secondary"
           onClick={handleSettingsBtnClick}
         >
-          Settings (Ctrl+5)
+          Settings <Kbd>Ctrl+5</Kbd>
         </Button>
       </CardContent>
     </Card>

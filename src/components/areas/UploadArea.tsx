@@ -10,6 +10,7 @@ import {
 } from "../ui/dialog";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useProblemsStore, type ImageItem } from "@/store/problems-store";
+import { Kbd } from "../ui/kbd";
 
 export type UploadAreaProps = {
   appendFiles: (files: File[] | FileList, source: ImageItem["source"]) => void;
@@ -36,8 +37,8 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
   };
 
   // Add keybindings
-  useHotkeys("ctrl+1", handleCameraBtnClicked);
-  useHotkeys("ctrl+2", handleUploadBtnClicked);
+  useHotkeys("ctrl+1", handleUploadBtnClicked);
+  useHotkeys("ctrl+2", handleCameraBtnClicked);
 
   const onDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -87,7 +88,7 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
           disabled={isWorking}
           onClick={handleUploadBtnClicked}
         >
-          <Upload className="mr-2 h-4 w-4" /> Upload Images (Ctrl+2)
+          <Upload className="mr-2 h-4 w-4" /> Upload Images <Kbd>Ctrl+1</Kbd>
         </Button>
       </div>
       <div className="flex gap-2">
@@ -111,7 +112,7 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
           disabled={isWorking}
           onClick={handleCameraBtnClicked}
         >
-          <Camera className="mr-2 h-4 w-4" /> Take Photo (Ctrl+1)
+          <Camera className="mr-2 h-4 w-4" /> Take Photo <Kbd>Ctrl+2</Kbd>
         </Button>
         <Button
           variant="ghost"

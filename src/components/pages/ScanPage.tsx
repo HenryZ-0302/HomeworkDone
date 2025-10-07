@@ -15,6 +15,8 @@ import {
   type ProblemSolution,
 } from "@/store/problems-store";
 import SolutionsArea from "../areas/SolutionsArea";
+import { Button } from "../ui/button";
+import { Link } from "react-router-dom";
 
 export default function ScanPage() {
   // Destructure all necessary state and new semantic actions from the store.
@@ -287,16 +289,20 @@ ${geminiTraits}
           <SolutionsArea />
         </div>
 
-        <footer className="mt-4">
+        <footer className="mt-4 flex flex-row justify-between">
           <p className="text-sm text-gray-500">
             Licensed under GPL-3.0. Students' life matter{" "}
             <a
               className="underline"
               href="https://github.com/cubewhy/skid-homework"
+              target="_blank"
             >
               Source code
             </a>
           </p>
+          <Button variant="link" asChild>
+            <Link to="/help">Help</Link>
+          </Button>
         </footer>
       </div>
     </div>

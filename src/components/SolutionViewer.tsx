@@ -26,6 +26,7 @@ import { parseImproveResponse, type ImproveResponse } from "@/ai/response";
 import { IMPROVE_SYSTEM_PROMPT } from "@/ai/prompts";
 import { renderImproveXml } from "@/ai/request";
 import { Loader2 } from "lucide-react";
+import { Kbd } from "./ui/kbd";
 
 export type SolutionViewerProps = {
   entry: OrderedSolution;
@@ -235,7 +236,7 @@ export default function SolutionViewer({
               <Button variant="outline" disabled={isImproving}>
                 {" "}
                 {isImproving && <Loader2 className="animate-spin" />} Improve
-                the Solution (/)
+                the Solution <Kbd>/</Kbd>
               </Button>
             </DialogTrigger>
             <DialogContent>

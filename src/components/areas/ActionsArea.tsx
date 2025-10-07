@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useProblemsStore } from "@/store/problems-store";
+import { Kbd } from "../ui/kbd";
 
 export type ActionsAreaProps = {
   startScan: () => Promise<void>;
@@ -63,7 +64,7 @@ export default function ActionsArea({
         ) : (
           <label>Click again to confirm</label>
         )}{" "}
-        (Ctrl+4)
+        <Kbd>Ctrl+4</Kbd>
       </Button>
       <Button
         ref={skidBtnRef}
@@ -76,7 +77,9 @@ export default function ActionsArea({
             <Loader2Icon className="animate-spin" /> Processing...
           </>
         ) : (
-          <>Let's Skid (Ctrl+3)</>
+          <>
+            Let's Skid <Kbd>Ctrl+3</Kbd>
+          </>
         )}
       </Button>
     </div>
