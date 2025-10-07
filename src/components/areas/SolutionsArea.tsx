@@ -8,7 +8,7 @@ import {
 } from "../ui/collapsible";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   useProblemsStore,
   type FileItem,
@@ -35,6 +35,7 @@ export default function SolutionsArea() {
     updateProblem,
     isWorking,
   } = useProblemsStore((s) => s);
+  const viewerRef = useRef<HTMLElement | null>(null);
   // Build a solutions list that matches the visual order of the uploaded items.
   const orderedSolutions: OrderedSolution[] = useMemo(() => {
     const byUrl = new Map(imageSolutions.map((s) => [s.imageUrl, s]));
@@ -211,6 +212,10 @@ export default function SolutionsArea() {
 
                             {/* Right: Detailed view of the selected problem. */}
                             <SolutionViewer
+                              ref={viewerRef}
+                              needFocus={() =>
+                                setTimeout(() => viewerRef.current?.focus(), 0)
+                              }
                               entry={entry}
                               goNextImage={goNextImage}
                               goPrevImage={goPrevImage}

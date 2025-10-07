@@ -1,5 +1,5 @@
 import "katex/dist/katex.min.css";
-import { useState, type ComponentProps } from "react";
+import { useRef, useState, type ComponentProps } from "react";
 import Markdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -34,6 +34,7 @@ export type SolutionViewerProps = {
   goNextImage: () => void;
   goNextProblem: () => void;
   goPrevProblem: () => void;
+  needFocus: () => void;
 
   updateSolution: (solution: ImproveResponse) => void;
 } & ComponentProps<"section">;
@@ -46,6 +47,7 @@ export default function SolutionViewer({
   goNextProblem,
   goPrevProblem,
   updateSolution,
+  needFocus,
   ...props
 }: SolutionViewerProps) {
   const getGemini = useGeminiStore((s) => s.getGemini);
@@ -57,6 +59,8 @@ export default function SolutionViewer({
   const [improveSolutionPrompt, setImproveSolutionPrompt] = useState("");
 
   const [isImproving, setImproving] = useState(false);
+
+  const viewerRef = useRef<HTMLElement | null>(null);
 
   const problemCount = entry.solutions.problems.length;
   const safeIndex = Math.min(
@@ -150,7 +154,7 @@ export default function SolutionViewer({
         e.preventDefault();
         if (e.shiftKey) goPrevImage();
         else goNextImage();
-        e.currentTarget.focus();
+        needFocus();
         return;
       }
       // Space/Shift+Space for problem navigation.
@@ -158,7 +162,7 @@ export default function SolutionViewer({
         e.preventDefault();
         if (e.shiftKey) goPrevProblem();
         else goNextProblem();
-        e.currentTarget.focus();
+        viewerRef.current?.focus();
       }
       if (e.key === "/") {
         e.preventDefault();
@@ -174,6 +178,7 @@ export default function SolutionViewer({
 
   return (
     <section
+      ref={viewerRef}
       tabIndex={0}
       className={cn("md:col-span-2", className)}
       onKeyDown={onKeyDown}
