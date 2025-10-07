@@ -1,4 +1,4 @@
-import { ImageIcon, X } from "lucide-react";
+import { ImageIcon, Trash2, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { Badge } from "../ui/badge";
@@ -47,20 +47,22 @@ export default function PreviewCard({
       <CardHeader>
         <CardTitle className="text-base">Preview</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent
+        className="flex flex-col gap-2"
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+      >
         {items.length === 0 ? (
           <div
             className={cn(
-              "flex h-64 flex-col items-center justify-center rounded-lg border border-dashed border-white/10 text-slate-400",
+              "flex h-64 flex-col items-center justify-center rounded-lg border border-dashed text-slate-400",
               isDragging
                 ? "border-indigo-400 bg-indigo-500/10"
                 : "border-white/15",
             )}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragLeave={() => setIsDragging(false)}
             onDrop={onDrop}
           >
             <ImageIcon className="mb-2 h-6 w-6" />
@@ -69,7 +71,7 @@ export default function PreviewCard({
             </p>
           </div>
         ) : (
-          <ScrollArea className="h-[520px] rounded-lg">
+          <ScrollArea className="rounded-lg">
             <div
               className={cn(
                 "grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4",
@@ -77,11 +79,6 @@ export default function PreviewCard({
                   ? "border-indigo-400 bg-indigo-500/10"
                   : "border-white/15",
               )}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setIsDragging(true);
-              }}
-              onDragLeave={() => setIsDragging(false)}
               onDrop={onDrop}
             >
               {items.map((it) => (
@@ -116,6 +113,19 @@ export default function PreviewCard({
               ))}
             </div>
           </ScrollArea>
+        )}
+
+        {isDragging && (
+          <div
+            className="flex h-64 flex-col items-center justify-center rounded-lg border border-dashed text-slate-400 border-red-500 bg-red-500/10"
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragging(false);
+            }}
+          >
+            <Trash2 />
+            Drag to here to cancel
+          </div>
         )}
       </CardContent>
     </Card>
