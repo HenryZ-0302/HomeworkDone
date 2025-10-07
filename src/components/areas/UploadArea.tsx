@@ -1,6 +1,6 @@
-import { Camera, ImageIcon, Info, Upload } from "lucide-react";
+import { Camera, Info, Upload } from "lucide-react";
 import { Button } from "../ui/button";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ export type UploadAreaProps = {
 
 export default function UploadArea({ appendFiles }: UploadAreaProps) {
   const isWorking = useProblemsStore((s) => s.isWorking);
-  const [isDragging, setIsDragging] = useState(false);
+  // const [isDragging, setIsDragging] = useState(false);
   const [cameraTipOpen, setCameraTipOpen] = useState(false);
 
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
@@ -40,35 +40,37 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
   useHotkeys("ctrl+1", handleUploadBtnClicked);
   useHotkeys("ctrl+2", handleCameraBtnClicked);
 
-  const onDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setIsDragging(false);
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        appendFiles(e.dataTransfer.files, "upload");
-      }
-    },
-    [appendFiles],
-  );
+  // const onDrop = useCallback(
+  //   (e: React.DragEvent<HTMLDivElement>) => {
+  //     e.preventDefault();
+  //     setIsDragging(false);
+  //     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+  //       appendFiles(e.dataTransfer.files, "upload");
+  //     }
+  //   },
+  //   [appendFiles],
+  // );
 
   return (
     <>
-      {" "}
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragging(true);
-        }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={onDrop}
-        className={`rounded-xl border border-dashed p-6 text-center transition ${
-          isDragging ? "border-indigo-400 bg-indigo-500/10" : "border-white/15"
-        }`}
-      >
-        <ImageIcon className="mx-auto mb-2 h-6 w-6 opacity-80" />
-        <p className="text-sm">Drag & drop images here</p>
-        <p className="text-xs text-slate-400">PNG, JPG, HEIC…</p>
-      </div>
+      <p className="text-sm">
+        Looking for the drag & drop area? It was moved to the right panel!
+      </p>
+      {/* <div */}
+      {/*   onDragOver={(e) => { */}
+      {/*     e.preventDefault(); */}
+      {/*     setIsDragging(true); */}
+      {/*   }} */}
+      {/*   onDragLeave={() => setIsDragging(false)} */}
+      {/*   onDrop={onDrop} */}
+      {/*   className={`rounded-xl border border-dashed p-6 text-center transition ${ */}
+      {/*     isDragging ? "border-indigo-400 bg-indigo-500/10" : "border-white/15" */}
+      {/*   }`} */}
+      {/* > */}
+      {/*   <ImageIcon className="mx-auto mb-2 h-6 w-6 opacity-80" /> */}
+      {/*   <p className="text-sm">Drag & drop images here</p> */}
+      {/*   <p className="text-xs text-slate-400">PNG, JPG, HEIC…</p> */}
+      {/* </div> */}
       <div className="flex gap-2">
         <input
           ref={uploadInputRef}

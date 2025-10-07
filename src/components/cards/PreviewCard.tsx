@@ -67,7 +67,10 @@ export default function PreviewCard({
           >
             <ImageIcon className="mb-2 h-6 w-6" />
             <p className="text-sm">
-              No images yet. Upload or take a photo to begin.
+              No images yet. Upload or take a photo to begin.{" "}
+            </p>
+            <p className="text-sm">
+              NOTE: You can drag your images to this panel.
             </p>
           </div>
         ) : (
