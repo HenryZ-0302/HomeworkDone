@@ -22,7 +22,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10 # Pin pnpm version; adjust if needed
+          # version: 10 # Pin pnpm version; adjust if needed
           run_install: false # Do not auto-install deps here
 
       # Setup Node.js and enable pnpm cache
