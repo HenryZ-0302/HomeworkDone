@@ -290,7 +290,7 @@ export default function SolutionViewer({
                 onClick={goPrevProblem}
                 disabled={selectedProblem === 0}
               >
-                Prev (Shift+Space)
+                Prev <Kbd>⇧+␣</Kbd>
               </Button>
               <Button
                 variant="outline"
@@ -300,13 +300,13 @@ export default function SolutionViewer({
                   selectedProblem >= entry.solutions.problems.length - 1
                 }
               >
-                Next (Space)
+                Next <Kbd>␣</Kbd>
               </Button>
               <Button variant="outline" size="sm" onClick={goPrevImage}>
-                ⟵ Image (Shift+Tab)
+                ⟵ Image <Kbd>⇧+TAB</Kbd>
               </Button>
               <Button variant="outline" size="sm" onClick={goNextImage}>
-                Image ⟶ (Tab)
+                Image ⟶ <Kbd>TAB</Kbd>
               </Button>
             </div>
           </div>
