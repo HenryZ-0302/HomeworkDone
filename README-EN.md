@@ -6,13 +6,16 @@ The open source AI homework solver. A time-saving workground for self-learners
 
 ## Why SkidHomework
 
+If this tool saved your time, please give us a star or share this tool to your friends!
+
 - Save time
 - No telemetry
 - Open source, no black-box
 - No spamming calls
 - No phone number required
+- Customizable answer styles, not limited to standard answers
 - Can access from your computer, tablet or mobile phone
-- Ergonomics
+- Ergonomics, keyboard workflow support
 
 ## Try it
 
