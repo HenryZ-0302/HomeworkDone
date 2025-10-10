@@ -35,11 +35,11 @@ You need to request a Gemini API key for AI usage.
 | Ctrl+4      | Delete all files                         |
 | Ctrl+5      | Open settings page                       |
 | ESC         | Close settings page / current dialog box |
-| Space       | Next item                                |
-| Shift+Space | Previous item                            |
+| Space       | Next problem                             |
+| Shift+Space | Previous problem                         |
 | Tab         | Next file                                |
 | Shift+Tab   | Previous file                            |
-| /           | Improve answer                           |
+| /           | Improve solution                         |
 
 ## Star History
 
