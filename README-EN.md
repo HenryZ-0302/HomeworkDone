@@ -25,6 +25,22 @@ You need to request a Gemini API key for AI usage.
 
 [Google AI Studio](https://aistudio.google.com/api-keys)
 
+## Shortcuts
+
+| Shortcut    | Description                              |
+| ----------- | ---------------------------------------- |
+| Ctrl+1      | Upload file                              |
+| Ctrl+2      | Take a photo                             |
+| Ctrl+3      | Submit file to AI                        |
+| Ctrl+4      | Delete all files                         |
+| Ctrl+5      | Open settings page                       |
+| ESC         | Close settings page / current dialog box |
+| Space       | Next item                                |
+| Shift+Space | Previous item                            |
+| Tab         | Next file                                |
+| Shift+Tab   | Previous file                            |
+| /           | Improve answer                           |
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=cubewhy/skid-homework&type=Date)](https://www.star-history.com/#cubewhy/skid-homework&Date)
