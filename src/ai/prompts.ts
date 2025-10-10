@@ -63,6 +63,7 @@ export const IMPROVE_SYSTEM_PROMPT = String.raw`
 4.  **Markdown使用**: 在 \`improved_explanation\` 内部可以使用Markdown语法（如列表、加粗）来提高可读性。
 5. 不要模仿用户输入的语法, 用户输入的语法是经过encode 的, 输出之后无法渲染
 6. 务必使用正确的语法
+7.  **人类可读**: 不要让Markdown 渲染之后的结果令人困惑, 必要时请使用换行
 `;
 
 export const SOLVE_SYSTEM_PROMPT = String.raw`
@@ -100,6 +101,7 @@ export const SOLVE_SYSTEM_PROMPT = String.raw`
     *   例如: \`$$ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} $$\`
 2.  **Markdown与CDATA**: \`explanation\` 字段内可以使用Markdown语法（如列表、加粗）来提高可读性。为了确保XML解析的正确性，**markdown内容必须被包裹在 \`<![CDATA[...]]>\` 块中**。客户端渲染器支持 remarkGfm 和 \`\${"\`"}remarkMath\${"\`"}\`。
 3.  **标签规范**: 保持XML标签的整洁和规范性，确保所有标签都正确闭合。
+4.  **人类可读**: 不要让Markdown 渲染之后的结果令人困惑, 必要时请使用换行
 
 #### <traits> 行为准则
 你必须严格遵守以下由用户定义的特征：
