@@ -72,7 +72,7 @@ export default function InitPage() {
             SkidHomework
           </span>
         </div>
-        <div className="text-sm text-slate-300">Local • Private • Free</div>
+        <div className="text-sm">Local • Private • Free</div>
       </header>
 
       <main className="relative z-10 mx-auto max-w-6xl px-6 pb-20 pt-6">
@@ -88,14 +88,14 @@ export default function InitPage() {
                 Welcome to SkidHomework
               </span>
               <br />
-              <span className="text-slate-300">Escape the homework grind.</span>
+              <span>Escape the homework grind.</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.08 }}
-              className="mt-5 max-w-prose text-slate-300"
+              className="mt-5 max-w-prose"
             >
               Prefer Khan Academy–style self‑study but still get stuck with
               endless assignments? SkidHomework runs locally, respects your
@@ -106,7 +106,7 @@ export default function InitPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.16 }}
-              className="mt-6 grid gap-3 text-sm text-slate-300"
+              className="mt-6 grid gap-3 text-sm"
             >
               <li className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4" /> No Telemetry or spamming
@@ -136,7 +136,7 @@ export default function InitPage() {
                   placeholder="Gemini API Key"
                   value={key}
                   onChange={(e) => setKey(e.target.value)}
-                  className="h-11 flex-1 bg-slate-900/60 placeholder:text-slate-500 focus-visible:ring-indigo-500"
+                  className="h-11 flex-1 focus-visible:ring-indigo-500"
                 />
                 <Button type="submit" className="h-11 px-5">
                   Get My Time Back!
@@ -146,16 +146,13 @@ export default function InitPage() {
               {/* START: Advanced settings section, collapsible */}
               <Accordion type="single" collapsible className="w-full max-w-md">
                 <AccordionItem value="advanced-settings" className="border-b-0">
-                  <AccordionTrigger className="text-sm text-slate-400 hover:no-underline">
+                  <AccordionTrigger className="text-sm hover:no-underline">
                     Advanced
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-2">
                       {/* Input for custom Gemini API Base URL */}
-                      <Label
-                        htmlFor="base-url"
-                        className="text-xs text-slate-400"
-                      >
+                      <Label htmlFor="base-url" className="text-xs">
                         Gemini API Base URL (Optional)
                       </Label>
                       <Input
@@ -164,9 +161,9 @@ export default function InitPage() {
                         placeholder="https://generativelanguage.googleapis.com"
                         value={baseUrl ?? ""}
                         onChange={(e) => setBaseUrl(e.target.value)}
-                        className="bg-slate-900/60 placeholder:text-slate-500 focus-visible:ring-indigo-500"
+                        className="placeholder:text-slate-500 focus-visible:ring-indigo-500"
                       />
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-400">
                         Leave blank to use the default Google API endpoint.
                       </p>
                     </div>
