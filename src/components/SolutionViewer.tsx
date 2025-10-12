@@ -34,7 +34,6 @@ export type SolutionViewerProps = {
   goNextImage: () => void;
   goNextProblem: () => void;
   goPrevProblem: () => void;
-  needFocus: () => void;
 
   updateSolution: (solution: ImproveResponse) => void;
 } & ComponentProps<"section">;
@@ -47,7 +46,6 @@ export default function SolutionViewer({
   goNextProblem,
   goPrevProblem,
   updateSolution,
-  needFocus,
   ...props
 }: SolutionViewerProps) {
   const getGemini = useGeminiStore((s) => s.getGemini);
@@ -147,23 +145,6 @@ export default function SolutionViewer({
       }
       return;
     } else {
-      // handle navigation
-
-      // Tab/Shift+Tab for image navigation.
-      if (e.key === "Tab") {
-        e.preventDefault();
-        if (e.shiftKey) goPrevImage();
-        else goNextImage();
-        needFocus();
-        return;
-      }
-      // Space/Shift+Space for problem navigation.
-      if (e.code === "Space") {
-        e.preventDefault();
-        if (e.shiftKey) goPrevProblem();
-        else goNextProblem();
-        viewerRef.current?.focus();
-      }
       if (e.key === "/") {
         e.preventDefault();
         setDialogOpen(true);

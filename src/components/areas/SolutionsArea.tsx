@@ -8,7 +8,7 @@ import {
 } from "../ui/collapsible";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type KeyboardEvent } from "react";
 import {
   useProblemsStore,
   type FileItem,
@@ -118,6 +118,26 @@ export default function SolutionsArea() {
     );
   };
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    // handle navigation
+    // Tab/Shift+Tab for image navigation.
+    if (e.key === "Tab") {
+      e.preventDefault();
+      if (e.shiftKey) goPrevImage();
+      else goNextImage();
+      // focus the viewer
+      setTimeout(() => viewerRef.current?.focus(), 0);
+      return;
+    }
+    // Space/Shift+Space for problem navigation.
+    if (e.code === "Space") {
+      e.preventDefault();
+      if (e.shiftKey) goPrevProblem();
+      else goNextProblem();
+      viewerRef.current?.focus();
+    }
+  };
+
   return (
     <>
       <Card className="rounded-2xl p-4 shadow">
@@ -162,6 +182,7 @@ export default function SolutionsArea() {
                         key={entry.item.id}
                         value={entry.item.url}
                         className="mt-4"
+                        onKeyDown={handleKeyDown}
                       >
                         {/* Collapsible preview of the current photo. */}
                         {entry.item.mimeType.startsWith("image/") && (
@@ -213,9 +234,6 @@ export default function SolutionsArea() {
                             {/* Right: Detailed view of the selected problem. */}
                             <SolutionViewer
                               ref={viewerRef}
-                              needFocus={() =>
-                                setTimeout(() => viewerRef.current?.focus(), 0)
-                              }
                               entry={entry}
                               goNextImage={goNextImage}
                               goPrevImage={goPrevImage}
