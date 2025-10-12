@@ -22,7 +22,7 @@
 
 ## 现在尝试
 
-官方实例部署在 [https://skid.996every.day](https://skid.9964every.day)
+官方实例部署在 [https://skid.996every.day](https://skid.996every.day)
 
 您需要申请一个 Gemini API 密钥才能访问 AI。
 
