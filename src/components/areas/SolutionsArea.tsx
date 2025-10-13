@@ -236,7 +236,8 @@ export default function SolutionsArea() {
                           </Collapsible>
                         )}
 
-                        {entry.solutions.status === "processing" && (
+                        {(entry.solutions.status === "processing" ||
+                          entry.solutions.streamedOutput) && (
                           <StreamingOutputDisplay
                             output={entry.solutions.streamedOutput ?? null}
                             placeholder="AI is Thinking"
