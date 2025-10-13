@@ -122,6 +122,7 @@ export default function SolutionsArea() {
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.target instanceof HTMLTextAreaElement) return;
     // handle navigation
     // Tab/Shift+Tab for image navigation.
     if (e.key === "Tab") {

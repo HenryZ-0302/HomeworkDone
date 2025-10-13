@@ -1,32 +1,21 @@
 import "katex/dist/katex.min.css";
-import { useRef, useState, type ComponentProps } from "react";
+import { useRef, type ComponentProps } from "react";
 import Markdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
-import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import type { OrderedSolution } from "./areas/SolutionsArea";
 import { useProblemsStore } from "@/store/problems-store";
 import { toast } from "sonner";
-import { useGeminiStore } from "@/store/gemini-store";
-import { uint8ToBase64 } from "@/utils/encoding";
-import { parseImproveResponse, type ImproveResponse } from "@/ai/response";
-import { IMPROVE_SYSTEM_PROMPT } from "@/ai/prompts";
-import { renderImproveXml } from "@/ai/request";
-import { Loader2 } from "lucide-react";
+import { type ImproveResponse } from "@/ai/response";
 import { Kbd } from "./ui/kbd";
+import { MemoizedMarkdown } from "./MarkdownRenderer";
+import {
+  ImproveSolutionDialog,
+  type ImproveSolutionDialogHandle,
+} from "./dialogs/ImproveSolutionDialog";
 
 export type SolutionViewerProps = {
   entry: OrderedSolution;
@@ -48,16 +37,7 @@ export default function SolutionViewer({
   updateSolution,
   ...props
 }: SolutionViewerProps) {
-  const getGemini = useGeminiStore((s) => s.getGemini);
-  // const geminiTraits = useGeminiStore((s) => s.traits);
-  const geminiModel = useGeminiStore((s) => s.geminiModel);
-  const { selectedProblem, appendStreamedOutput, clearStreamedOutput } =
-    useProblemsStore((s) => s);
-
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [improveSolutionPrompt, setImproveSolutionPrompt] = useState("");
-
-  const [isImproving, setImproving] = useState(false);
+  const selectedProblem = useProblemsStore((s) => s.selectedProblem);
 
   const viewerRef = useRef<HTMLElement | null>(null);
 
@@ -79,89 +59,27 @@ export default function SolutionViewer({
     }
   };
 
-  const handleImproveSolution = async () => {
-    if (!activeProblem) return;
-    const ai = getGemini();
-    if (!ai) {
-      toast("You're almost there", {
-        description: "You need to set your API key in settings to use the AI.",
-      });
-      return;
-    }
-
-    // apply system prompt
-    ai.setSystemPrompt(IMPROVE_SYSTEM_PROMPT);
-
-    const buf = await entry.item.file.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-
-    const prompt = renderImproveXml({
-      user_suggestion: improveSolutionPrompt,
-      answer: activeProblem.answer,
-      explanation: activeProblem.explanation,
-      problem: activeProblem.problem,
-    });
-
-    const callback = (text: string) => {
-      appendStreamedOutput(entry.item.url, text);
-    };
-
-    try {
-      toast("Processing", {
-        description:
-          "Improving your solution with AI...Please wait for a while...",
-      });
-      setImproving(true);
-      const resText = await ai?.sendMedia(
-        uint8ToBase64(bytes),
-        entry.item.mimeType,
-        prompt,
-        geminiModel,
-        callback,
-      );
-      // console.log(resText);
-
-      const res = parseImproveResponse(resText);
-
-      // console.log(res);
-      if (!res) {
-        toast("Failed to improve your solution", {
-          description:
-            "Failed to parse response, see the developer tools for more details.",
-        });
-        return;
-      }
-      updateSolution(res);
-      // clear streaming output
-      clearStreamedOutput(entry.item.url);
-    } catch (e) {
-      toast("Failed to improve your solution", {
-        description: `Something went wrong: ${e}`,
-      });
-      return;
-    } finally {
-      setImproving(false);
-    }
-  };
+  const dialogRef = useRef<ImproveSolutionDialogHandle>(null);
 
   const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
-    if (dialogOpen) {
-      // handle Ctrl+Enter to submit the prompt
-      if (e.ctrlKey && e.key === "Enter") {
-        setDialogOpen(false);
-        handleImproveSolution();
-      }
+    const target = e.target as HTMLElement;
+    if (
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "INPUT" ||
+      target.isContentEditable
+    ) {
       return;
-    } else {
-      if (e.key === "/") {
-        e.preventDefault();
-        setDialogOpen(true);
-      }
-      if (e.ctrlKey && e.shiftKey && e.key === "C") {
-        if (!activeProblem) return;
-        e.preventDefault();
-        copyToClipboard(activeProblem.answer);
-      }
+    }
+
+    if (e.key === "/") {
+      e.preventDefault();
+      // open the dialog
+      dialogRef.current?.openDialog();
+    }
+    if (e.ctrlKey && e.shiftKey && e.key === "C") {
+      if (!activeProblem) return;
+      e.preventDefault();
+      copyToClipboard(activeProblem.answer);
     }
   };
 
@@ -196,12 +114,7 @@ export default function SolutionViewer({
               Answer
             </div>
             <div className="rounded-lg bg-slate-900/60 p-3 text-sm">
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[[rehypeKatex, { output: "html" }]]}
-              >
-                {activeProblem?.answer ?? ""}
-              </Markdown>
+              <MemoizedMarkdown source={activeProblem?.problem ?? ""} />
             </div>
             <div className="mt-2">
               <Button
@@ -219,56 +132,16 @@ export default function SolutionViewer({
               Explanation
             </div>
             <div className="rounded-lg bg-slate-900/40 p-3 text-sm leading-relaxed">
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[[rehypeKatex, { output: "html" }]]}
-              >
-                {activeProblem?.explanation ?? ""}
-              </Markdown>
+              <MemoizedMarkdown source={activeProblem?.problem ?? ""} />
             </div>
           </div>
 
-          <Dialog
-            open={dialogOpen}
-            onOpenChange={(state) => setDialogOpen(state)}
-          >
-            <DialogTrigger asChild>
-              <Button variant="outline" disabled={isImproving}>
-                {" "}
-                {isImproving && <Loader2 className="animate-spin" />} Improve
-                the Solution <Kbd>/</Kbd>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Improve the Solution</DialogTitle>
-                <DialogDescription>
-                  Generate a more detailed solution using the current solution
-                  and your prompt
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col items-center gap-2">
-                <Textarea
-                  value={improveSolutionPrompt}
-                  onChange={(e) => setImproveSolutionPrompt(e.target.value)}
-                  className="h-40"
-                  placeholder="Make it more detailed..."
-                />
-              </div>
-
-              <DialogFooter className="sm:justify-start">
-                <DialogClose asChild>
-                  <Button
-                    variant="secondary"
-                    disabled={!improveSolutionPrompt}
-                    onClick={handleImproveSolution}
-                  >
-                    Submit <Kbd>Ctrl+Enter</Kbd>
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <ImproveSolutionDialog
+            ref={dialogRef}
+            entry={entry}
+            activeProblem={activeProblem}
+            updateSolution={updateSolution}
+          />
 
           {/* Navigation controls for problems and images. */}
           <div className="flex items-center justify-between pt-2">
