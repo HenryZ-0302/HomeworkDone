@@ -239,7 +239,6 @@ export default function SolutionsArea() {
                         {entry.solutions.status === "processing" && (
                           <StreamingOutputDisplay
                             output={entry.solutions.streamedOutput ?? null}
-                            title="Output..."
                             placeholder="AI is Thinking"
                           />
                         )}
