@@ -221,7 +221,6 @@ ${geminiTraits}
 
           const res = parseSolveResponse(resText);
 
-          // TODO: fail on parse error
           updateSolution(item.url, {
             status: "success",
             problems: res?.problems ?? [],

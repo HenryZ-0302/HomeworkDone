@@ -101,7 +101,7 @@ export function parseSolveResponse(response: string): SolveResponse | null {
       return JSON.parse(content) as SolveResponse;
     } catch (e) {
       console.error("Failed to parse JSON:", e, content);
-      return null;
+      throw e;
     }
   }
 
@@ -110,7 +110,7 @@ export function parseSolveResponse(response: string): SolveResponse | null {
   }
 
   console.error("Failed to parse response due to unknown format:", response);
-  return null;
+  throw Error(`Failed to parse response due to unknown format:\n${response}`);
 }
 
 // SECTION: Improve Response Parsing (New)
