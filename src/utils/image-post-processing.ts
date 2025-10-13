@@ -6,7 +6,7 @@
  * @param quality For JPEG output, the quality level (0-1).
  * @returns A promise that resolves with the processed File object and its Object URL.
  */
-export const rasterizeImageFile = async (
+export const binarizeImageFile = async (
   imageFile: File,
   type: "image/png" | "image/jpeg" = "image/png",
   quality?: number,

@@ -27,6 +27,8 @@ import {
 } from "../ui/command";
 import { cn } from "@/lib/utils";
 import { Kbd } from "../ui/kbd";
+import { useSettingsStore } from "@/store/settings-store";
+import { Checkbox } from "../ui/checkbox";
 
 export default function SettingsPage() {
   // API Key state and actions
@@ -52,6 +54,12 @@ export default function SettingsPage() {
   // AI Thinking budget
   const thinkingBudget = useGeminiStore((s) => s.thinkingBudget);
   const setThinkBudget = useGeminiStore((s) => s.setThinkingBudget);
+
+  // Image post-processing state
+  const {
+    imageBinarizing: imagePostprocessing,
+    setImageBinarizing: setImagePostprocessing,
+  } = useSettingsStore((s) => s);
 
   // input box states
   const [localGeminiKey, setLocalGeminiKey] = useState(geminiKey);
@@ -285,7 +293,7 @@ export default function SettingsPage() {
             proxy).
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-3">
           <div className="space-y-2">
             <Label htmlFor="base-url">Custom Base URL</Label>
             <div className="flex items-center space-x-2">
@@ -304,6 +312,22 @@ export default function SettingsPage() {
               >
                 Clear
               </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="base-url">Image Post-processing</Label>
+            <div className="flex items-center space-x-2 mt-2">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="image-pp-checkbox"
+                  checked={imagePostprocessing}
+                  onCheckedChange={(state) =>
+                    setImagePostprocessing(state as boolean)
+                  }
+                />
+                <Label htmlFor="image-pp-checkbox">Enable binarizing</Label>
+              </div>
             </div>
           </div>
         </CardContent>

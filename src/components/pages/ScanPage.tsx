@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { Info } from "lucide-react";
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useRef } from "react";
 import { useGeminiStore } from "@/store/gemini-store";
 import ActionsCard from "../cards/ActionsCard";
 import PreviewCard from "../cards/PreviewCard";
@@ -15,7 +15,8 @@ import {
   type ProblemSolution,
 } from "@/store/problems-store";
 import SolutionsArea from "../areas/SolutionsArea";
-import { rasterizeImageFile } from "@/utils/rasterize";
+import { useSettingsStore } from "@/store/settings-store";
+import { binarizeImageFile } from "@/utils/image-post-processing";
 
 export default function ScanPage() {
   // Destructure all necessary state and new semantic actions from the store.
@@ -32,6 +33,9 @@ export default function ScanPage() {
     clearAllSolutions,
     appendStreamedOutput,
   } = useProblemsStore((s) => s);
+
+  const { imageBinarizing } = useSettingsStore((s) => s);
+  const imageBinarizingRef = useRef(imageBinarizing);
 
   // Zustand store for Gemini API configuration.
   const geminiModel = useGeminiStore((state) => state.geminiModel);
@@ -74,24 +78,27 @@ export default function ScanPage() {
 
       addFileItems(initialItems);
 
-      initialItems.forEach((item) => {
-        if (item.status === "rasterizing") {
-          rasterizeImageFile(item.file)
-            .then((rasterizedResult) => {
-              updateFileItem(item.id, {
-                status: "pending",
-                url: rasterizedResult.url,
-                file: rasterizedResult.file,
+      // Image post-processing
+      if (imageBinarizingRef.current) {
+        initialItems.forEach((item) => {
+          if (item.status === "rasterizing") {
+            binarizeImageFile(item.file)
+              .then((rasterizedResult) => {
+                updateFileItem(item.id, {
+                  status: "pending",
+                  url: rasterizedResult.url,
+                  file: rasterizedResult.file,
+                });
+              })
+              .catch((error) => {
+                console.error(`Failed to rasterize ${item.file.name}:`, error);
+                updateFileItem(item.id, {
+                  status: "failed",
+                });
               });
-            })
-            .catch((error) => {
-              console.error(`Failed to rasterize ${item.file.name}:`, error);
-              updateFileItem(item.id, {
-                status: "failed",
-              });
-            });
-        }
-      });
+          }
+        });
+      }
     },
     [addFileItems, updateFileItem],
   );
