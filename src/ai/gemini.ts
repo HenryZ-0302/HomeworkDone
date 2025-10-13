@@ -53,44 +53,45 @@ export class GeminiAi {
     this.systemPrompt = prompt;
   }
 
-  async sendText(userText: string, model = "gemini-2.5-pro") {
-    const contents = [];
-
-    if (this.systemPrompt) {
-      contents.push({
-        role: "user",
-        parts: [{ text: this.systemPrompt }],
-      });
-    }
-
-    contents.push({
-      role: "user",
-      parts: [{ text: userText }],
-    });
-
-    const response = await this.ai.models.generateContentStream({
-      model,
-      config: {
-        thinkingConfig: { thinkingBudget: this.config.thinkingBudget },
-        safetySettings: this.config.safetySettings,
-      },
-      contents,
-    });
-
-    let result = "";
-    for await (const chunk of response) {
-      if (chunk.text) {
-        result += chunk.text;
-      }
-    }
-    return result;
-  }
+  // async sendText(userText: string, model = "gemini-2.5-pro") {
+  //   const contents = [];
+  //
+  //   if (this.systemPrompt) {
+  //     contents.push({
+  //       role: "user",
+  //       parts: [{ text: this.systemPrompt }],
+  //     });
+  //   }
+  //
+  //   contents.push({
+  //     role: "user",
+  //     parts: [{ text: userText }],
+  //   });
+  //
+  //   const response = await this.ai.models.generateContentStream({
+  //     model,
+  //     config: {
+  //       thinkingConfig: { thinkingBudget: this.config.thinkingBudget },
+  //       safetySettings: this.config.safetySettings,
+  //     },
+  //     contents,
+  //   });
+  //
+  //   let result = "";
+  //   for await (const chunk of response) {
+  //     if (chunk.text) {
+  //       result += chunk.text;
+  //     }
+  //   }
+  //   return result;
+  // }
 
   async sendMedia(
     media: string,
     mimeType: string,
     prompt?: string,
     model = "gemini-2.5-pro",
+    callback?: (text: string) => void,
   ) {
     const contents = [];
 
@@ -141,6 +142,7 @@ export class GeminiAi {
     for await (const chunk of response) {
       if (chunk.text) {
         result += chunk.text;
+        callback?.(chunk.text);
       }
     }
     return result;
