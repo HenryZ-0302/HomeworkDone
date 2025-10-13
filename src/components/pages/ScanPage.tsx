@@ -73,7 +73,7 @@ export default function ScanPage() {
         mimeType: file.type,
         url: URL.createObjectURL(file),
         source,
-        status: file.type.startsWith("image/") ? "rasterizing" : "success",
+        status: file.type.startsWith("image/") ? "rasterizing" : "pending",
       }));
 
       addFileItems(initialItems);
