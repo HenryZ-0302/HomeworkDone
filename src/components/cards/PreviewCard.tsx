@@ -71,9 +71,7 @@ export default function PreviewCard({
             <p className="text-sm">
               No images yet. Upload or take a photo to begin.
             </p>
-            <p className="text-sm">
-              NOTE: You can drag your images to this panel.
-            </p>
+            <p className="text-sm">You can drag your files to this panel.</p>
           </div>
         ) : (
           <ScrollArea className="rounded-lg">
