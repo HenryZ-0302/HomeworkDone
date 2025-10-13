@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
+// --- TYPE DEFINITIONS ---
+
 // Type definition for an image item in the upload list.
 export type FileItem = {
   id: string; // Unique identifier for each item
@@ -13,21 +15,25 @@ export type FileItem = {
 // Type definition for the solution set of a single image.
 export type Solution = {
   imageUrl: string; // URL of the source image, used as a key
-  success: boolean; // Whether the AI processing was successful
+  status: "success" | "processing" | "failed"; // Whether the AI processing was successful
+  streamedOutput?: string | null; // Stores the raw streaming output from the AI
   problems: ProblemSolution[]; // Array of problems found in the image
 };
 
+// Type definition for a single problem-answer pair.
 export type ProblemSolution = {
   problem: string;
   answer: string;
   explanation: string;
 };
 
-// The new interface for our store's state and actions.
+// The interface for our store's state and actions.
 export interface ProblemsState {
   // --- STATE ---
   imageItems: FileItem[];
-  imageSolutions: Solution[];
+  // Use a Map to store solutions. This gives us O(1) access for performance
+  // AND maintains insertion order, which is crucial for rendering.
+  imageSolutions: Map<string, Solution>;
   selectedImage?: string;
   selectedProblem: number;
   isWorking: boolean;
@@ -48,6 +54,9 @@ export interface ProblemsState {
 
   // Actions for managing image solutions
   addSolution: (solution: Solution) => void;
+  updateSolution: (imageUrl: string, updates: Partial<Solution>) => void;
+  appendStreamedOutput: (imageUrl: string, chunk: string) => void;
+  clearStreamedOutput: (imageUrl: string) => void;
   removeSolutionsByUrls: (urls: Set<string>) => void;
   clearAllSolutions: () => void;
 
@@ -55,14 +64,14 @@ export interface ProblemsState {
   setSelectedImage: (image?: string) => void;
   setSelectedProblem: (index: number) => void;
 
-  // Actions to update is working
+  // Action to update the global working/loading state
   setWorking: (isWorking: boolean) => void;
 }
 
 export const useProblemsStore = create<ProblemsState>((set) => ({
   // --- INITIAL STATE ---
   imageItems: [],
-  imageSolutions: [],
+  imageSolutions: new Map(), // Initialize as an empty Map
   selectedImage: undefined,
   selectedProblem: 0,
   isWorking: false,
@@ -71,15 +80,12 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
 
   /**
    * Adds new image items to the list.
-   * This uses the functional form of `set` to prevent race conditions
-   * when adding items from multiple sources.
    */
   addFileItems: (newItems) =>
     set((state) => ({ imageItems: [...state.imageItems, ...newItems] })),
 
   /**
    * Updates the status of a specific image item.
-   * This is concurrency-safe because it operates on the latest state.
    */
   updateItemStatus: (id, status) =>
     set((state) => ({
@@ -96,28 +102,31 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
       imageItems: state.imageItems.filter((item) => item.id !== id),
     })),
 
-  updateProblem: (
-    imageUrl: string,
-    problemIndex: number,
-    newAnswer: string,
-    newExplanation: string,
-  ) =>
-    set((state) => ({
-      imageSolutions: state.imageSolutions.map((solution) => {
-        if (solution.imageUrl === imageUrl) {
-          const updatedProblems = [...solution.problems];
+  /**
+   * Updates a specific problem within a solution.
+   */
+  updateProblem: (imageUrl, problemIndex, newAnswer, newExplanation) =>
+    set((state) => {
+      const currentSolution = state.imageSolutions.get(imageUrl);
+      if (!currentSolution) {
+        return state; // Do nothing if solution doesn't exist
+      }
 
-          updatedProblems[problemIndex] = {
-            ...updatedProblems[problemIndex],
-            answer: newAnswer,
-            explanation: newExplanation,
-          };
+      const updatedProblems = [...currentSolution.problems];
+      updatedProblems[problemIndex] = {
+        ...updatedProblems[problemIndex],
+        answer: newAnswer,
+        explanation: newExplanation,
+      };
 
-          return { ...solution, problems: updatedProblems };
-        }
-        return solution;
-      }),
-    })),
+      const newSolutionsMap = new Map(state.imageSolutions);
+      newSolutionsMap.set(imageUrl, {
+        ...currentSolution,
+        problems: updatedProblems,
+      });
+
+      return { imageSolutions: newSolutionsMap };
+    }),
 
   /**
    * Clears all image items from the state.
@@ -125,34 +134,133 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
   clearAllItems: () => set({ imageItems: [] }),
 
   /**
-   * Adds a new image solution to the list.
-   * This is the core fix for the concurrency issue. By appending to the previous state
-   * within the `set` function, we ensure no solution overwrites another.
+   * Adds a new solution to the map.
+   * Use this to create an initial placeholder before AI processing begins.
+   * This function will NOT overwrite an existing solution to prevent accidental data loss.
+   * @param newSolution The initial solution object.
    */
   addSolution: (newSolution) =>
-    set((state) => ({
-      imageSolutions: [...state.imageSolutions, newSolution],
-    })),
+    set((state) => {
+      // Prevent overwriting an existing entry with this specific action.
+      if (state.imageSolutions.has(newSolution.imageUrl)) {
+        console.warn(
+          `Solution for ${newSolution.imageUrl} already exists. Use updateSolution to modify it.`,
+        );
+        return state;
+      }
+      const newSolutionsMap = new Map(state.imageSolutions);
+      newSolutionsMap.set(newSolution.imageUrl, newSolution);
+      return { imageSolutions: newSolutionsMap };
+    }),
+
+  /**
+   * Updates an existing solution with new data.
+   * This is the primary way to update a solution after AI processing is complete.
+   * It performs an O(1) update.
+   * If the update includes `success: true`, it automatically clears `streamedOutput`.
+   * @param imageUrl The key of the solution to update.
+   * @param updates An object containing the fields to update (e.g., { problems, success }).
+   */
+  updateSolution: (imageUrl, updates) =>
+    set((state) => {
+      const currentSolution = state.imageSolutions.get(imageUrl);
+
+      // If there's no solution to update, do nothing.
+      if (!currentSolution) {
+        console.error(
+          `Attempted to update a non-existent solution for URL: ${imageUrl}`,
+        );
+        return state;
+      }
+
+      const newSolutionsMap = new Map(state.imageSolutions);
+
+      // Merge the current solution with the updates.
+      const updatedSolution = { ...currentSolution, ...updates };
+
+      // If the update marks the solution as successful, clear the streamed output.
+      if (updates.status === "success") {
+        updatedSolution.streamedOutput = null;
+      }
+
+      newSolutionsMap.set(imageUrl, updatedSolution);
+
+      return { imageSolutions: newSolutionsMap };
+    }),
+
+  /**
+   * Appends a chunk of text to a solution's streamedOutput. O(1) performance.
+   * @param imageUrl The unique identifier for the solution to update.
+   * @param chunk The piece of text to append.
+   */
+  appendStreamedOutput: (imageUrl, chunk) =>
+    set((state) => {
+      const currentSolution = state.imageSolutions.get(imageUrl);
+      if (!currentSolution) return state;
+
+      const newSolutionsMap = new Map(state.imageSolutions);
+      newSolutionsMap.set(imageUrl, {
+        ...currentSolution,
+        streamedOutput: (currentSolution.streamedOutput || "") + chunk,
+      });
+
+      return { imageSolutions: newSolutionsMap };
+    }),
+
+  /**
+   * Clears the streamedOutput for a specific solution, setting it to null.
+   * This is useful if a user wants to manually clear a log or cancel an operation.
+   * O(1) performance.
+   * @param imageUrl The key of the solution to modify.
+   */
+  clearStreamedOutput: (imageUrl: string) =>
+    set((state) => {
+      const currentSolution = state.imageSolutions.get(imageUrl);
+      // Do nothing if the solution doesn't exist.
+      if (!currentSolution) {
+        return state;
+      }
+
+      const newSolutionsMap = new Map(state.imageSolutions);
+      // Create a new solution object with streamedOutput set to null.
+      newSolutionsMap.set(imageUrl, {
+        ...currentSolution,
+        streamedOutput: null,
+      });
+
+      return { imageSolutions: newSolutionsMap };
+    }),
 
   /**
    * Removes solutions associated with a given set of image URLs.
-   * Useful for reprocessing failed items without creating duplicates.
+   * The order of the remaining items is preserved.
    */
   removeSolutionsByUrls: (urlsToRemove) =>
-    set((state) => ({
-      imageSolutions: state.imageSolutions.filter(
-        (sol) => !urlsToRemove.has(sol.imageUrl),
-      ),
-    })),
+    set((state) => {
+      const newSolutionsMap = new Map(state.imageSolutions);
+      urlsToRemove.forEach((url) => {
+        newSolutionsMap.delete(url);
+      });
+      return { imageSolutions: newSolutionsMap };
+    }),
 
   /**
    * Clears all solutions from the state.
    */
-  clearAllSolutions: () => set({ imageSolutions: [] }),
+  clearAllSolutions: () => set({ imageSolutions: new Map() }),
 
-  // Simple setters for selection state
+  /**
+   * Sets the currently selected image URL.
+   */
   setSelectedImage: (selectedImage) => set({ selectedImage }),
+
+  /**
+   * Sets the index of the currently selected problem for the selected image.
+   */
   setSelectedProblem: (selectedProblem) => set({ selectedProblem }),
 
+  /**
+   * Sets the global working state, e.g., for a global loading indicator.
+   */
   setWorking: (isWorking) => set({ isWorking }),
 }));

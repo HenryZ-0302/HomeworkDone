@@ -18,6 +18,7 @@ import ProblemList from "../ProblemList";
 import SolutionViewer from "../SolutionViewer";
 import type { ImproveResponse } from "@/ai/response";
 import { PhotoProvider, PhotoView } from "react-photo-view";
+import StreamingOutputDisplay from "../StreamingOutputDisplay";
 
 export interface OrderedSolution {
   item: FileItem;
@@ -36,16 +37,18 @@ export default function SolutionsArea() {
     isWorking,
   } = useProblemsStore((s) => s);
   const viewerRef = useRef<HTMLElement | null>(null);
+
   // Build a solutions list that matches the visual order of the uploaded items.
   const orderedSolutions: OrderedSolution[] = useMemo(() => {
-    const byUrl = new Map(imageSolutions.map((s) => [s.imageUrl, s]));
     return items
-      .filter((it) => byUrl.has(it.url)) // Only include items that have a solution entry.
-      .map((it) => ({
-        item: it,
-        solutions: byUrl.get(it.url)!,
+      .filter((item) => imageSolutions.has(item.url)) // Use the map directly for an efficient O(1) check.
+      .map((item) => ({
+        item: item,
+        // Retrieve the solution directly from the map. The `!` is safe
+        // because the filter step guarantees the key exists.
+        solutions: imageSolutions.get(item.url)!,
       }));
-  }, [items, imageSolutions]); // Dependencies remain correct
+  }, [items, imageSolutions]);
 
   // Derive the index of the currently selected image.
   const currentImageIdx = useMemo(() => {
@@ -138,6 +141,22 @@ export default function SolutionsArea() {
     }
   };
 
+  const renderStatusMessage = (entry: OrderedSolution) => {
+    switch (entry.item.status) {
+      case "success":
+        return "No problems were detected for this image.";
+
+      case "pending":
+        if (entry.solutions.streamedOutput) {
+          return "Reasoning...";
+        }
+        return "Processing in progress...";
+
+      case "failed":
+        return "Failed to process this image. Please try again.";
+    }
+  };
+
   return (
     <>
       <Card className="rounded-2xl p-4 shadow">
@@ -217,14 +236,20 @@ export default function SolutionsArea() {
                           </Collapsible>
                         )}
 
+                        {entry.solutions.status === "processing" && (
+                          <StreamingOutputDisplay
+                            output={entry.solutions.streamedOutput ?? null}
+                            title="Output..."
+                            placeholder="AI is Thinking"
+                          />
+                        )}
+
                         <Separator className="my-4" />
 
                         {/* Display problems or a message if none were found. */}
                         {entry.solutions.problems.length === 0 ? (
                           <div className="text-sm text-slate-400">
-                            {entry.solutions.success
-                              ? "No problems detected for this image."
-                              : "Failed to process this image. Please try again."}
+                            {renderStatusMessage(entry)}
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

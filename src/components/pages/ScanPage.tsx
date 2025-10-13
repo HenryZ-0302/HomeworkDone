@@ -25,8 +25,10 @@ export default function ScanPage() {
     removeImageItem, // Rename to avoid conflict with local function
     clearAllItems,
     addSolution: addImageSolution,
+    updateSolution,
     removeSolutionsByUrls,
     clearAllSolutions,
+    appendStreamedOutput,
   } = useProblemsStore((s) => s);
 
   // Zustand store for Gemini API configuration.
@@ -189,8 +191,20 @@ ${geminiTraits}
        * @param item The ImageItem to process.
        */
       const processOne = async (item: FileItem) => {
+        const callback = (text: string) => {
+          appendStreamedOutput(item.url, text);
+        };
+
         try {
           console.log(`Processing ${item.id}`);
+
+          // add the placeholder solution
+          addImageSolution({
+            imageUrl: item.url,
+            status: "processing",
+            problems: [],
+          });
+
           const buf = await item.file.arrayBuffer();
           const bytes = new Uint8Array(buf);
 
@@ -201,14 +215,15 @@ ${geminiTraits}
               item.mimeType,
               undefined,
               geminiModel,
+              callback,
             ),
           );
 
           const res = parseSolveResponse(resText);
 
-          addImageSolution({
-            imageUrl: item.url,
-            success: true,
+          // TODO: fail on parse error
+          updateSolution(item.url, {
+            status: "success",
             problems: res?.problems ?? [],
           });
 
@@ -227,7 +242,7 @@ ${geminiTraits}
 
           addImageSolution({
             imageUrl: item.url,
-            success: false,
+            status: "failed",
             problems: [failureProblem],
           });
 

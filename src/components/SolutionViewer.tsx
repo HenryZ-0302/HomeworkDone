@@ -51,7 +51,8 @@ export default function SolutionViewer({
   const getGemini = useGeminiStore((s) => s.getGemini);
   // const geminiTraits = useGeminiStore((s) => s.traits);
   const geminiModel = useGeminiStore((s) => s.geminiModel);
-  const { selectedProblem } = useProblemsStore((s) => s);
+  const { selectedProblem, appendStreamedOutput, clearStreamedOutput } =
+    useProblemsStore((s) => s);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [improveSolutionPrompt, setImproveSolutionPrompt] = useState("");
@@ -101,6 +102,10 @@ export default function SolutionViewer({
       problem: activeProblem.problem,
     });
 
+    const callback = (text: string) => {
+      appendStreamedOutput(entry.item.url, text);
+    };
+
     try {
       toast("Processing", {
         description:
@@ -112,6 +117,7 @@ export default function SolutionViewer({
         entry.item.mimeType,
         prompt,
         geminiModel,
+        callback,
       );
       // console.log(resText);
 
@@ -126,6 +132,8 @@ export default function SolutionViewer({
         return;
       }
       updateSolution(res);
+      // clear streaming output
+      clearStreamedOutput(entry.item.url);
     } catch (e) {
       toast("Failed to improve your solution", {
         description: `Something went wrong: ${e}`,
