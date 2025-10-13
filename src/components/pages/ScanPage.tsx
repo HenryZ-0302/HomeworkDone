@@ -15,16 +15,18 @@ import {
   type ProblemSolution,
 } from "@/store/problems-store";
 import SolutionsArea from "../areas/SolutionsArea";
+import { rasterizeImageFile } from "@/utils/rasterize";
 
 export default function ScanPage() {
   // Destructure all necessary state and new semantic actions from the store.
   const {
     imageItems: items,
-    addFileItems: addImageItems,
+    addFileItems,
     updateItemStatus,
-    removeImageItem, // Rename to avoid conflict with local function
+    removeImageItem,
+    updateFileItem,
     clearAllItems,
-    addSolution: addImageSolution,
+    addSolution,
     updateSolution,
     removeSolutionsByUrls,
     clearAllSolutions,
@@ -56,25 +58,42 @@ export default function ScanPage() {
   // Callback to add new files to the items list using the store action.
   const appendFiles = useCallback(
     (files: File[] | FileList, source: FileItem["source"]) => {
-      // Filter for image files only.
       const arr = Array.from(files).filter((f) => {
         return f.type.startsWith("image/") || f.type === "application/pdf";
       });
       if (arr.length === 0) return;
 
-      // Create new ImageItem objects for each valid file.
-      const next: FileItem[] = arr.map((file) => ({
+      const initialItems: FileItem[] = arr.map((file) => ({
         id: crypto.randomUUID(),
         file,
         mimeType: file.type,
-        status: "pending", // All new images start with a 'pending' status.
-        url: URL.createObjectURL(file), // Create a temporary URL for preview.
+        url: URL.createObjectURL(file),
         source,
+        status: file.type.startsWith("image/") ? "rasterizing" : "success",
       }));
-      // Use the semantic action to add items safely.
-      addImageItems(next);
+
+      addFileItems(initialItems);
+
+      initialItems.forEach((item) => {
+        if (item.status === "rasterizing") {
+          rasterizeImageFile(item.file)
+            .then((rasterizedResult) => {
+              updateFileItem(item.id, {
+                status: "pending",
+                url: rasterizedResult.url,
+                file: rasterizedResult.file,
+              });
+            })
+            .catch((error) => {
+              console.error(`Failed to rasterize ${item.file.name}:`, error);
+              updateFileItem(item.id, {
+                status: "failed",
+              });
+            });
+        }
+      });
     },
-    [addImageItems],
+    [addFileItems, updateFileItem],
   );
 
   // Function to remove a specific item from the list by its ID.
@@ -199,7 +218,7 @@ ${geminiTraits}
           console.log(`Processing ${item.id}`);
 
           // add the placeholder solution
-          addImageSolution({
+          addSolution({
             imageUrl: item.url,
             status: "processing",
             problems: [],
@@ -239,7 +258,7 @@ ${geminiTraits}
             explanation: String(err),
           };
 
-          addImageSolution({
+          addSolution({
             imageUrl: item.url,
             status: "failed",
             problems: [failureProblem],

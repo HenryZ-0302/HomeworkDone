@@ -9,7 +9,7 @@ export type FileItem = {
   mimeType: string;
   url: string; // Object URL for client-side preview
   source: "upload" | "camera"; // Origin of the image
-  status: "success" | "pending" | "failed";
+  status: "success" | "pending" | "failed" | "rasterizing";
 };
 
 // Type definition for the solution set of a single image.
@@ -42,6 +42,7 @@ export interface ProblemsState {
 
   // Actions for managing image items
   addFileItems: (items: FileItem[]) => void;
+  updateFileItem: (id: string, updates: Partial<FileItem>) => void;
   updateItemStatus: (id: string, status: FileItem["status"]) => void;
   removeImageItem: (id: string) => void;
   updateProblem: (
@@ -91,6 +92,18 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
     set((state) => ({
       imageItems: state.imageItems.map((item) =>
         item.id === id ? { ...item, status } : item,
+      ),
+    })),
+
+  /**
+   * Updates a specific file item with a set of partial updates.
+   * This is more flexible than updateItemStatus, allowing changes to any field,
+   * such as adding rasterization results or an error message.
+   */
+  updateFileItem: (id, updates) =>
+    set((state) => ({
+      imageItems: state.imageItems.map((item) =>
+        item.id === id ? { ...item, ...updates } : item,
       ),
     })),
 

@@ -15,7 +15,9 @@ export type PreviewCardProps = {
   removeItem: (id: string) => void;
 };
 
-function getColorClassByStatus(status: "success" | "failed" | "pending") {
+function getColorClassByStatus(
+  status: "success" | "failed" | "pending" | "rasterizing",
+) {
   switch (status) {
     case "success":
       return "border-green-500";
@@ -23,6 +25,8 @@ function getColorClassByStatus(status: "success" | "failed" | "pending") {
       return "border-red-500";
     case "pending":
       return "border-amber-500";
+    case "rasterizing":
+      return "border-cyan-500";
   }
 }
 
