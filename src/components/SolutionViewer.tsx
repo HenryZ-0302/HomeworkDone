@@ -114,7 +114,7 @@ export default function SolutionViewer({
               Answer
             </div>
             <div className="rounded-lg bg-slate-900/60 p-3 text-sm">
-              <MemoizedMarkdown source={activeProblem?.problem ?? ""} />
+              <MemoizedMarkdown source={activeProblem?.answer ?? ""} />
             </div>
             <div className="mt-2">
               <Button
@@ -132,7 +132,7 @@ export default function SolutionViewer({
               Explanation
             </div>
             <div className="rounded-lg bg-slate-900/40 p-3 text-sm leading-relaxed">
-              <MemoizedMarkdown source={activeProblem?.problem ?? ""} />
+              <MemoizedMarkdown source={activeProblem?.explanation ?? ""} />
             </div>
           </div>
 
