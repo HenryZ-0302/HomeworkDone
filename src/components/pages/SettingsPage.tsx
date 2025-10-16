@@ -59,6 +59,8 @@ export default function SettingsPage() {
   const {
     imageBinarizing: imagePostprocessing,
     setImageBinarizing: setImagePostprocessing,
+    showDonateBtn,
+    setShowDonateBtn,
   } = useSettingsStore((s) => s);
 
   // input box states
@@ -316,7 +318,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="base-url">Image Post-processing</Label>
+            <Label>Image Post-processing</Label>
             <div className="flex items-center space-x-2 mt-2">
               <div className="flex items-center gap-3">
                 <Checkbox
@@ -327,6 +329,22 @@ export default function SettingsPage() {
                   }
                 />
                 <Label htmlFor="image-pp-checkbox">Enable binarizing</Label>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>UI</Label>
+            <div className="flex items-center space-x-2 mt-2">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="show-donate-checkbox"
+                  checked={showDonateBtn}
+                  onCheckedChange={(state) =>
+                    setShowDonateBtn(state as boolean)
+                  }
+                />
+                <Label htmlFor="show-donate-checkbox">Show Donate button</Label>
               </div>
             </div>
           </div>

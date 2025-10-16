@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { Info } from "lucide-react";
+import { Info, StarIcon } from "lucide-react";
 import { useEffect, useMemo, useCallback, useRef } from "react";
 import { useGeminiStore } from "@/store/gemini-store";
 import ActionsCard from "../cards/ActionsCard";
@@ -17,6 +17,7 @@ import {
 import SolutionsArea from "../areas/SolutionsArea";
 import { useSettingsStore } from "@/store/settings-store";
 import { binarizeImageFile } from "@/utils/image-post-processing";
+import { Button } from "../ui/button";
 
 export default function ScanPage() {
   // Destructure all necessary state and new semantic actions from the store.
@@ -45,6 +46,8 @@ export default function ScanPage() {
 
   // State to track if the AI is currently processing images.
   const setWorking = useProblemsStore((s) => s.setWorking);
+
+  const showDonateBtn = useSettingsStore((s) => s.showDonateBtn);
 
   // Effect hook to clean up object URLs when the component unmounts or items change.
   useEffect(() => {
@@ -310,10 +313,18 @@ ${geminiTraits}
   return (
     <div className="min-h-screen text-slate-100">
       <div className="mx-auto max-w-7xl px-6 py-8">
-        <header className="mb-6 flex items-center justify-between">
+        <header className="mb-6 flex space-x-4 items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">
             Scan your homework
           </h1>
+          {showDonateBtn && (
+            <Button className="flex-1" variant="secondary" asChild>
+              <a href="https://996every.day/donate" target="_blank">
+                <StarIcon />
+                Donate Now
+              </a>
+            </Button>
+          )}
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <Info className="h-4 w-4" /> Images stay local. We never upload
             without your action.
