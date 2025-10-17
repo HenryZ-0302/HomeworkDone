@@ -19,6 +19,7 @@ import SolutionViewer from "../SolutionViewer";
 import type { ImproveResponse } from "@/ai/response";
 import { PhotoProvider, PhotoView } from "react-photo-view";
 import StreamingOutputDisplay from "../StreamingOutputDisplay";
+import { useTranslation } from "react-i18next";
 
 export interface OrderedSolution {
   item: FileItem;
@@ -26,6 +27,7 @@ export interface OrderedSolution {
 }
 
 export default function SolutionsArea() {
+  const { t } = useTranslation("commons", { keyPrefix: "solutions" });
   const {
     imageItems: items,
     imageSolutions,
@@ -161,7 +163,7 @@ export default function SolutionsArea() {
   return (
     <>
       <Card className="rounded-2xl p-4 shadow">
-        <CardTitle>Solutions</CardTitle>
+        <CardTitle>{t("title")}</CardTitle>
         <CardContent>
           {/* Focusable region to capture keyboard shortcuts for navigation. */}
           <div
@@ -172,9 +174,7 @@ export default function SolutionsArea() {
             {/* Conditional rendering based on whether solutions are available. */}
             {!orderedSolutions.length ? (
               <div className="text-sm text-gray-400">
-                {isWorking
-                  ? "Analyzing... extracting problems and solutions from your images."
-                  : 'No solutions yet. Add images and click "Let\'s Skid" to see results here.'}
+                {isWorking ? t("analyzing") : t("idle")}
               </div>
             ) : (
               <div className="space-y-4">

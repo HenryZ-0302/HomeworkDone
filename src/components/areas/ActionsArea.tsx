@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useProblemsStore } from "@/store/problems-store";
 import { Kbd } from "../ui/kbd";
+import { useTranslation } from "react-i18next";
 
 export type ActionsAreaProps = {
   startScan: () => Promise<void>;
@@ -16,6 +17,8 @@ export default function ActionsArea({
   itemsLength,
   clearAll,
 }: ActionsAreaProps) {
+  const { t } = useTranslation("commons", { keyPrefix: "actions" });
+
   const isWorking = useProblemsStore((s) => s.isWorking);
   const handleSkidBtnClicked = () => {
     if (isWorking) return;
@@ -60,9 +63,9 @@ export default function ActionsArea({
       >
         <Trash2 className="mr-2 h-4 w-4" />
         {!confirmedClear ? (
-          <label>Clear All</label>
+          <label>{t("clear-all")}</label>
         ) : (
-          <label>Click again to confirm</label>
+          <label>{t("clear-confirmation")}</label>
         )}{" "}
         <Kbd>Ctrl+4</Kbd>
       </Button>
@@ -74,11 +77,11 @@ export default function ActionsArea({
       >
         {isWorking ? (
           <>
-            <Loader2Icon className="animate-spin" /> Processing...
+            <Loader2Icon className="animate-spin" /> {t("processing")}
           </>
         ) : (
           <>
-            Let's Skid <Kbd>Ctrl+3</Kbd>
+            {t("scan")} <Kbd>Ctrl+3</Kbd>
           </>
         )}
       </Button>

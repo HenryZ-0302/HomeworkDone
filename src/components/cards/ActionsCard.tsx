@@ -8,6 +8,7 @@ import UploadArea from "../areas/UploadArea";
 import { useNavigate } from "react-router-dom";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Kbd } from "../ui/kbd";
+import { useTranslation } from "react-i18next";
 
 export type ActionsCardProps = {
   items: FileItem[];
@@ -24,6 +25,7 @@ export default function ActionsCard({
   clearAll,
   startScan,
 }: ActionsCardProps) {
+  const { t } = useTranslation("commons", { keyPrefix: "actions" });
   const navigate = useNavigate();
 
   const handleSettingsBtnClick = () => {
@@ -35,7 +37,7 @@ export default function ActionsCard({
   return (
     <Card className="md:col-span-1 border-white/10 backdrop-blur">
       <CardHeader>
-        <CardTitle className="text-base">Add Images</CardTitle>
+        <CardTitle className="text-base">{t("title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <UploadArea appendFiles={appendFiles} />
@@ -55,7 +57,7 @@ export default function ActionsCard({
           variant="secondary"
           onClick={handleSettingsBtnClick}
         >
-          Settings <Kbd>Ctrl+5</Kbd>
+          {t("settings")} <Kbd>Ctrl+5</Kbd>
         </Button>
       </CardContent>
     </Card>

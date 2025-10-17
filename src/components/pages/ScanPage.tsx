@@ -18,8 +18,10 @@ import SolutionsArea from "../areas/SolutionsArea";
 import { useSettingsStore } from "@/store/settings-store";
 import { binarizeImageFile } from "@/utils/image-post-processing";
 import { Button } from "../ui/button";
+import { useTranslation } from "react-i18next";
 
 export default function ScanPage() {
+  const { t } = useTranslation("commons", { keyPrefix: "scan-page" });
   // Destructure all necessary state and new semantic actions from the store.
   const {
     imageItems: items,
@@ -311,17 +313,17 @@ ${geminiTraits}
   };
 
   return (
-    <div className="min-h-screen text-slate-100">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <header className="mb-6 flex space-x-4 items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Scan your homework
+            {t("title")}
           </h1>
           {showDonateBtn && (
             <Button className="flex-1" variant="secondary" asChild>
               <a href="https://996every.day/donate" target="_blank">
                 <StarIcon />
-                Donate Now
+                {t("donate-btn")}
               </a>
             </Button>
           )}

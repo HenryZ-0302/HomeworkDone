@@ -1,4 +1,5 @@
 import { Badge } from "./ui/badge";
+import { useTranslation } from "react-i18next";
 
 function bytesToReadable(size: number) {
   const units = ["B", "KB", "MB", "GB"];
@@ -16,14 +17,20 @@ export type InfoAreaProps = {
 };
 
 export default function InfoArea({ itemsLength, totalBytes }: InfoAreaProps) {
+  const { t } = useTranslation("commons", { keyPrefix: "uploads-info" });
   return (
     <div className="flex items-center justify-between text-sm">
-      <span className="text-slate-300">Selected</span>
+      <span className="dark:text-slate-300">{t("selected")}</span>
       <div className="flex items-center gap-2">
-        <Badge variant="secondary" className="bg-slate-800/80">
+        <Badge
+          variant="secondary"
+          className="text-white dark:text-black bg-slate-800/80"
+        >
           {itemsLength}
         </Badge>
-        <span className="text-slate-400">{bytesToReadable(totalBytes)}</span>
+        <span className="text-slate-700 dark:text-slate-400">
+          {bytesToReadable(totalBytes)}
+        </span>
       </div>
     </div>
   );

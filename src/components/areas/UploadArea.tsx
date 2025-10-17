@@ -11,12 +11,15 @@ import {
 import { useHotkeys } from "react-hotkeys-hook";
 import { useProblemsStore, type FileItem } from "@/store/problems-store";
 import { Kbd } from "../ui/kbd";
+import { useTranslation } from "react-i18next";
 
 export type UploadAreaProps = {
   appendFiles: (files: File[] | FileList, source: FileItem["source"]) => void;
 };
 
 export default function UploadArea({ appendFiles }: UploadAreaProps) {
+  const { t } = useTranslation("commons", { keyPrefix: "upload-area" });
+
   const isWorking = useProblemsStore((s) => s.isWorking);
   // const [isDragging, setIsDragging] = useState(false);
   const [cameraTipOpen, setCameraTipOpen] = useState(false);
@@ -40,20 +43,9 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
   useHotkeys("ctrl+1", handleUploadBtnClicked);
   useHotkeys("ctrl+2", handleCameraBtnClicked);
 
-  // const onDrop = useCallback(
-  //   (e: React.DragEvent<HTMLDivElement>) => {
-  //     e.preventDefault();
-  //     setIsDragging(false);
-  //     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-  //       appendFiles(e.dataTransfer.files, "upload");
-  //     }
-  //   },
-  //   [appendFiles],
-  // );
-
   return (
     <>
-      <p className="text-sm">PDF & Image files are supported</p>
+      <p className="text-sm">{t("upload-tip")}</p>
       <div className="flex gap-2">
         <input
           ref={uploadInputRef}
@@ -73,7 +65,9 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
           disabled={isWorking}
           onClick={handleUploadBtnClicked}
         >
-          <Upload className="mr-2 h-4 w-4" /> Upload Files <Kbd>Ctrl+1</Kbd>
+          <Upload className="mr-2 h-4 w-4" />
+          <label>{t("upload")}</label>
+          <Kbd>Ctrl+1</Kbd>
         </Button>
       </div>
       <div className="flex gap-2">
@@ -97,7 +91,9 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
           disabled={isWorking}
           onClick={handleCameraBtnClicked}
         >
-          <Camera className="mr-2 h-4 w-4" /> Take Photo <Kbd>Ctrl+2</Kbd>
+          <Camera className="mr-2 h-4 w-4" />
+          <label>{t("take-photo")}</label>
+          <Kbd>Ctrl+2</Kbd>
         </Button>
         <Button
           variant="ghost"

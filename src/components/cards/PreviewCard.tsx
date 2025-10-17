@@ -8,6 +8,7 @@ import { twMerge } from "tailwind-merge";
 import type { FileItem } from "@/store/problems-store";
 import { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export type PreviewCardProps = {
   items: FileItem[];
@@ -35,6 +36,8 @@ export default function PreviewCard({
   removeItem,
   appendFiles,
 }: PreviewCardProps) {
+  const { t } = useTranslation("commons", { keyPrefix: "preview" });
+
   const [isDragging, setIsDragging] = useState(false);
 
   const onDrop = useCallback(
@@ -51,7 +54,7 @@ export default function PreviewCard({
   return (
     <Card className="md:col-span-2 border-white/10 backdrop-blur">
       <CardHeader>
-        <CardTitle className="text-base">Preview</CardTitle>
+        <CardTitle className="text-base">{t("title")}</CardTitle>
       </CardHeader>
       <CardContent
         className="flex flex-col gap-2"
@@ -73,9 +76,13 @@ export default function PreviewCard({
           >
             <ImageIcon className="mb-2 h-6 w-6" />
             <p className="text-sm">
-              No images yet. Upload or take a photo to begin.
+              {/* No images yet. Upload or take a photo to begin. */}
+              {t("no-files")}
             </p>
-            <p className="text-sm">You can drag your files to this panel.</p>
+            <p className="text-sm">
+              {/* You can drag your files to this panel. */}
+              {t("drag-tip")}
+            </p>
           </div>
         ) : (
           <ScrollArea className="rounded-lg">
