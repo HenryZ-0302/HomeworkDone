@@ -26,13 +26,13 @@ interface Resources {
         "desc": "Please make sure you know what you are doing.",
         "image-post-processing": {
           "binarizing": "Enable binarizing",
-          "title": "Image Post-processing",
-          "ui": {
-            "show-donate-btn": "Show donate button",
-            "title": "UI"
-          }
+          "title": "Image Post-processing"
         },
-        "title": "Advanced Settings"
+        "title": "Advanced Settings",
+        "ui": {
+          "show-donate-btn": "Show donate button",
+          "title": "UI"
+        }
       },
       "api-credentials": {
         "desc": "Enter your Google AI Studio API key to connect to Gemini.",

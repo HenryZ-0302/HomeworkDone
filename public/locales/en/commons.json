@@ -65,11 +65,11 @@
       },
       "image-post-processing": {
         "title": "Image Post-processing",
-        "binarizing": "Enable binarizing",
-        "ui": {
-          "title": "UI",
-          "show-donate-btn": "Show donate button"
-        }
+        "binarizing": "Enable binarizing"
+      },
+      "ui": {
+        "title": "UI",
+        "show-donate-btn": "Show donate button"
       }
     }
   }
