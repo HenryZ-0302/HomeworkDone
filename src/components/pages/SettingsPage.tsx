@@ -280,7 +280,7 @@ export default function SettingsPage() {
                 onClick={clearTraits}
                 disabled={!traits}
               >
-                Clear
+                {t("clear-input")}
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">{t("traits.desc")}</p>
@@ -291,15 +291,14 @@ export default function SettingsPage() {
       {/* Card for Advanced Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Advanced Settings</CardTitle>
-          <CardDescription>
-            Optionally provide a custom base URL for API requests (e.g., for a
-            proxy).
-          </CardDescription>
+          <CardTitle>{t("advanced.title")}</CardTitle>
+          <CardDescription>{t("advanced.desc")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <div className="space-y-2">
-            <Label htmlFor="base-url">Custom Base URL</Label>
+            <Label htmlFor="base-url">
+              {t("advanced.custom-base-url.title")}
+            </Label>
             <div className="flex items-center space-x-2">
               <Input
                 id="base-url"
@@ -314,13 +313,13 @@ export default function SettingsPage() {
                 onClick={clearGeminiBaseUrl}
                 disabled={!geminiBaseUrl}
               >
-                Clear
+                {t("clear-input")}
               </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Image Post-processing</Label>
+            <Label>{t("advanced.image-post-processing.title")}</Label>
             <div className="flex items-center space-x-2 mt-2">
               <div className="flex items-center gap-3">
                 <Checkbox
@@ -330,13 +329,15 @@ export default function SettingsPage() {
                     setImagePostprocessing(state as boolean)
                   }
                 />
-                <Label htmlFor="image-pp-checkbox">Enable binarizing</Label>
+                <Label htmlFor="image-pp-checkbox">
+                  {t("advanced.image-post-processing.binarizing")}
+                </Label>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>UI</Label>
+            <Label>{t("advanced.ui.title")}</Label>
             <div className="flex items-center space-x-2 mt-2">
               <div className="flex items-center gap-3">
                 <Checkbox
@@ -346,7 +347,9 @@ export default function SettingsPage() {
                     setShowDonateBtn(state as boolean)
                   }
                 />
-                <Label htmlFor="show-donate-checkbox">Show Donate button</Label>
+                <Label htmlFor="show-donate-checkbox">
+                  {t("advanced.ui.show-donate-btn")}
+                </Label>
               </div>
             </div>
           </div>

@@ -19,6 +19,21 @@ interface Resources {
       "title": "Scan your homework"
     },
     "settings-page": {
+      "advanced": {
+        "custom-base-url": {
+          "title": "Custom Gemini API base URL"
+        },
+        "desc": "Please make sure you know what you are doing.",
+        "image-post-processing": {
+          "binarizing": "Enable binarizing",
+          "title": "Image Post-processing",
+          "ui": {
+            "show-donate-btn": "Show donate button",
+            "title": "UI"
+          }
+        },
+        "title": "Advanced Settings"
+      },
       "api-credentials": {
         "desc": "Enter your Google AI Studio API key to connect to Gemini.",
         "title": "API Credentials"
