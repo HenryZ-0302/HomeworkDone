@@ -328,8 +328,7 @@ ${geminiTraits}
             </Button>
           )}
           <div className="flex items-center gap-2 text-xs text-slate-400">
-            <Info className="h-4 w-4" /> Images stay local. We never upload
-            without your action.
+            <Info className="h-4 w-4" /> {t("tip")}
           </div>
         </header>
 

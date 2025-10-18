@@ -29,8 +29,11 @@ import { cn } from "@/lib/utils";
 import { Kbd } from "../ui/kbd";
 import { useSettingsStore } from "@/store/settings-store";
 import { Checkbox } from "../ui/checkbox";
+import { useTranslation } from "react-i18next";
 
 export default function SettingsPage() {
+  const { t } = useTranslation("commons", { keyPrefix: "settings-page" });
+
   // API Key state and actions
   const geminiKey = useGeminiStore((s) => s.geminiKey);
   const setGeminiKey = useGeminiStore((s) => s.setGeminiKey);
@@ -111,15 +114,13 @@ export default function SettingsPage() {
       </h1>
 
       <Button className="w-full" onClick={handleBack}>
-        Back <Kbd>ESC</Kbd>
+        {t("back")} <Kbd>ESC</Kbd>
       </Button>
       {/* Card for API Credentials */}
       <Card>
         <CardHeader>
-          <CardTitle>API Credentials</CardTitle>
-          <CardDescription>
-            Enter your Google AI Studio API key to connect to Gemini.
-          </CardDescription>
+          <CardTitle>{t("api-credentials.title")}</CardTitle>
+          <CardDescription>{t("api-credentials.desc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -141,7 +142,7 @@ export default function SettingsPage() {
                 onClick={clearGeminiKey}
                 disabled={!hasKey()}
               >
-                Clear
+                {t("clear-input")}
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -156,15 +157,13 @@ export default function SettingsPage() {
       {/* Card for Model Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle>Model Configuration</CardTitle>
-          <CardDescription>
-            Choose the model and define the AI's behavior.
-          </CardDescription>
+          <CardTitle>{t("model.title")}</CardTitle>
+          <CardDescription>{t("model.desc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Model Selection Dropdown */}
           <div className="space-y-2">
-            <Label htmlFor="gemini-model">Model</Label>
+            <Label htmlFor="gemini-model">{t("model.sel.title")}</Label>
             <Popover open={modelPopoverOpen} onOpenChange={setModelPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -179,8 +178,8 @@ export default function SettingsPage() {
                       )?.displayName ??
                       (availableModels.length === 0
                         ? geminiModel
-                        : `Unknown Model (${geminiModel})`))
-                    : "Select model..."}
+                        : t("model.sel.unknown", { name: geminiModel })))
+                    : t("model.sel.empty")}
                   <ChevronsUpDown className="opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -188,7 +187,9 @@ export default function SettingsPage() {
                 <Command>
                   <CommandInput placeholder="Search model..." className="h-9" />
                   <CommandList>
-                    <CommandEmpty>No model available</CommandEmpty>
+                    <CommandEmpty>
+                      {t("model.sel.no-model-available")}
+                    </CommandEmpty>
                     <CommandGroup>
                       {availableModels.map((model) => (
                         <CommandItem
@@ -225,9 +226,9 @@ export default function SettingsPage() {
 
           {/* Thinking budget */}
           <div className="space-y-2">
-            <Label>Thinking Budget</Label>
+            <Label>{t("thinking.title")}</Label>
             <span className="text-sm text-muted-foreground">
-              Default: 8192 Tokens
+              {t("thinking.default")}
             </span>
             <div className="w-full flex items-center gap-2">
               {/* Slider container takes up all available space */}
@@ -258,7 +259,7 @@ export default function SettingsPage() {
 
           {/* AI Traits / System Prompt Textarea */}
           <div className="space-y-2">
-            <Label htmlFor="gemini-traits">System Prompt (Traits)</Label>
+            <Label htmlFor="gemini-traits">{t("traits.title")}</Label>
             <div className="relative">
               <Textarea
                 id="gemini-traits"
@@ -279,9 +280,7 @@ export default function SettingsPage() {
                 Clear
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Define the AI's personality, role, or instructions.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("traits.desc")}</p>
           </div>
         </CardContent>
       </Card>
@@ -351,7 +350,7 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
       <Button className="w-full" onClick={handleBack}>
-        Back <Kbd>ESC</Kbd>
+        {t("back")} <Kbd>ESC</Kbd>
       </Button>
     </div>
   );
