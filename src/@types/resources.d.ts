@@ -30,6 +30,7 @@ interface Resources {
         "sel": {
           "empty": "Select a model...",
           "no-model-available": "No available models",
+          "search-placeholder": "Search model...",
           "title": "Model",
           "unknown": "Unknown model ({{name, string}})"
         },

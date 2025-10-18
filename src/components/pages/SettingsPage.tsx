@@ -185,7 +185,10 @@ export default function SettingsPage() {
               </PopoverTrigger>
               <PopoverContent className="w-full p-0">
                 <Command>
-                  <CommandInput placeholder="Search model..." className="h-9" />
+                  <CommandInput
+                    placeholder={t("model.sel.search-placeholder")}
+                    className="h-9"
+                  />
                   <CommandList>
                     <CommandEmpty>
                       {t("model.sel.no-model-available")}
