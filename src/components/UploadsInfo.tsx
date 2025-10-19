@@ -22,10 +22,7 @@ export default function InfoArea({ itemsLength, totalBytes }: InfoAreaProps) {
     <div className="flex items-center justify-between text-sm">
       <span className="dark:text-slate-300">{t("selected")}</span>
       <div className="flex items-center gap-2">
-        <Badge
-          variant="secondary"
-          className="text-white dark:text-black bg-slate-800/80"
-        >
+        <Badge variant="secondary" className="text-white bg-slate-800/80">
           {itemsLength}
         </Badge>
         <span className="text-slate-700 dark:text-slate-400">
