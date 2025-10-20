@@ -66,6 +66,9 @@ interface Resources {
       "title": "Solutions"
     },
     "upload-area": {
+      "camera-tip": {
+        "title": "Taking photos on different devices"
+      },
       "take-photo": "Take Photo",
       "upload": "Upload Files",
       "upload-tip": "PDF and image files are supported"

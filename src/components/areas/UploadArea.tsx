@@ -108,16 +108,16 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
       <Dialog open={cameraTipOpen} onOpenChange={setCameraTipOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Taking photos on different devices</DialogTitle>
+            <DialogTitle>{t("camera-tip.title")}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 text-sm text-slate-300">
+          <div className="space-y-3 text-sm">
             <p>
               The <code>Take Photo</code> button uses the browser's native
               camera picker (<code>capture="environment"</code>). On phones, it
               opens the camera directly. On desktops, it usually falls back to
               the file chooser.
             </p>
-            <ul className="list-disc pl-5 text-slate-400">
+            <ul className="list-disc pl-5 dark:text-slate-400">
               <li>Prefer natural light and avoid glare.</li>
               <li>Fill the frame with the problem. Keep text sharp.</li>
               <li>One question per shot yields better recognition.</li>
