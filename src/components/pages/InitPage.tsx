@@ -147,7 +147,7 @@ export default function InitPage() {
                     {t("form.advanced.title")}
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="space-y-2">
+                    <div className="space-y-2 mx-1">
                       {/* Input for custom Gemini API Base URL */}
                       <Label htmlFor="base-url" className="text-xs">
                         {t("form.advanced.base-url-label")}
