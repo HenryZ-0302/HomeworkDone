@@ -221,7 +221,7 @@ export default function InitPage() {
         <div className="opacity-80">
           {t("footer.notice")}{" "}
           <a
-            href="https://github.com/cubewhy/skid-homework"
+            href="https://github.com/996-ai/skid-homework"
             className="underline"
           >
             {t("footer.source")}
