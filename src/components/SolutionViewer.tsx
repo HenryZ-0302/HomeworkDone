@@ -16,6 +16,7 @@ import {
   ImproveSolutionDialog,
   type ImproveSolutionDialogHandle,
 } from "./dialogs/ImproveSolutionDialog";
+import { useTranslation } from "react-i18next";
 
 export type SolutionViewerProps = {
   entry: OrderedSolution;
@@ -38,6 +39,7 @@ export default function SolutionViewer({
   ...props
 }: SolutionViewerProps) {
   const selectedProblem = useProblemsStore((s) => s.selectedProblem);
+  const { t } = useTranslation("commons", { keyPrefix: "solution-viewer" });
 
   const viewerRef = useRef<HTMLElement | null>(null);
 
@@ -53,9 +55,13 @@ export default function SolutionViewer({
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast("Copied", { description: "Answer copied to clipboard." });
+      toast(t("copy.success.title"), {
+        description: t("copy.success.description"),
+      });
     } catch {
-      toast("Copy failed", { description: "Please copy manually." });
+      toast(t("copy.failed.title"), {
+        description: t("copy.failed.description"),
+      });
     }
   };
 
@@ -93,11 +99,13 @@ export default function SolutionViewer({
     >
       <div className="rounded-xl border border-slate-700 p-4">
         <div className="mb-2 text-xs uppercase tracking-wide text-slate-400">
-          Problem{" "}
+          {t("progress.prefix")}{" "}
           <label className="font-extrabold text-amber-500">
             {selectedProblem + 1}
           </label>{" "}
-          of {entry.solutions.problems.length}
+          {t("progress.suffix", {
+            total: entry.solutions.problems.length,
+          })}
         </div>
 
         {/* Markdown renderer for problem, answer, and explanation. */}
@@ -111,7 +119,7 @@ export default function SolutionViewer({
         <div className="mt-4 space-y-4">
           <div>
             <div className="mb-1 text-sm font-medium text-slate-300">
-              Answer
+              {t("answer")}
             </div>
             <div className="rounded-lg bg-slate-900/60 p-3 text-sm">
               <MemoizedMarkdown source={activeProblem?.answer ?? ""} />
@@ -122,14 +130,14 @@ export default function SolutionViewer({
                 size="sm"
                 onClick={() => copyToClipboard(activeProblem?.answer ?? "")}
               >
-                Copy answer <Kbd>Ctrl+⇧+C</Kbd>
+                {t("copy.button")} <Kbd>Ctrl+⇧+C</Kbd>
               </Button>
             </div>
           </div>
 
           <div>
             <div className="mb-1 text-sm font-medium text-slate-300">
-              Explanation
+              {t("explanation")}
             </div>
             <div className="rounded-lg bg-slate-900/40 p-3 text-sm leading-relaxed">
               <MemoizedMarkdown source={activeProblem?.explanation ?? ""} />
@@ -146,14 +154,14 @@ export default function SolutionViewer({
           {/* Navigation controls for problems and images. */}
           <div className="flex items-center justify-between pt-2">
             <div className="text-xs text-slate-500">
-              Source image:&nbsp;
+              {t("source-image")}&nbsp;
               <a
                 href={entry.item.url}
                 target="_blank"
                 rel="noreferrer"
                 className="underline decoration-dotted"
               >
-                open preview
+                {t("open-preview")}
               </a>
             </div>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -163,7 +171,7 @@ export default function SolutionViewer({
                 onClick={goPrevProblem}
                 disabled={selectedProblem === 0}
               >
-                Prev <Kbd>⇧+␣</Kbd>
+                {t("navigation.prev-problem")} <Kbd>⇧+␣</Kbd>
               </Button>
               <Button
                 variant="outline"
@@ -173,13 +181,13 @@ export default function SolutionViewer({
                   selectedProblem >= entry.solutions.problems.length - 1
                 }
               >
-                Next <Kbd>␣</Kbd>
+                {t("navigation.next-problem")} <Kbd>␣</Kbd>
               </Button>
               <Button variant="outline" size="sm" onClick={goPrevImage}>
-                ⟵ Image <Kbd>⇧+TAB</Kbd>
+                {t("navigation.prev-image")} <Kbd>⇧+TAB</Kbd>
               </Button>
               <Button variant="outline" size="sm" onClick={goNextImage}>
-                Image ⟶ <Kbd>TAB</Kbd>
+                {t("navigation.next-image")} <Kbd>TAB</Kbd>
               </Button>
             </div>
           </div>

@@ -12,6 +12,7 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { Label } from "../ui/label";
+import { Trans, useTranslation } from "react-i18next";
 
 export default function InitPage() {
   const [key, setKey] = useState("");
@@ -22,6 +23,7 @@ export default function InitPage() {
 
   const navigate = useNavigate();
   const location = useLocation() as { state?: { from?: Location } };
+  const { t } = useTranslation("commons", { keyPrefix: "init-page" });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +74,7 @@ export default function InitPage() {
             SkidHomework
           </span>
         </div>
-        <div className="text-sm">Local • Private • Free</div>
+        <div className="text-sm">{t("tagline")}</div>
       </header>
 
       <main className="relative z-10 mx-auto max-w-6xl px-6 pb-20 pt-6">
@@ -85,10 +87,10 @@ export default function InitPage() {
               className="text-balance text-4xl font-bold leading-tight tracking-tight md:text-5xl"
             >
               <span className="bg-gradient-to-r from-indigo-300 via-white to-fuchsia-300 bg-clip-text text-transparent">
-                Welcome to SkidHomework
+                {t("headline.highlight")}
               </span>
               <br />
-              <span>Escape the homework grind.</span>
+              <span>{t("headline.subtitle")}</span>
             </motion.h1>
 
             <motion.p
@@ -97,9 +99,7 @@ export default function InitPage() {
               transition={{ duration: 0.6, delay: 0.08 }}
               className="mt-5 max-w-prose"
             >
-              Prefer Khan Academy–style self‑study but still get stuck with
-              endless assignments? SkidHomework runs locally, respects your
-              privacy, and helps you focus on learning instead of busywork.
+              {t("intro")}
             </motion.p>
 
             <motion.ul
@@ -109,16 +109,13 @@ export default function InitPage() {
               className="mt-6 grid gap-3 text-sm"
             >
               <li className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4" /> No Telemetry or spamming
-                calls. Just Gemini API
+                <ShieldCheck className="h-4 w-4" /> {t("features.telemetry")}
               </li>
               <li className="flex items-center gap-2">
-                <Camera className="h-4 w-4" /> Snap homework, get step‑by‑step
-                help
+                <Camera className="h-4 w-4" /> {t("features.camera")}
               </li>
               <li className="flex items-center gap-2">
-                <Rocket className="h-4 w-4" /> Fast setup — paste your Gemini
-                API key and go
+                <Rocket className="h-4 w-4" /> {t("features.setup")}
               </li>
             </motion.ul>
 
@@ -133,13 +130,13 @@ export default function InitPage() {
               <div className="flex w-full max-w-md items-center gap-3">
                 <Input
                   type="password"
-                  placeholder="Gemini API Key"
+                  placeholder={t("form.key-placeholder")}
                   value={key}
                   onChange={(e) => setKey(e.target.value)}
                   className="h-11 flex-1 focus-visible:ring-indigo-500"
                 />
                 <Button type="submit" className="h-11 px-5">
-                  Get My Time Back!
+                  {t("form.submit")}
                 </Button>
               </div>
 
@@ -147,24 +144,24 @@ export default function InitPage() {
               <Accordion type="single" collapsible className="w-full max-w-md">
                 <AccordionItem value="advanced-settings" className="border-b-0">
                   <AccordionTrigger className="text-sm hover:no-underline">
-                    Advanced
+                    {t("form.advanced.title")}
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-2">
                       {/* Input for custom Gemini API Base URL */}
                       <Label htmlFor="base-url" className="text-xs">
-                        Gemini API Base URL (Optional)
+                        {t("form.advanced.base-url-label")}
                       </Label>
                       <Input
                         id="base-url"
                         type="url"
-                        placeholder="https://generativelanguage.googleapis.com"
+                        placeholder={t("form.advanced.base-url-placeholder")}
                         value={baseUrl ?? ""}
                         onChange={(e) => setBaseUrl(e.target.value)}
                         className="placeholder:text-slate-500 focus-visible:ring-indigo-500"
                       />
                       <p className="text-xs text-slate-400">
-                        Leave blank to use the default Google API endpoint.
+                        {t("form.advanced.base-url-helper")}
                       </p>
                     </div>
                   </AccordionContent>
@@ -173,18 +170,22 @@ export default function InitPage() {
               {/* END: Advanced settings section */}
             </motion.form>
             <p className="mt-3 text-xs text-slate-400">
-              Get an API Key at{" "}
-              <a
-                href="https://aistudio.google.com/api-keys"
-                className="underline"
-              >
-                Google AI Studio
-              </a>
+              <Trans
+                t={t}
+                i18nKey="form.api-hint"
+                components={{
+                  link: (
+                    <a
+                      href="https://aistudio.google.com/api-keys"
+                      className="underline"
+                    />
+                  ),
+                }}
+              />
             </p>
 
             <p className="mt-3 text-xs text-slate-400">
-              We store your key locally using encrypted browser storage and
-              never send it to our servers.
+              {t("form.storage-note")}
             </p>
           </div>
 
@@ -197,18 +198,18 @@ export default function InitPage() {
             <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-6 shadow-2xl backdrop-blur">
               <div className="mb-4 flex items-center gap-2 text-slate-300">
                 <Camera className="h-5 w-5" />
-                <span className="text-sm">Homework Camera</span>
+                <span className="text-sm">{t("preview.title")}</span>
               </div>
               <div className="aspect-[16/10] w-full rounded-xl bg-gradient-to-br from-indigo-500/20 to-fuchsia-500/20 ring-1 ring-white/10" />
               <div className="mt-4 grid grid-cols-3 gap-3 text-xs text-slate-300">
                 <div className="rounded-lg border border-white/10 bg-slate-950/40 p-3">
-                  OCR
+                  {t("preview.ocr")}
                 </div>
                 <div className="rounded-lg border border-white/10 bg-slate-950/40 p-3">
-                  Steps
+                  {t("preview.steps")}
                 </div>
                 <div className="rounded-lg border border-white/10 bg-slate-950/40 p-3">
-                  Hints
+                  {t("preview.hints")}
                 </div>
               </div>
             </div>
@@ -218,12 +219,12 @@ export default function InitPage() {
 
       <footer className="relative z-10 mx-auto max-w-6xl px-6 pb-10 text-xs text-slate-500">
         <div className="opacity-80">
-          Licensed under GPLv3, created by cubewhy.{" "}
+          {t("footer.notice")}{" "}
           <a
             href="https://github.com/cubewhy/skid-homework"
             className="underline"
           >
-            Source Code
+            {t("footer.source")}
           </a>
         </div>
       </footer>

@@ -28,6 +28,7 @@ export interface OrderedSolution {
 
 export default function SolutionsArea() {
   const { t } = useTranslation("commons", { keyPrefix: "solutions" });
+  const { t: tCommon } = useTranslation("commons");
   const {
     imageItems: items,
     imageSolutions,
@@ -147,16 +148,16 @@ export default function SolutionsArea() {
   const renderStatusMessage = (entry: OrderedSolution) => {
     switch (entry.item.status) {
       case "success":
-        return "No problems were detected for this image.";
+        return t("status.success");
 
       case "pending":
         if (entry.solutions.streamedOutput) {
-          return "Reasoning...";
+          return t("status.stream");
         }
-        return "Processing in progress...";
+        return t("status.pending");
 
       case "failed":
-        return "Failed to process this image. Please try again.";
+        return t("status.failed");
     }
   };
 
@@ -169,7 +170,7 @@ export default function SolutionsArea() {
           <div
             tabIndex={0}
             className="outline-none"
-            aria-label="Solutions keyboard focus region (Tab/Shift+Tab for problems, Space/Shift+Space for images)"
+            aria-label={t("focus-region-aria")}
           >
             {/* Conditional rendering based on whether solutions are available. */}
             {!orderedSolutions.length ? (
@@ -190,7 +191,8 @@ export default function SolutionsArea() {
                   <TabsList className="flex flex-wrap gap-2">
                     {orderedSolutions.map((entry, idx) => (
                       <TabsTrigger key={entry.item.id} value={entry.item.url}>
-                        {entry.item.file.name || `File ${idx + 1}`}
+                        {entry.item.file.name ||
+                          t("tabs.fallback", { index: idx + 1 })}
                       </TabsTrigger>
                     ))}
                   </TabsList>
@@ -209,7 +211,10 @@ export default function SolutionsArea() {
                           <Collapsible defaultOpen>
                             <div className="flex items-center justify-between">
                               <div className="text-xs text-slate-400">
-                                Photo {idx + 1} • {entry.item.source}
+                                {t("photo-label", {
+                                  index: idx + 1,
+                                  source: tCommon(`sources.${entry.item.source}`),
+                                })}
                               </div>
                               <CollapsibleTrigger asChild>
                                 <Button
@@ -217,7 +222,7 @@ export default function SolutionsArea() {
                                   size="sm"
                                   className="h-7 px-2"
                                 >
-                                  Toggle Preview
+                                  {t("toggle-preview")}
                                 </Button>
                               </CollapsibleTrigger>
                             </div>
@@ -240,8 +245,9 @@ export default function SolutionsArea() {
                         {(entry.solutions.status === "processing" ||
                           entry.solutions.streamedOutput) && (
                           <StreamingOutputDisplay
+                            title={t("streaming.title")}
                             output={entry.solutions.streamedOutput ?? null}
-                            placeholder="AI is Thinking"
+                            placeholder={t("streaming.placeholder")}
                           />
                         )}
 

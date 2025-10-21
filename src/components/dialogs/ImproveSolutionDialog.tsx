@@ -21,6 +21,7 @@ import { renderImproveXml } from "@/ai/request";
 import { IMPROVE_SYSTEM_PROMPT } from "@/ai/prompts";
 import { uint8ToBase64 } from "@/utils/encoding";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export type ImproveSolutionDialogProps = {
   entry: OrderedSolution;
@@ -41,6 +42,7 @@ export const ImproveSolutionDialog = forwardRef<
   const { appendStreamedOutput, clearStreamedOutput } = useProblemsStore(
     (s) => s,
   );
+  const { t } = useTranslation("commons", { keyPrefix: "improve-dialog" });
 
   useImperativeHandle(ref, () => ({
     openDialog: () => {
@@ -56,8 +58,8 @@ export const ImproveSolutionDialog = forwardRef<
     if (!activeProblem) return;
     const ai = getGemini();
     if (!ai) {
-      toast("You're almost there", {
-        description: "You need to set your API key in settings to use the AI.",
+      toast(t("toasts.no-key.title"), {
+        description: t("toasts.no-key.description"),
       });
       return;
     }
@@ -80,9 +82,8 @@ export const ImproveSolutionDialog = forwardRef<
     };
 
     try {
-      toast("Processing", {
-        description:
-          "Improving your solution with AI...Please wait for a while...",
+      toast(t("toasts.processing.title"), {
+        description: t("toasts.processing.description"),
       });
       setImproving(true);
       const resText = await ai?.sendMedia(
@@ -98,9 +99,8 @@ export const ImproveSolutionDialog = forwardRef<
 
       // console.log(res);
       if (!res) {
-        toast("Failed to improve your solution", {
-          description:
-            "Failed to parse response, see the developer tools for more details.",
+        toast(t("toasts.failed.title"), {
+          description: t("toasts.failed.parse"),
         });
         return;
       }
@@ -108,8 +108,8 @@ export const ImproveSolutionDialog = forwardRef<
       // clear streaming output
       clearStreamedOutput(entry.item.url);
     } catch (e) {
-      toast("Failed to improve your solution", {
-        description: `Something went wrong: ${e}`,
+      toast(t("toasts.failed.title"), {
+        description: t("toasts.failed.description", { error: String(e) }),
       });
       return;
     } finally {
@@ -131,23 +131,20 @@ export const ImproveSolutionDialog = forwardRef<
       <DialogTrigger asChild>
         <Button variant="outline" disabled={isImproving}>
           {isImproving && <Loader2 className="animate-spin mr-2" />}
-          Improve the Solution <Kbd>/</Kbd>
+          {t("trigger")} <Kbd>/</Kbd>
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Improve the Solution</DialogTitle>
-          <DialogDescription>
-            Generate a more detailed solution using the current solution and
-            your prompt.
-          </DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
         <Textarea
           value={improveSolutionPrompt}
           onChange={(e) => setImproveSolutionPrompt(e.target.value)}
           onKeyDown={onKeyDown} // 在 Textarea 上监听快捷键
           className="h-40"
-          placeholder="Make it more detailed..."
+          placeholder={t("placeholder")}
         />
         <DialogFooter>
           <DialogClose asChild>
@@ -157,7 +154,7 @@ export const ImproveSolutionDialog = forwardRef<
               onClick={handleImproveSolution}
               disabled={!improveSolutionPrompt || isImproving}
             >
-              Submit <Kbd>Ctrl+Enter</Kbd>
+              {t("submit")} <Kbd>Ctrl+Enter</Kbd>
             </Button>
           </DialogClose>
         </DialogFooter>

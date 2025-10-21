@@ -1,6 +1,7 @@
 import { useProblemsStore } from "@/store/problems-store";
 import type { OrderedSolution } from "./areas/SolutionsArea";
 import { Button } from "./ui/button";
+import { useTranslation } from "react-i18next";
 
 export type ProblemListProps = {
   entry: OrderedSolution;
@@ -8,6 +9,7 @@ export type ProblemListProps = {
 
 export default function ProblemList({ entry }: ProblemListProps) {
   const { selectedProblem, setSelectedProblem } = useProblemsStore((s) => s);
+  const { t } = useTranslation("commons", { keyPrefix: "problem-list" });
 
   return (
     <aside className="md:col-span-1">
@@ -20,7 +22,9 @@ export default function ProblemList({ entry }: ProblemListProps) {
               onClick={() => setSelectedProblem(i)}
             >
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold">Problem {i + 1}</div>
+                <div className="text-xs font-semibold">
+                  {t("item-label", { index: i + 1 })}
+                </div>
                 <div className="truncate text-xs opacity-80">{p.problem}</div>
               </div>
             </Button>

@@ -37,6 +37,7 @@ export default function PreviewCard({
   appendFiles,
 }: PreviewCardProps) {
   const { t } = useTranslation("commons", { keyPrefix: "preview" });
+  const { t: tCommon } = useTranslation("commons");
 
   const [isDragging, setIsDragging] = useState(false);
 
@@ -108,17 +109,15 @@ export default function PreviewCard({
                       <PhotoView src={it.url}>
                         <img
                           src={it.url}
-                          alt="homework"
+                          alt={t("image-alt")}
                           className="h-40 w-full object-cover cursor-pointer"
                         />
                       </PhotoView>
                     ) : (
                       <div className="h-40 w-full object-cover flex items-center justify-center select-none">
-                        {it.mimeType === "application/pdf" ? (
-                          <>PDF</>
-                        ) : (
-                          <>Unknown Type</>
-                        )}
+                        {it.mimeType === "application/pdf"
+                          ? t("file-type.pdf")
+                          : t("file-type.unknown")}
                       </div>
                     )}
                     <figcaption className="flex items-center justify-between px-3 py-2 text-xs text-slate-300">
@@ -126,13 +125,13 @@ export default function PreviewCard({
                         {it.file.name}
                       </span>
                       <Badge variant="outline" className="border-white/20">
-                        {it.source}
+                        {tCommon(`sources.${it.source}`)}
                       </Badge>
                     </figcaption>
                     <button
                       className="absolute right-2 top-2 hidden rounded-md bg-black/40 p-1 text-white/90 backdrop-blur transition group-hover:block"
                       onClick={() => removeItem(it.id)}
-                      aria-label="Remove image"
+                      aria-label={t("remove-aria")}
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -152,7 +151,7 @@ export default function PreviewCard({
             }}
           >
             <Trash2 />
-            Drag to here to cancel
+            {t("drop-cancel")}
           </div>
         )}
       </CardContent>

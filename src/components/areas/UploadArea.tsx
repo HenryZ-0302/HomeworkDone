@@ -11,7 +11,7 @@ import {
 import { useHotkeys } from "react-hotkeys-hook";
 import { useProblemsStore, type FileItem } from "@/store/problems-store";
 import { Kbd } from "../ui/kbd";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
 export type UploadAreaProps = {
   appendFiles: (files: File[] | FileList, source: FileItem["source"]) => void;
@@ -19,6 +19,9 @@ export type UploadAreaProps = {
 
 export default function UploadArea({ appendFiles }: UploadAreaProps) {
   const { t } = useTranslation("commons", { keyPrefix: "upload-area" });
+  const cameraTips = t("camera-tip.tips", {
+    returnObjects: true,
+  }) as string[];
 
   const isWorking = useProblemsStore((s) => s.isWorking);
   // const [isDragging, setIsDragging] = useState(false);
@@ -99,7 +102,7 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
           variant="ghost"
           size="icon"
           onClick={() => setCameraTipOpen(true)}
-          aria-label="Camera help"
+          aria-label={t("camera-help-aria")}
         >
           <Info className="h-4 w-4" />
         </Button>
@@ -112,19 +115,24 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
           </DialogHeader>
           <div className="space-y-3 text-sm">
             <p>
-              The <code>Take Photo</code> button uses the browser's native
-              camera picker (<code>capture="environment"</code>). On phones, it
-              opens the camera directly. On desktops, it usually falls back to
-              the file chooser.
+              <Trans
+                i18nKey="upload-area.camera-tip.intro"
+                components={{
+                  takePhoto: <code />,
+                  capture: <code />,
+                }}
+              />
             </p>
             <ul className="list-disc pl-5 dark:text-slate-400">
-              <li>Prefer natural light and avoid glare.</li>
-              <li>Fill the frame with the problem. Keep text sharp.</li>
-              <li>One question per shot yields better recognition.</li>
+              {cameraTips.map((tip, index) => (
+                <li key={index}>{tip}</li>
+              ))}
             </ul>
           </div>
           <DialogFooter>
-            <Button onClick={() => setCameraTipOpen(false)}>Got it</Button>
+            <Button onClick={() => setCameraTipOpen(false)}>
+              {t("camera-tip.close")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -109,9 +109,7 @@ export default function SettingsPage() {
   return (
     // Main container for the settings page with padding and max-width for better layout.
     <div className="mx-auto max-w-3xl space-y-8 p-4 md:p-8">
-      <h1 className="text-2xl font-bold tracking-tight">
-        SkidHomework Settings
-      </h1>
+      <h1 className="text-2xl font-bold tracking-tight">{t("heading")}</h1>
 
       <Button className="w-full" onClick={handleBack}>
         {t("back")} <Kbd>ESC</Kbd>
@@ -124,13 +122,13 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="gemini-key">Gemini API Key</Label>
+            <Label htmlFor="gemini-key">{t("api-credentials.label")}</Label>
             <div className="flex items-center space-x-2">
               {/* Input for the API key. type="password" obscures the value. */}
               <Input
                 id="gemini-key"
                 type="password"
-                placeholder="Enter your API key here"
+                placeholder={t("api-credentials.placeholder")}
                 // Use `geminiKey || ''` to ensure the input is always a controlled component.
                 value={localGeminiKey || ""}
                 onBlur={applyGeminiKey}
@@ -147,8 +145,8 @@ export default function SettingsPage() {
             </div>
             <p className="text-sm text-muted-foreground">
               {hasKey()
-                ? "Your API key is set and stored securely."
-                : "Your API key is not set."}
+                ? t("api-credentials.status.set")
+                : t("api-credentials.status.unset")}
             </p>
           </div>
         </CardContent>
@@ -255,7 +253,7 @@ export default function SettingsPage() {
                   onChange={(e) => setThinkBudget(parseInt(e.target.value))}
                   type="number"
                 />{" "}
-                Tokens
+                {t("thinking.tokens-unit")}
               </span>
             </div>
           </div>
@@ -266,7 +264,7 @@ export default function SettingsPage() {
             <div className="relative">
               <Textarea
                 id="gemini-traits"
-                placeholder="e.g., You are a helpful assistant that speaks in a friendly and professional tone."
+                placeholder={t("traits.placeholder")}
                 // Use `traits || ''` to handle the optional string value.
                 value={traits || ""}
                 onChange={(e) => setTraits(e.target.value)}
@@ -303,7 +301,7 @@ export default function SettingsPage() {
               <Input
                 id="base-url"
                 type="text"
-                placeholder="https://generativelanguage.googleapis.com"
+                placeholder={t("advanced.custom-base-url.placeholder")}
                 value={localGeminiBaseUrl || ""}
                 onBlur={applyGeminiBaseUrl}
                 onChange={(e) => setLocalGeminiBaseUrl(e.target.value)}

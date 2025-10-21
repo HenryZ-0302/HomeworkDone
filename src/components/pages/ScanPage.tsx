@@ -162,16 +162,14 @@ export default function ScanPage() {
   const startScan = async () => {
     // Validation checks... (omitted for brevity, assume they pass)
     if (!geminiModel || geminiModel.length === 0) {
-      toast("You're almost there", {
-        description:
-          "Please specific a Gemini model in settings to start skidding!",
+      toast(t("toasts.no-model.title"), {
+        description: t("toasts.no-model.description"),
       });
       return;
     }
     if (!geminiKey) {
-      toast("You're almost there", {
-        description:
-          "Please set a Gemini API key before you scan your homework.",
+      toast(t("toasts.no-key.title"), {
+        description: t("toasts.no-key.description"),
       });
       return;
     }
@@ -182,14 +180,16 @@ export default function ScanPage() {
     );
 
     if (itemsToProcess.length === 0) {
-      toast("All images processed", {
-        description: "There are no pending or failed images to scan.",
+      toast(t("toasts.all-processed.title"), {
+        description: t("toasts.all-processed.description"),
       });
       return;
     }
 
-    toast("Working...", {
-      description: `Sending ${itemsToProcess.length} file(s) to Gemini... Your time is being saved...`,
+    toast(t("toasts.working.title"), {
+      description: t("toasts.working.description", {
+        count: itemsToProcess.length,
+      }),
     });
     setWorking(true);
 
@@ -268,9 +268,11 @@ ${geminiTraits}
           );
 
           const failureProblem: ProblemSolution = {
-            problem: "Processing failed after multiple retries.",
-            answer: "Please check the console for errors and try again.",
-            explanation: String(err),
+            problem: t("errors.processing-failed.problem"),
+            answer: t("errors.processing-failed.answer"),
+            explanation: t("errors.processing-failed.explanation", {
+              error: String(err),
+            }),
           };
 
           addSolution({
@@ -300,13 +302,12 @@ ${geminiTraits}
       await Promise.all(workers);
     } catch (e) {
       console.error(e);
-      toast("An unexpected error occurred", {
-        description:
-          "Something went wrong during the process. Please check the console.",
+      toast(t("toasts.error.title"), {
+        description: t("toasts.error.description"),
       });
     } finally {
-      toast("All done!", {
-        description: "Your homework has been processed.",
+      toast(t("toasts.done.title"), {
+        description: t("toasts.done.description"),
       });
       setWorking(false);
     }
@@ -356,13 +357,13 @@ ${geminiTraits}
 
         <footer className="mt-4 flex flex-row justify-between">
           <p className="text-sm text-gray-500">
-            Licensed under GPL-3.0. Students' life matter{" "}
+            {t("footer.license")} {t("footer.slogan")}{" "}
             <a
               className="underline"
               href="https://github.com/cubewhy/skid-homework"
               target="_blank"
             >
-              Source code
+              {t("footer.source")}
             </a>
           </p>
           {/* TODO: Add help page */}
