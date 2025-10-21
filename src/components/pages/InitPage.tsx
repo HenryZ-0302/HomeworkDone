@@ -86,7 +86,7 @@ export default function InitPage() {
               transition={{ duration: 0.6 }}
               className="text-balance text-4xl font-bold leading-tight tracking-tight md:text-5xl"
             >
-              <span className="bg-gradient-to-r from-indigo-300 via-white to-fuchsia-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-indigo-300 via-slate-500 dark:via-white to-fuchsia-300 bg-clip-text text-transparent">
                 {t("headline.highlight")}
               </span>
               <br />
