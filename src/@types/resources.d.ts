@@ -311,6 +311,7 @@ interface Resources {
     "solutions": {
       "analyzing": "Analyzing... extracting problems and solutions from your images.",
       "focus-region-aria": "Solutions keyboard focus region (Tab/Shift+Tab for problems, Space/Shift+Space for images)",
+      "gesture-hint": "Swipe left or right to switch files, swipe up or down to change problems.",
       "idle": "No solutions yet. Add images and click \"Let's Skid\" to see results here.",
       "photo-label": "Photo {{index}} • {{source}}",
       "status": {

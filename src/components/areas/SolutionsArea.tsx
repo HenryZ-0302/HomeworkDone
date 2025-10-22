@@ -8,7 +8,13 @@ import {
 } from "../ui/collapsible";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
-import { useEffect, useMemo, useRef, type KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type KeyboardEvent,
+} from "react";
 import {
   useProblemsStore,
   type FileItem,
@@ -21,6 +27,9 @@ import type { ImproveResponse } from "@/ai/response";
 import { PhotoProvider, PhotoView } from "react-photo-view";
 import StreamingOutputDisplay from "../StreamingOutputDisplay";
 import { useTranslation } from "react-i18next";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { useDrag } from "@use-gesture/react";
+import { animated, to, useSpring } from "@react-spring/web";
 
 export interface OrderedSolution {
   item: FileItem;
@@ -46,6 +55,8 @@ export default function SolutionsArea() {
   }, [aiSources]);
   const viewerRef = useRef<HTMLElement | null>(null);
 
+  const prefersTouch = useMediaQuery("(pointer: coarse)");
+
   // Build a solutions list that matches the visual order of the uploaded items.
   const orderedSolutions: OrderedSolution[] = useMemo(() => {
     return items
@@ -66,6 +77,13 @@ export default function SolutionsArea() {
     return idx === -1 ? 0 : idx; // Default to the first image if not found.
   }, [orderedSolutions, selectedImage]);
 
+  // Get the current solution bundle (image + its problems).
+  const currentBundle =
+    currentImageIdx >= 0 ? orderedSolutions[currentImageIdx] : null;
+  const problems = currentBundle?.solutions.problems ?? [];
+
+  const [{ x, y }, api] = useSpring(() => ({ x: 0, y: 0 }));
+
   // Effect to keep the selectedImage state consistent if the data changes.
   useEffect(() => {
     if (!orderedSolutions.length) {
@@ -79,31 +97,42 @@ export default function SolutionsArea() {
   }, [orderedSolutions.length, currentImageIdx]); // Depend on length and index
 
   // Navigation helpers for problems and images.
-  const goNextProblem = () =>
+  const goNextProblem = useCallback(() => {
+    if (!problems.length) return;
     setSelectedProblem(
       Math.min(selectedProblem + 1, Math.max(0, problems.length - 1)),
     );
-  const goPrevProblem = () =>
-    setSelectedProblem(Math.max(selectedProblem - 1, 0));
+  }, [problems.length, selectedProblem, setSelectedProblem]);
 
-  const goNextImage = () => {
+  const goPrevProblem = useCallback(() => {
+    if (!problems.length) return;
+    setSelectedProblem(Math.max(selectedProblem - 1, 0));
+  }, [problems.length, selectedProblem, setSelectedProblem]);
+
+  const goNextImage = useCallback(() => {
     if (!orderedSolutions.length) return;
     const next = (currentImageIdx + 1) % orderedSolutions.length;
     setSelectedImage(orderedSolutions[next].item.url);
     setSelectedProblem(0); // Reset problem index when changing images.
-  };
-  const goPrevImage = () => {
+  }, [
+    currentImageIdx,
+    orderedSolutions,
+    setSelectedImage,
+    setSelectedProblem,
+  ]);
+
+  const goPrevImage = useCallback(() => {
     if (!orderedSolutions.length) return;
     const prev =
       (currentImageIdx - 1 + orderedSolutions.length) % orderedSolutions.length;
     setSelectedImage(orderedSolutions[prev].item.url);
     setSelectedProblem(0); // Reset problem index.
-  };
-
-  // Get the current solution bundle (image + its problems).
-  const currentBundle =
-    currentImageIdx >= 0 ? orderedSolutions[currentImageIdx] : null;
-  const problems = currentBundle?.solutions.problems ?? [];
+  }, [
+    currentImageIdx,
+    orderedSolutions,
+    setSelectedImage,
+    setSelectedProblem,
+  ]);
 
   // Effect to clamp the selectedProblem index to a valid range when data changes.
   useEffect(() => {
@@ -172,9 +201,65 @@ export default function SolutionsArea() {
         return t("status.pending");
 
       case "failed":
-        return t("status.failed");
+      return t("status.failed");
     }
   };
+
+  const bindDrag = useDrag(
+    ({ down, movement: [mx, my], elapsedTime }) => {
+      if (!prefersTouch) return;
+
+      api.start({
+        x: down ? mx : 0,
+        y: down ? my : 0,
+        immediate: down,
+      });
+
+      if (down) return;
+
+      const absMx = Math.abs(mx);
+      const absMy = Math.abs(my);
+      const MIN_DISTANCE = 60;
+      const MAX_DURATION = 450;
+
+      if (elapsedTime > MAX_DURATION) return;
+
+      if (absMx > absMy + 10 && absMx > MIN_DISTANCE) {
+        if (mx < 0) {
+          goNextImage();
+        } else {
+          goPrevImage();
+        }
+        setTimeout(() => viewerRef.current?.focus(), 0);
+        return;
+      }
+
+      if (
+        absMy > absMx * 1.2 &&
+        absMy > MIN_DISTANCE &&
+        problems.length > 0
+      ) {
+        if (my < 0) {
+          goNextProblem();
+        } else {
+          goPrevProblem();
+        }
+        setTimeout(() => viewerRef.current?.focus(), 0);
+      }
+    },
+    {
+      enabled: prefersTouch,
+      filterTaps: true,
+      threshold: 25,
+    },
+  );
+
+  const dragStyle = prefersTouch
+    ? {
+        touchAction: "pan-y",
+        transform: to([x, y], (mx, my) => `translate3d(${mx}px, ${my}px, 0)`),
+      }
+    : undefined;
 
   return (
     <>
@@ -182,10 +267,12 @@ export default function SolutionsArea() {
         <CardTitle>{t("title")}</CardTitle>
         <CardContent>
           {/* Focusable region to capture keyboard shortcuts for navigation. */}
-          <div
+          <animated.div
             tabIndex={0}
             className="outline-none"
             aria-label={t("focus-region-aria")}
+            {...(prefersTouch ? bindDrag() : {})}
+            style={dragStyle}
           >
             {/* Conditional rendering based on whether solutions are available. */}
             {!orderedSolutions.length ? (
@@ -211,6 +298,11 @@ export default function SolutionsArea() {
                       </TabsTrigger>
                     ))}
                   </TabsList>
+                  {prefersTouch && orderedSolutions.length > 0 && (
+                    <p className="mt-3 text-xs text-muted-foreground sm:hidden">
+                      {t("gesture-hint")}
+                    </p>
+                  )}
 
                   {/* Content for each image tab. */}
                   {orderedSolutions.map((entry, idx) => {
@@ -298,7 +390,7 @@ export default function SolutionsArea() {
                 </Tabs>
               </div>
             )}
-          </div>
+          </animated.div>
         </CardContent>
       </Card>
     </>

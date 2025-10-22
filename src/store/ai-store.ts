@@ -201,11 +201,14 @@ export const useAiStore = create<AiStore>()(
 
       getActiveSource: () => {
         const state = get();
-        return (
-          state.sources.find((source) => source.id === state.activeSourceId) ??
-          state.sources[0] ??
-          null
+        const enabled = state.sources.filter(
+          (source) => source.enabled && source.apiKey,
         );
+        if (enabled.length > 0) {
+          const index = Math.floor(Math.random() * enabled.length);
+          return enabled[index];
+        }
+        return state.sources[0] ?? null;
       },
 
       getEnabledSources: () =>
@@ -214,23 +217,31 @@ export const useAiStore = create<AiStore>()(
       getSourceById: (id) => get().sources.find((source) => source.id === id),
 
       hasActiveKey: () => {
-        const active = get().getActiveSource();
-        return Boolean(active?.apiKey);
+        return get().getEnabledSources().length > 0;
       },
 
       allowPdfUpload: () => {
-        const active = get().getActiveSource();
-        return active?.provider === "gemini";
+        return get()
+          .getEnabledSources()
+          .some((source) => source.provider === "gemini");
       },
 
       getClientForSource: (id) => {
         const state = get();
-        const sourceId = id ?? state.activeSourceId;
-        const source =
-          state.sources.find((entry) => entry.id === sourceId) ??
-          state.sources[0];
-        if (!source) return null;
-        return createClientForSource(source);
+        if (id) {
+          const explicitSource = state.sources.find(
+            (entry) => entry.id === id,
+          );
+          return explicitSource ? createClientForSource(explicitSource) : null;
+        }
+
+        const enabled = state.getEnabledSources();
+        const fallbackSources = enabled.length > 0 ? enabled : state.sources;
+        if (!fallbackSources.length) return null;
+
+        const randomIndex = Math.floor(Math.random() * fallbackSources.length);
+        const chosen = fallbackSources[randomIndex];
+        return createClientForSource(chosen);
       },
     }),
     {
