@@ -37,7 +37,13 @@ import {
   CommandList,
 } from "../ui/command";
 import { Check, ChevronsUpDown, Plus, Trash2 } from "lucide-react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 import { toast } from "sonner";
 
 const DEFAULT_BASE_BY_PROVIDER: Record<AiProvider, string> = {
@@ -268,7 +274,8 @@ export default function SettingsPage() {
         provider === "gemini"
           ? DEFAULT_GEMINI_BASE_URL
           : DEFAULT_OPENAI_BASE_URL,
-      model: provider === "gemini" ? DEFAULT_GEMINI_MODEL : DEFAULT_OPENAI_MODEL,
+      model:
+        provider === "gemini" ? DEFAULT_GEMINI_MODEL : DEFAULT_OPENAI_MODEL,
       traits: undefined,
       thinkingBudget: provider === "gemini" ? 8192 : undefined,
       enabled: false,
@@ -338,17 +345,11 @@ export default function SettingsPage() {
                   key={source.id}
                   className={cn(
                     "flex flex-col gap-3 rounded-md border border-border p-3 md:flex-row md:items-center md:justify-between",
-                    isActive && "border-primary"
+                    isActive && "border-primary",
                   )}
+                  onClick={() => setActiveSource(source.id)}
                 >
                   <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
-                    <Button
-                      size="sm"
-                      variant={isActive ? "default" : "outline"}
-                      onClick={() => setActiveSource(source.id)}
-                    >
-                      {isActive ? t("sources.active.badge") : t("sources.make-active")}
-                    </Button>
                     <div>
                       <p className="text-sm font-medium">
                         {source.name}
@@ -366,6 +367,7 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-3">
                     <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
                       <Checkbox
+                        onClick={(e) => e.stopPropagation()}
                         checked={source.enabled}
                         onCheckedChange={(state) =>
                           toggleSource(source.id, Boolean(state))
@@ -397,7 +399,9 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="source-name">{t("api-credentials.name.label")}</Label>
+            <Label htmlFor="source-name">
+              {t("api-credentials.name.label")}
+            </Label>
             <Input
               id="source-name"
               value={localName}
@@ -701,10 +705,15 @@ export default function SettingsPage() {
             </div>
           </div>
           <DialogFooter className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => handleAddDialogChange(false)}>
+            <Button
+              variant="outline"
+              onClick={() => handleAddDialogChange(false)}
+            >
               {t("sources.add.cancel")}
             </Button>
-            <Button onClick={handleAddSource}>{t("sources.add.confirm")}</Button>
+            <Button onClick={handleAddSource}>
+              {t("sources.add.confirm")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
