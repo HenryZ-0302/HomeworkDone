@@ -88,7 +88,7 @@
     "analyzing": "Analyzing... extracting problems and solutions from your images.",
     "idle": "No solutions yet. Add images and click \"Let's Skid\" to see results here.",
     "title": "Solutions",
-    "gesture-hint": "Swipe left or right to switch files, swipe up or down to change problems.",
+    "gesture-hint": "Swipe left or right to switch problems.",
     "status": {
       "success": "No problems were detected for this image.",
       "stream": "Reasoning...",

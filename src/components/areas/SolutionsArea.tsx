@@ -30,6 +30,7 @@ import { useTranslation } from "react-i18next";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useDrag } from "@use-gesture/react";
 import { animated, to, useSpring } from "@react-spring/web";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export interface OrderedSolution {
   item: FileItem;
@@ -82,7 +83,7 @@ export default function SolutionsArea() {
     currentImageIdx >= 0 ? orderedSolutions[currentImageIdx] : null;
   const problems = currentBundle?.solutions.problems ?? [];
 
-  const [{ x, y }, api] = useSpring(() => ({ x: 0, y: 0 }));
+  const [{ x }, api] = useSpring(() => ({ x: 0 }));
 
   // Effect to keep the selectedImage state consistent if the data changes.
   useEffect(() => {
@@ -206,46 +207,29 @@ export default function SolutionsArea() {
   };
 
   const bindDrag = useDrag(
-    ({ down, movement: [mx, my], elapsedTime }) => {
+    ({ down, movement: [mx], elapsedTime }) => {
       if (!prefersTouch) return;
 
       api.start({
         x: down ? mx : 0,
-        y: down ? my : 0,
         immediate: down,
       });
 
       if (down) return;
 
-      const absMx = Math.abs(mx);
-      const absMy = Math.abs(my);
       const MIN_DISTANCE = 60;
       const MAX_DURATION = 450;
 
       if (elapsedTime > MAX_DURATION) return;
 
-      if (absMx > absMy + 10 && absMx > MIN_DISTANCE) {
-        if (mx < 0) {
-          goNextImage();
-        } else {
-          goPrevImage();
-        }
-        setTimeout(() => viewerRef.current?.focus(), 0);
-        return;
-      }
+      if (Math.abs(mx) < MIN_DISTANCE || problems.length === 0) return;
 
-      if (
-        absMy > absMx * 1.2 &&
-        absMy > MIN_DISTANCE &&
-        problems.length > 0
-      ) {
-        if (my < 0) {
-          goNextProblem();
-        } else {
-          goPrevProblem();
-        }
-        setTimeout(() => viewerRef.current?.focus(), 0);
+      if (mx < 0) {
+        goNextProblem();
+      } else {
+        goPrevProblem();
       }
+      setTimeout(() => viewerRef.current?.focus(), 0);
     },
     {
       enabled: prefersTouch,
@@ -257,7 +241,7 @@ export default function SolutionsArea() {
   const dragStyle = prefersTouch
     ? {
         touchAction: "pan-y",
-        transform: to([x, y], (mx, my) => `translate3d(${mx}px, ${my}px, 0)`),
+        transform: to([x], (mx) => `translate3d(${mx}px, 0, 0)`),
       }
     : undefined;
 
@@ -298,7 +282,28 @@ export default function SolutionsArea() {
                       </TabsTrigger>
                     ))}
                   </TabsList>
-                  {prefersTouch && orderedSolutions.length > 0 && (
+                  {orderedSolutions.length > 1 && (
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                      <Button
+                        size={prefersTouch ? "lg" : "default"}
+                        className="flex-1 justify-center gap-2 py-4 text-base"
+                        variant="outline"
+                        onClick={goPrevImage}
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                        {tCommon("solution-viewer.navigation.prev-image")}
+                      </Button>
+                      <Button
+                        size={prefersTouch ? "lg" : "default"}
+                        className="flex-1 justify-center gap-2 py-4 text-base"
+                        onClick={goNextImage}
+                      >
+                        {tCommon("solution-viewer.navigation.next-image")}
+                        <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  )}
+                  {prefersTouch && problems.length > 0 && (
                     <p className="mt-3 text-xs text-muted-foreground sm:hidden">
                       {t("gesture-hint")}
                     </p>
