@@ -5,8 +5,19 @@ import InitPage from "./components/pages/InitPage";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
 import SettingsPage from "./components/pages/SettingsPage";
+import { useEffect } from "react";
+import { useSettingsStore } from "./store/settings-store";
+import i18n from "./i18n";
 
 function App() {
+  const language = useSettingsStore((s) => s.language);
+
+  useEffect(() => {
+    if (language && i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
+  }, [language]);
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="theme">
       <HashRouter>

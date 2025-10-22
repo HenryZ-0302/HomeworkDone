@@ -236,6 +236,27 @@ interface Resources {
         },
         "title": "AI Sources"
       },
+      "appearance": {
+        "desc": "Choose how SkidHomework looks and which language it uses.",
+        "language": {
+          "desc": "Switch the interface language.",
+          "label": "Language",
+          "options": {
+            "en": "English",
+            "zh": "中文"
+          }
+        },
+        "theme": {
+          "desc": "Use the system preference or pick a fixed mode.",
+          "label": "Theme",
+          "options": {
+            "dark": "Dark",
+            "light": "Light",
+            "system": "System"
+          }
+        },
+        "title": "Appearance & Language"
+      },
       "thinking": {
         "budget": "Thinking budget",
         "desc": "Adjust advanced thinking parameters for supported providers.",

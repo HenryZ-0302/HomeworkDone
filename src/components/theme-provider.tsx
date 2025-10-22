@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useSettingsStore, type ThemePreference } from "@/store/settings-store";
 
 type Theme = "dark" | "light" | "system";
 
@@ -26,9 +27,22 @@ export function ThemeProvider({
   storageKey = "vite-ui-theme",
   ...props
 }: ThemeProviderProps) {
+  const storeTheme = useSettingsStore((s) => s.theme);
+  const setThemePreference = useSettingsStore((s) => s.setThemePreference);
+
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
+    () =>
+      storeTheme ||
+      ((localStorage.getItem(storageKey) as Theme | null) ?? defaultTheme),
   );
+
+  // Keep local theme in sync if external store updates it first.
+  useEffect(() => {
+    if (storeTheme && storeTheme !== theme) {
+      setTheme(storeTheme);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeTheme]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -53,8 +67,13 @@ export function ThemeProvider({
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme);
       setTheme(theme);
+      setThemePreference(theme as ThemePreference);
     },
   };
+
+  useEffect(() => {
+    setThemePreference(theme as ThemePreference);
+  }, [theme, setThemePreference]);
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>

@@ -7,7 +7,11 @@ import {
   type AiProvider,
   useAiStore,
 } from "@/store/ai-store";
-import { useSettingsStore } from "@/store/settings-store";
+import {
+  useSettingsStore,
+  type LanguagePreference,
+  type ThemePreference,
+} from "@/store/settings-store";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -45,6 +49,7 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { toast } from "sonner";
+import { useTheme } from "../theme-provider";
 
 const DEFAULT_BASE_BY_PROVIDER: Record<AiProvider, string> = {
   gemini: DEFAULT_GEMINI_BASE_URL,
@@ -52,7 +57,7 @@ const DEFAULT_BASE_BY_PROVIDER: Record<AiProvider, string> = {
 };
 
 export default function SettingsPage() {
-  const { t } = useTranslation("commons", { keyPrefix: "settings-page" });
+  const { t, i18n } = useTranslation("commons", { keyPrefix: "settings-page" });
 
   const sources = useAiStore((s) => s.sources);
   const activeSourceId = useAiStore((s) => s.activeSourceId);
@@ -68,7 +73,12 @@ export default function SettingsPage() {
     setImageBinarizing,
     showDonateBtn,
     setShowDonateBtn,
+    theme: themePreference,
+    setThemePreference,
+    language,
+    setLanguage,
   } = useSettingsStore((s) => s);
+  const { theme: activeTheme, setTheme } = useTheme();
 
   const activeSource = useMemo(
     () => sources.find((source) => source.id === activeSourceId) ?? sources[0],
@@ -115,6 +125,56 @@ export default function SettingsPage() {
     navigate("/");
   };
   useHotkeys("esc", handleBack);
+
+  useEffect(() => {
+    if (themePreference !== activeTheme) {
+      setTheme(themePreference);
+    }
+  }, [themePreference, activeTheme, setTheme]);
+
+  const themeOptions = useMemo(
+    () => [
+      {
+        value: "system" as ThemePreference,
+        label: t("appearance.theme.options.system"),
+      },
+      {
+        value: "light" as ThemePreference,
+        label: t("appearance.theme.options.light"),
+      },
+      {
+        value: "dark" as ThemePreference,
+        label: t("appearance.theme.options.dark"),
+      },
+    ],
+    [t],
+  );
+
+  const languageOptions = useMemo(
+    () => [
+      {
+        value: "en" as LanguagePreference,
+        label: t("appearance.language.options.en"),
+      },
+      {
+        value: "zh" as LanguagePreference,
+        label: t("appearance.language.options.zh"),
+      },
+    ],
+    [t],
+  );
+
+  const handleThemeSelect = (value: ThemePreference) => {
+    setThemePreference(value);
+    setTheme(value);
+  };
+
+  const handleLanguageSelect = (value: LanguagePreference) => {
+    setLanguage(value);
+    if (i18n.language !== value) {
+      i18n.changeLanguage(value);
+    }
+  };
 
   const loadModels = useCallback(async () => {
     if (!activeSource?.id || !activeSource.apiKey) {
@@ -349,7 +409,7 @@ export default function SettingsPage() {
                   )}
                   onClick={() => setActiveSource(source.id)}
                 >
-                  <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3 select-none">
                     <div>
                       <p className="text-sm font-medium">
                         {source.name}
@@ -378,7 +438,10 @@ export default function SettingsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleRemoveSource(source.id)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleRemoveSource(source.id);
+                      }}
                       disabled={!canRemoveSource}
                       aria-label={t("sources.remove.label")}
                     >
@@ -455,6 +518,58 @@ export default function SettingsPage() {
               {t("advanced.custom-base-url.helper", {
                 provider: activeSource?.name ?? "",
               })}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("appearance.title")}</CardTitle>
+          <CardDescription>{t("appearance.desc")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="theme-select">{t("appearance.theme.label")}</Label>
+            <select
+              id="theme-select"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              value={themePreference}
+              onChange={(event) =>
+                handleThemeSelect(event.target.value as ThemePreference)
+              }
+            >
+              {themeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              {t("appearance.theme.desc")}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="language-select">
+              {t("appearance.language.label")}
+            </Label>
+            <select
+              id="language-select"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              value={language}
+              onChange={(event) =>
+                handleLanguageSelect(event.target.value as LanguagePreference)
+              }
+            >
+              {languageOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              {t("appearance.language.desc")}
             </p>
           </div>
         </CardContent>
