@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Kbd } from "../ui/kbd";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 export type ActionsCardProps = {
   items: FileItem[];
@@ -17,6 +18,8 @@ export type ActionsCardProps = {
   clearAll: () => void;
   startScan: () => Promise<void>;
   allowPdfUploads: boolean;
+  layout?: "default" | "mobile";
+  className?: string;
 };
 
 export default function ActionsCard({
@@ -26,6 +29,8 @@ export default function ActionsCard({
   clearAll,
   startScan,
   allowPdfUploads,
+  layout = "default",
+  className,
 }: ActionsCardProps) {
   const { t } = useTranslation("commons", { keyPrefix: "actions" });
   const navigate = useNavigate();
@@ -37,11 +42,34 @@ export default function ActionsCard({
   useHotkeys("ctrl+5", handleSettingsBtnClick);
 
   return (
-    <Card className="md:col-span-1 border-white/10 backdrop-blur">
-      <CardHeader>
-        <CardTitle className="text-base">{t("title")}</CardTitle>
+    <Card
+      className={cn(
+        "md:col-span-1 border-white/10 backdrop-blur",
+        layout === "mobile" &&
+          "border border-white/20 bg-background/70 shadow-lg backdrop-blur-lg",
+        className,
+      )}
+    >
+      <CardHeader
+        className={cn(
+          layout === "mobile" ? "px-5 pb-2 pt-5" : undefined,
+        )}
+      >
+        <CardTitle
+          className={cn(
+            "text-base",
+            layout === "mobile" && "text-lg font-semibold",
+          )}
+        >
+          {t("title")}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent
+        className={cn(
+          "space-y-4",
+          layout === "mobile" && "px-5 pb-5 pt-1",
+        )}
+      >
         <UploadArea appendFiles={appendFiles} allowPdf={allowPdfUploads} />
 
         <Separator className="my-2" />
@@ -52,14 +80,16 @@ export default function ActionsCard({
           itemsLength={items.length}
           clearAll={clearAll}
           startScan={startScan}
+          layout={layout}
         />
 
         <Button
-          className="w-full"
+          className={cn("w-full", layout === "mobile" && "py-6 text-base")}
+          size={layout === "mobile" ? "lg" : "default"}
           variant="secondary"
           onClick={handleSettingsBtnClick}
         >
-          {t("settings")} <Kbd>Ctrl+5</Kbd>
+          {t("settings")} {layout !== "mobile" && <Kbd>Ctrl+5</Kbd>}
         </Button>
       </CardContent>
     </Card>

@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { Info, StarIcon } from "lucide-react";
-import { useEffect, useMemo, useCallback, useRef } from "react";
+import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAiStore } from "@/store/ai-store";
 import ActionsCard from "../cards/ActionsCard";
 import PreviewCard from "../cards/PreviewCard";
@@ -19,6 +19,9 @@ import { useSettingsStore } from "@/store/settings-store";
 import { binarizeImageFile } from "@/utils/image-post-processing";
 import { Button } from "../ui/button";
 import { useTranslation } from "react-i18next";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { cn } from "@/lib/utils";
 
 export default function ScanPage() {
   const { t } = useTranslation("commons", { keyPrefix: "scan-page" });
@@ -36,7 +39,7 @@ export default function ScanPage() {
     clearAllSolutions,
     appendStreamedOutput,
     clearStreamedOutput,
-} = useProblemsStore((s) => s);
+  } = useProblemsStore((s) => s);
 
   const { imageBinarizing } = useSettingsStore((s) => s);
   const imageBinarizingRef = useRef(imageBinarizing);
@@ -57,16 +60,23 @@ export default function ScanPage() {
       return available;
     }
 
-    return [
-      active,
-      ...available.filter((source) => source.id !== active.id),
-    ];
+    return [active, ...available.filter((source) => source.id !== active.id)];
   }, [sources, activeSourceId]);
 
   // State to track if the AI is currently processing images.
   const setWorking = useProblemsStore((s) => s.setWorking);
 
   const showDonateBtn = useSettingsStore((s) => s.showDonateBtn);
+  const isMobile = useMediaQuery("(max-width: 640px)");
+  const [activeTab, setActiveTab] = useState<"capture" | "preview">(
+    items.length ? "preview" : "capture",
+  );
+
+  useEffect(() => {
+    if (!items.length) {
+      setActiveTab("capture");
+    }
+  }, [items.length]);
 
   // Effect hook to clean up object URLs when the component unmounts or items change.
   useEffect(() => {
@@ -318,10 +328,7 @@ ${source.traits}
             return;
           } catch (error) {
             lastError = error;
-            console.error(
-              `Source ${source.name} failed for ${item.id}`,
-              error,
-            );
+            console.error(`Source ${source.name} failed for ${item.id}`, error);
             clearStreamedOutput(item.url);
           }
         }
@@ -376,63 +383,146 @@ ${source.traits}
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <header className="mb-6 flex space-x-4 items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {t("title")}
-          </h1>
+    <div className={cn("min-h-screen", isMobile && "pb-24")}>
+      <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+        <header
+          className={cn(
+            "mb-6 flex items-center justify-between gap-4",
+            isMobile && "flex-col items-start",
+          )}
+        >
+          <div className="flex w-full flex-col gap-2">
+            <h1
+              className={cn(
+                "text-3xl font-semibold tracking-tight",
+                isMobile && "text-2xl leading-tight",
+              )}
+            >
+              {t("title")}
+            </h1>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground sm:text-sm">
+              <Info className="h-4 w-4 shrink-0" />
+              <span>{t("tip")}</span>
+            </div>
+          </div>
           {showDonateBtn && (
-            <Button className="flex-1" variant="secondary" asChild>
-              <a href="https://996every.day/donate" target="_blank">
-                <StarIcon />
+            <Button
+              className={cn(
+                "gap-2 whitespace-nowrap",
+                isMobile ? "w-full justify-center rounded-full py-3" : "px-4",
+              )}
+              size={isMobile ? "lg" : "default"}
+              variant="secondary"
+              asChild
+            >
+              <a
+                href="https://996every.day/donate"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <StarIcon className="h-4 w-4" />
                 {t("donate-btn")}
               </a>
             </Button>
           )}
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <Info className="h-4 w-4" /> {t("tip")}
-          </div>
         </header>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* Left panel: Upload controls and actions. */}
-          <ActionsCard
-            appendFiles={appendFiles}
-            clearAll={clearAll}
-            startScan={startScan}
-            totalBytes={totalBytes}
-            items={items}
-            allowPdfUploads={allowPdfUploads}
-          />
+        {isMobile && (
+          <div className="mb-6 w-full rounded-2xl border border-white/15 bg-background/70 p-4 shadow-sm backdrop-blur">
+            <p className="text-base font-medium">
+              {items.length
+                ? t("mobile.status", { count: items.length })
+                : t("mobile.empty")}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {allowPdfUploads ? t("mobile.hint-ready") : t("mobile.hint-pdf")}
+            </p>
+          </div>
+        )}
 
-          <PreviewCard
-            appendFiles={appendFiles}
-            removeItem={removeItem}
-            items={items}
-          />
-        </div>
+        {isMobile ? (
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) =>
+              setActiveTab(value as "capture" | "preview")
+            }
+            className="md:hidden"
+          >
+            <TabsList className="grid w-full grid-cols-2 bg-muted/40">
+              <TabsTrigger
+                value="capture"
+                className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground"
+              >
+                {t("mobile.tabs.capture")}
+              </TabsTrigger>
+              <TabsTrigger
+                value="preview"
+                className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground"
+              >
+                {t("mobile.tabs.preview")}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="capture" className="mt-4">
+              <ActionsCard
+                appendFiles={appendFiles}
+                clearAll={clearAll}
+                startScan={startScan}
+                totalBytes={totalBytes}
+                items={items}
+                allowPdfUploads={allowPdfUploads}
+                layout="mobile"
+              />
+            </TabsContent>
+            <TabsContent value="preview" className="mt-4">
+              <PreviewCard
+                appendFiles={appendFiles}
+                removeItem={removeItem}
+                items={items}
+                layout="mobile"
+              />
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
+            <ActionsCard
+              appendFiles={appendFiles}
+              clearAll={clearAll}
+              startScan={startScan}
+              totalBytes={totalBytes}
+              items={items}
+              allowPdfUploads={allowPdfUploads}
+            />
+
+            <PreviewCard
+              appendFiles={appendFiles}
+              removeItem={removeItem}
+              items={items}
+            />
+          </div>
+        )}
 
         {/* Solutions Section */}
-        <div className="mt-6">
+        <section className={cn("mt-8", !isMobile && "mt-10")}>
           <SolutionsArea />
-        </div>
+        </section>
 
-        <footer className="mt-4 flex flex-row justify-between">
-          <p className="text-sm text-gray-500">
+        <footer
+          className={cn(
+            "mt-10 flex items-center justify-between text-sm text-muted-foreground",
+            isMobile && "mt-12 flex-col items-start gap-3 text-base",
+          )}
+        >
+          <p>
             {t("footer.license")} {t("footer.slogan")}{" "}
             <a
               className="underline"
               href="https://github.com/996-ai/skid-homework"
               target="_blank"
+              rel="noreferrer"
             >
               {t("footer.source")}
             </a>
           </p>
-          {/* TODO: Add help page */}
-          {/* <Button variant="link" asChild> */}
-          {/*   <Link to="/help">Help</Link> */}
-          {/* </Button> */}
         </footer>
       </div>
     </div>

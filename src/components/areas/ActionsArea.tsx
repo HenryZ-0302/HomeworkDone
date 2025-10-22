@@ -5,19 +5,23 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useProblemsStore } from "@/store/problems-store";
 import { Kbd } from "../ui/kbd";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 export type ActionsAreaProps = {
   startScan: () => Promise<void>;
   clearAll: () => void;
   itemsLength: number;
+  layout?: "default" | "mobile";
 };
 
 export default function ActionsArea({
   startScan,
   itemsLength,
   clearAll,
+  layout = "default",
 }: ActionsAreaProps) {
   const { t } = useTranslation("commons", { keyPrefix: "actions" });
+  const isMobileLayout = layout === "mobile";
 
   const isWorking = useProblemsStore((s) => s.isWorking);
   const handleSkidBtnClicked = () => {
@@ -53,35 +57,43 @@ export default function ActionsArea({
   }, [confirmedClear, setConfirmedClear]);
 
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div
+      className={cn("flex gap-2 flex-wrap", isMobileLayout && "flex-col gap-3")}
+    >
       <Button
         ref={clearAllBtnRef}
         variant="destructive"
-        className="flex-1"
+        className={cn(
+          "flex-1 items-center justify-center",
+          isMobileLayout && "py-6 text-base",
+        )}
+        size={isMobileLayout ? "lg" : "default"}
         disabled={itemsLength === 0 || isWorking}
         onClick={handleClearAll}
       >
-        <Trash2 className="mr-2 h-4 w-4" />
-        {!confirmedClear ? (
-          <label>{t("clear-all")}</label>
-        ) : (
-          <label>{t("clear-confirmation")}</label>
-        )}{" "}
-        <Kbd>Ctrl+4</Kbd>
+        <span className="flex items-center gap-2">
+          <Trash2 className="h-5 w-5 shrink-0" />
+          {!confirmedClear ? t("clear-all") : t("clear-confirmation")}
+        </span>
+        {!isMobileLayout && <Kbd>Ctrl+4</Kbd>}
       </Button>
       <Button
         ref={skidBtnRef}
-        className="flex-1"
+        className={cn(
+          "flex-1 items-center justify-center gap-2",
+          isMobileLayout && "py-6 text-base",
+        )}
+        size={isMobileLayout ? "lg" : "default"}
         disabled={itemsLength === 0 || isWorking}
         onClick={handleSkidBtnClicked}
       >
         {isWorking ? (
           <>
-            <Loader2Icon className="animate-spin" /> {t("processing")}
+            <Loader2Icon className="h-5 w-5 animate-spin" /> {t("processing")}
           </>
         ) : (
           <>
-            {t("scan")} <Kbd>Ctrl+3</Kbd>
+            {t("scan")} {!isMobileLayout && <Kbd>Ctrl+3</Kbd>}
           </>
         )}
       </Button>

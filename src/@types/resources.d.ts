@@ -75,6 +75,7 @@ interface Resources {
     },
     "preview": {
       "drag-tip": "You can drag your files to this panel.",
+      "drag-tip-mobile": "Tap a card to zoom in. Swipe left or right to review everything.",
       "drop-cancel": "Drag here to cancel",
       "file-type": {
         "pdf": "PDF",
@@ -91,18 +92,29 @@ interface Resources {
     "scan-page": {
       "donate-btn": "Donate now",
       "errors": {
+        "missing-key": "Missing API key for {{provider}}.",
+        "parsing-failed": "Failed to parse the AI response.",
         "processing-failed": {
           "answer": "Please check the console for errors and try again.",
           "explanation": "{{error}}",
           "problem": "Processing failed after multiple retries."
-        },
-        "missing-key": "Missing API key for {{provider}}.",
-        "parsing-failed": "Failed to parse the AI response."
+        }
       },
       "footer": {
         "license": "Licensed under GPL-3.0.",
         "slogan": "Students' lives matter",
         "source": "Source code"
+      },
+      "mobile": {
+        "empty": "Add a photo or PDF to get started.",
+        "hint-pdf": "Enable a Gemini source in Settings to allow PDF uploads.",
+        "hint-ready": "You're ready to scan. Tap “Let's Skid” when you're set.",
+        "status": "{{count}} file ready",
+        "status_plural": "{{count}} files ready",
+        "tabs": {
+          "capture": "Capture",
+          "preview": "Review"
+        }
       },
       "tip": "We never upload without your action.",
       "title": "Scan your homework",
@@ -170,6 +182,27 @@ interface Resources {
         "placeholder": "Enter your {{provider}} API key",
         "title": "API Credentials"
       },
+      "appearance": {
+        "desc": "Choose how SkidHomework looks and which language it uses.",
+        "language": {
+          "desc": "Switch the interface language.",
+          "label": "Language",
+          "options": {
+            "en": "English",
+            "zh": "中文"
+          }
+        },
+        "theme": {
+          "desc": "Use the system preference or pick a fixed mode.",
+          "label": "Theme",
+          "options": {
+            "dark": "Dark",
+            "light": "Light",
+            "system": "System"
+          }
+        },
+        "title": "Appearance & Language"
+      },
       "back": "Back",
       "clear-input": "Clear",
       "heading": "SkidHomework Settings",
@@ -204,6 +237,10 @@ interface Resources {
       },
       "reset": "Reset",
       "sources": {
+        "active": {
+          "badge": "Active",
+          "label": "Active source"
+        },
         "add": {
           "cancel": "Cancel",
           "confirm": "Add source",
@@ -213,10 +250,6 @@ interface Resources {
           "provider": "Provider",
           "success": "Added {{name}}.",
           "title": "Add AI source"
-        },
-        "active": {
-          "badge": "Active",
-          "label": "Active source"
         },
         "desc": "Manage enabled AI providers and choose which one to configure.",
         "enabled": {
@@ -235,27 +268,6 @@ interface Resources {
           "success": "Removed {{name}}."
         },
         "title": "AI Sources"
-      },
-      "appearance": {
-        "desc": "Choose how SkidHomework looks and which language it uses.",
-        "language": {
-          "desc": "Switch the interface language.",
-          "label": "Language",
-          "options": {
-            "en": "English",
-            "zh": "中文"
-          }
-        },
-        "theme": {
-          "desc": "Use the system preference or pick a fixed mode.",
-          "label": "Theme",
-          "options": {
-            "dark": "Dark",
-            "light": "Light",
-            "system": "System"
-          }
-        },
-        "title": "Appearance & Language"
       },
       "thinking": {
         "budget": "Thinking budget",

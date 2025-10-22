@@ -12,6 +12,8 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useProblemsStore, type FileItem } from "@/store/problems-store";
 import { Kbd } from "../ui/kbd";
 import { Trans, useTranslation } from "react-i18next";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
 
 export type UploadAreaProps = {
   appendFiles: (files: File[] | FileList, source: FileItem["source"]) => void;
@@ -23,6 +25,7 @@ export default function UploadArea({
   allowPdf,
 }: UploadAreaProps) {
   const { t } = useTranslation("commons", { keyPrefix: "upload-area" });
+  const isCompact = useMediaQuery("(max-width: 640px)");
   const cameraTips = t("camera-tip.tips", {
     returnObjects: true,
   }) as string[];
@@ -54,13 +57,17 @@ export default function UploadArea({
 
   return (
     <>
-      <p className="text-sm">{t("upload-tip")}</p>
-      {!allowPdf && (
-        <p className="text-xs text-muted-foreground">
-          {t("pdf-disabled")}
+      <div className="space-y-2">
+        <p className="text-sm text-muted-foreground md:text-xs">
+          {t("upload-tip")}
         </p>
-      )}
-      <div className="flex gap-2">
+        {!allowPdf && (
+          <p className="text-xs text-muted-foreground/80">
+            {t("pdf-disabled")}
+          </p>
+        )}
+      </div>
+      <div className={cn("flex gap-2", isCompact && "flex-col")}>
         <input
           ref={uploadInputRef}
           type="file"
@@ -74,17 +81,23 @@ export default function UploadArea({
           }}
         />
         <Button
-          className="flex-1"
+          className={cn(
+            "flex-1 items-center justify-between",
+            isCompact && "py-6 text-base font-medium",
+          )}
+          size={isCompact ? "lg" : "default"}
           ref={uploadBtnRef}
           disabled={isWorking}
           onClick={handleUploadBtnClicked}
         >
-          <Upload className="mr-2 h-4 w-4" />
-          <label>{t("upload")}</label>
-          <Kbd>Ctrl+1</Kbd>
+          <span className="flex items-center gap-2">
+            <Upload className="h-5 w-5" />
+            {t("upload")}
+          </span>
+          {!isCompact && <Kbd>Ctrl+1</Kbd>}
         </Button>
       </div>
-      <div className="flex gap-2">
+      <div className={cn("flex gap-2", isCompact && "flex-col")}>
         <input
           ref={cameraInputRef}
           disabled={isWorking}
@@ -101,19 +114,26 @@ export default function UploadArea({
         <Button
           ref={cameraBtnRef}
           variant="secondary"
-          className="flex-1"
+          className={cn(
+            "flex-1 items-center justify-between",
+            isCompact && "py-6 text-base font-medium",
+          )}
+          size={isCompact ? "lg" : "default"}
           disabled={isWorking}
           onClick={handleCameraBtnClicked}
         >
-          <Camera className="mr-2 h-4 w-4" />
-          <label>{t("take-photo")}</label>
-          <Kbd>Ctrl+2</Kbd>
+          <span className="flex items-center gap-2">
+            <Camera className="h-5 w-5" />
+            {t("take-photo")}
+          </span>
+          {!isCompact && <Kbd>Ctrl+2</Kbd>}
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setCameraTipOpen(true)}
           aria-label={t("camera-help-aria")}
+          className={cn(isCompact && "h-12 w-12 rounded-xl border border-border/40")}
         >
           <Info className="h-4 w-4" />
         </Button>
