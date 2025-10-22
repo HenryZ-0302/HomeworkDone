@@ -16,6 +16,7 @@ export type ActionsCardProps = {
   totalBytes: number;
   clearAll: () => void;
   startScan: () => Promise<void>;
+  allowPdfUploads: boolean;
 };
 
 export default function ActionsCard({
@@ -24,6 +25,7 @@ export default function ActionsCard({
   totalBytes,
   clearAll,
   startScan,
+  allowPdfUploads,
 }: ActionsCardProps) {
   const { t } = useTranslation("commons", { keyPrefix: "actions" });
   const navigate = useNavigate();
@@ -40,7 +42,7 @@ export default function ActionsCard({
         <CardTitle className="text-base">{t("title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <UploadArea appendFiles={appendFiles} />
+        <UploadArea appendFiles={appendFiles} allowPdf={allowPdfUploads} />
 
         <Separator className="my-2" />
 

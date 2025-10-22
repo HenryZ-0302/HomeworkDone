@@ -15,11 +15,12 @@ import { Textarea } from "../ui/textarea";
 import type { OrderedSolution } from "../areas/SolutionsArea";
 import { useProblemsStore, type ProblemSolution } from "@/store/problems-store";
 import { parseImproveResponse, type ImproveResponse } from "@/ai/response";
-import { useGeminiStore } from "@/store/gemini-store";
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { useAiStore } from "@/store/ai-store";
+import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import { renderImproveXml } from "@/ai/request";
 import { IMPROVE_SYSTEM_PROMPT } from "@/ai/prompts";
 import { uint8ToBase64 } from "@/utils/encoding";
+import { shuffleArray } from "@/utils/shuffle";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
@@ -37,12 +38,27 @@ export const ImproveSolutionDialog = forwardRef<
   ImproveSolutionDialogHandle,
   ImproveSolutionDialogProps
 >(({ entry, activeProblem, updateSolution }, ref) => {
-  const getGemini = useGeminiStore((s) => s.getGemini);
-  const geminiModel = useGeminiStore((s) => s.geminiModel);
+  const sources = useAiStore((s) => s.sources);
+  const activeSourceId = useAiStore((s) => s.activeSourceId);
+  const getClientForSource = useAiStore((s) => s.getClientForSource);
   const { appendStreamedOutput, clearStreamedOutput } = useProblemsStore(
     (s) => s,
   );
   const { t } = useTranslation("commons", { keyPrefix: "improve-dialog" });
+
+  const enabledSources = useMemo(() => {
+    const available = sources.filter(
+      (source) => source.enabled && Boolean(source.apiKey),
+    );
+    const active = available.find((source) => source.id === activeSourceId);
+    if (!active) {
+      return available;
+    }
+    return [
+      active,
+      ...available.filter((source) => source.id !== active.id),
+    ];
+  }, [sources, activeSourceId]);
 
   useImperativeHandle(ref, () => ({
     openDialog: () => {
@@ -56,19 +72,15 @@ export const ImproveSolutionDialog = forwardRef<
 
   const handleImproveSolution = async () => {
     if (!activeProblem) return;
-    const ai = getGemini();
-    if (!ai) {
-      toast(t("toasts.no-key.title"), {
-        description: t("toasts.no-key.description"),
+    if (!enabledSources.length) {
+      toast(t("toasts.no-source.title"), {
+        description: t("toasts.no-source.description"),
       });
       return;
     }
 
-    // apply system prompt
-    ai.setSystemPrompt(IMPROVE_SYSTEM_PROMPT);
-
     const buf = await entry.item.file.arrayBuffer();
-    const bytes = new Uint8Array(buf);
+    const base64 = uint8ToBase64(new Uint8Array(buf));
 
     const prompt = renderImproveXml({
       user_suggestion: improveSolutionPrompt,
@@ -77,36 +89,57 @@ export const ImproveSolutionDialog = forwardRef<
       problem: activeProblem.problem,
     });
 
-    const callback = (text: string) => {
-      appendStreamedOutput(entry.item.url, text);
-    };
-
     try {
       toast(t("toasts.processing.title"), {
         description: t("toasts.processing.description"),
       });
       setImproving(true);
-      const resText = await ai?.sendMedia(
-        uint8ToBase64(bytes),
-        entry.item.mimeType,
-        prompt,
-        geminiModel,
-        callback,
-      );
-      // console.log(resText);
 
-      const res = parseImproveResponse(resText);
+      let lastError: unknown = null;
 
-      // console.log(res);
-      if (!res) {
-        toast(t("toasts.failed.title"), {
-          description: t("toasts.failed.parse"),
-        });
-        return;
+      for (const source of shuffleArray(enabledSources)) {
+        const ai = getClientForSource(source.id);
+        if (!ai) {
+          lastError = new Error(t("toasts.no-key.description", { provider: source.name }));
+          continue;
+        }
+
+        const traitsPrompt = source.traits
+          ? `\nUser defined traits:
+<traits>
+${source.traits}
+</traits>
+`
+          : "";
+
+        ai.setSystemPrompt(IMPROVE_SYSTEM_PROMPT + traitsPrompt);
+
+        try {
+          clearStreamedOutput(entry.item.url);
+
+          const resText = await ai.sendMedia(
+            base64,
+            entry.item.mimeType,
+            prompt,
+            source.model,
+            (text) => appendStreamedOutput(entry.item.url, text),
+          );
+
+          const res = parseImproveResponse(resText);
+          if (!res) {
+            throw new Error(t("toasts.failed.parse"));
+          }
+
+          updateSolution(res);
+          clearStreamedOutput(entry.item.url);
+          return;
+        } catch (error) {
+          lastError = error;
+          clearStreamedOutput(entry.item.url);
+        }
       }
-      updateSolution(res);
-      // clear streaming output
-      clearStreamedOutput(entry.item.url);
+
+      throw lastError ?? new Error(t("toasts.failed.parse"));
     } catch (e) {
       toast(t("toasts.failed.title"), {
         description: t("toasts.failed.description", { error: String(e) }),

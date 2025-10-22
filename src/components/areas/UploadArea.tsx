@@ -15,9 +15,13 @@ import { Trans, useTranslation } from "react-i18next";
 
 export type UploadAreaProps = {
   appendFiles: (files: File[] | FileList, source: FileItem["source"]) => void;
+  allowPdf: boolean;
 };
 
-export default function UploadArea({ appendFiles }: UploadAreaProps) {
+export default function UploadArea({
+  appendFiles,
+  allowPdf,
+}: UploadAreaProps) {
   const { t } = useTranslation("commons", { keyPrefix: "upload-area" });
   const cameraTips = t("camera-tip.tips", {
     returnObjects: true,
@@ -46,14 +50,21 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
   useHotkeys("ctrl+1", handleUploadBtnClicked);
   useHotkeys("ctrl+2", handleCameraBtnClicked);
 
+  const fileAccept = allowPdf ? "image/*,application/pdf" : "image/*";
+
   return (
     <>
       <p className="text-sm">{t("upload-tip")}</p>
+      {!allowPdf && (
+        <p className="text-xs text-muted-foreground">
+          {t("pdf-disabled")}
+        </p>
+      )}
       <div className="flex gap-2">
         <input
           ref={uploadInputRef}
           type="file"
-          accept="image/*, application/pdf"
+          accept={fileAccept}
           multiple
           className="hidden"
           onChange={(e) => {
@@ -78,7 +89,7 @@ export default function UploadArea({ appendFiles }: UploadAreaProps) {
           ref={cameraInputRef}
           disabled={isWorking}
           type="file"
-          accept="image/*, application/pdf"
+          accept={fileAccept}
           capture="environment"
           className="hidden"
           onChange={(e) => {

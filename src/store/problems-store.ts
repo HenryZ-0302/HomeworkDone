@@ -18,6 +18,7 @@ export type Solution = {
   status: "success" | "processing" | "failed"; // Whether the AI processing was successful
   streamedOutput?: string | null; // Stores the raw streaming output from the AI
   problems: ProblemSolution[]; // Array of problems found in the image
+  aiSourceId?: string; // Identifier of the AI source that produced the solution
 };
 
 // Type definition for a single problem-answer pair.

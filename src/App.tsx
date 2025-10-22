@@ -1,5 +1,5 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
-import RequireGeminiKey from "./components/guards/RequireGeminiKey";
+import RequireAiKey from "./components/guards/RequireAiKey";
 import ScanPage from "./components/pages/ScanPage";
 import InitPage from "./components/pages/InitPage";
 import { ThemeProvider } from "./components/theme-provider";
@@ -14,9 +14,9 @@ function App() {
           <Route
             path="/"
             element={
-              <RequireGeminiKey fallback="/init">
+              <RequireAiKey fallback="/init">
                 <ScanPage />
-              </RequireGeminiKey>
+              </RequireAiKey>
             }
           />
 

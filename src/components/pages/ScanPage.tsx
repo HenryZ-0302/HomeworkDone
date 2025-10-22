@@ -1,13 +1,13 @@
 import { toast } from "sonner";
 import { Info, StarIcon } from "lucide-react";
 import { useEffect, useMemo, useCallback, useRef } from "react";
-import { useGeminiStore } from "@/store/gemini-store";
+import { useAiStore } from "@/store/ai-store";
 import ActionsCard from "../cards/ActionsCard";
 import PreviewCard from "../cards/PreviewCard";
-import { GeminiAi } from "@/ai/gemini";
 import { SOLVE_SYSTEM_PROMPT } from "@/ai/prompts";
 import { uint8ToBase64 } from "@/utils/encoding";
 import { parseSolveResponse } from "@/ai/response";
+import { shuffleArray } from "@/utils/shuffle";
 
 import {
   useProblemsStore,
@@ -35,16 +35,33 @@ export default function ScanPage() {
     removeSolutionsByUrls,
     clearAllSolutions,
     appendStreamedOutput,
-  } = useProblemsStore((s) => s);
+    clearStreamedOutput,
+} = useProblemsStore((s) => s);
 
   const { imageBinarizing } = useSettingsStore((s) => s);
   const imageBinarizingRef = useRef(imageBinarizing);
 
-  // Zustand store for Gemini API configuration.
-  const geminiModel = useGeminiStore((state) => state.geminiModel);
-  const geminiKey = useGeminiStore((state) => state.geminiKey);
-  const geminiBaseUrl = useGeminiStore((state) => state.geminiBaseUrl);
-  const geminiTraits = useGeminiStore((state) => state.traits);
+  // Zustand store for AI provider configuration.
+  const sources = useAiStore((state) => state.sources);
+  const activeSourceId = useAiStore((state) => state.activeSourceId);
+  const getClientForSource = useAiStore((state) => state.getClientForSource);
+  const allowPdfUploads = useAiStore((state) => state.allowPdfUpload());
+
+  const enabledSources = useMemo(() => {
+    const available = sources.filter(
+      (source) => source.enabled && Boolean(source.apiKey),
+    );
+
+    const active = available.find((source) => source.id === activeSourceId);
+    if (!active) {
+      return available;
+    }
+
+    return [
+      active,
+      ...available.filter((source) => source.id !== active.id),
+    ];
+  }, [sources, activeSourceId]);
 
   // State to track if the AI is currently processing images.
   const setWorking = useProblemsStore((s) => s.setWorking);
@@ -67,9 +84,29 @@ export default function ScanPage() {
   // Callback to add new files to the items list using the store action.
   const appendFiles = useCallback(
     (files: File[] | FileList, source: FileItem["source"]) => {
+      let rejectedPdf = false;
       const arr = Array.from(files).filter((f) => {
-        return f.type.startsWith("image/") || f.type === "application/pdf";
+        if (f.type.startsWith("image/")) {
+          return true;
+        }
+
+        if (f.type === "application/pdf") {
+          if (allowPdfUploads) {
+            return true;
+          }
+          rejectedPdf = true;
+          return false;
+        }
+
+        return false;
       });
+
+      if (rejectedPdf) {
+        toast(t("toasts.pdf-blocked.title"), {
+          description: t("toasts.pdf-blocked.description"),
+        });
+      }
+
       if (arr.length === 0) return;
 
       const initialItems: FileItem[] = arr.map((file) => ({
@@ -108,7 +145,7 @@ export default function ScanPage() {
         });
       }
     },
-    [addFileItems, updateFileItem],
+    [addFileItems, updateFileItem, allowPdfUploads, t],
   );
 
   // Function to remove a specific item from the list by its ID.
@@ -152,29 +189,35 @@ export default function ScanPage() {
       }
     }
     // If all retries fail, throw the last captured error.
-    throw lastError;
+    throw lastError ?? new Error("Unknown AI failure");
   };
 
   /**
    * Main function to start the scanning process.
-   * It sends images to the Gemini AI and processes the results concurrently.
+   * It polls through the configured AI sources until one succeeds per item.
    */
   const startScan = async () => {
-    // Validation checks... (omitted for brevity, assume they pass)
-    if (!geminiModel || geminiModel.length === 0) {
-      toast(t("toasts.no-model.title"), {
-        description: t("toasts.no-model.description"),
-      });
-      return;
-    }
-    if (!geminiKey) {
-      toast(t("toasts.no-key.title"), {
-        description: t("toasts.no-key.description"),
+    const availableSources = shuffleArray(enabledSources);
+
+    if (!availableSources.length) {
+      toast(t("toasts.no-source.title"), {
+        description: t("toasts.no-source.description"),
       });
       return;
     }
 
-    // Filter the items list to get only the images that need processing.
+    const invalidSource = availableSources.find(
+      (source) => !source.model || source.model.length === 0,
+    );
+    if (invalidSource) {
+      toast(t("toasts.no-model.title"), {
+        description: t("toasts.no-model.description", {
+          provider: invalidSource.name,
+        }),
+      });
+      return;
+    }
+
     const itemsToProcess = items.filter(
       (item) => item.status === "pending" || item.status === "failed",
     );
@@ -182,6 +225,21 @@ export default function ScanPage() {
     if (itemsToProcess.length === 0) {
       toast(t("toasts.all-processed.title"), {
         description: t("toasts.all-processed.description"),
+      });
+      return;
+    }
+
+    const hasPdfItems = itemsToProcess.some(
+      (item) => item.mimeType === "application/pdf",
+    );
+
+    const hasGeminiSource = availableSources.some(
+      (source) => source.provider === "gemini",
+    );
+
+    if (hasPdfItems && !hasGeminiSource) {
+      toast(t("toasts.pdf-blocked.title"), {
+        description: t("toasts.pdf-blocked.description"),
       });
       return;
     }
@@ -194,104 +252,108 @@ export default function ScanPage() {
     setWorking(true);
 
     try {
-      const ai = new GeminiAi(geminiKey, geminiBaseUrl);
-
-      if (geminiTraits) {
-        // inject traits into prompt
-        ai.setSystemPrompt(
-          SOLVE_SYSTEM_PROMPT +
-            `\nUser defined traits:
-<traits>
-${geminiTraits}
-</traits>
-`,
-        );
-      } else {
-        ai.setSystemPrompt(SOLVE_SYSTEM_PROMPT);
-      }
-
-      // Concurrency limit for processing images.
       const concurrency = 4;
       const n = itemsToProcess.length;
 
-      // Prepare to remove existing solutions for images that are being re-processed.
       const urlsToProcess = new Set(itemsToProcess.map((item) => item.url));
-
-      // Use the store action to safely filter out existing solutions.
       removeSolutionsByUrls(urlsToProcess);
 
-      /**
-       * Processes a single image item.
-       * @param item The ImageItem to process.
-       */
       const processOne = async (item: FileItem) => {
-        const callback = (text: string) => {
-          appendStreamedOutput(item.url, text);
-        };
+        console.log(`Processing ${item.id}`);
 
-        try {
-          console.log(`Processing ${item.id}`);
+        addSolution({
+          imageUrl: item.url,
+          status: "processing",
+          problems: [],
+        });
 
-          // add the placeholder solution
-          addSolution({
-            imageUrl: item.url,
-            status: "processing",
-            problems: [],
-          });
+        const buf = await item.file.arrayBuffer();
+        const base64 = uint8ToBase64(new Uint8Array(buf));
 
-          const buf = await item.file.arrayBuffer();
-          const bytes = new Uint8Array(buf);
+        let lastError: unknown = null;
 
-          // Send file to AI with retry logic.
-          const resText = await retryAsyncOperation(() =>
-            ai.sendMedia(
-              uint8ToBase64(bytes),
-              item.mimeType,
-              undefined,
-              geminiModel,
-              callback,
-            ),
-          );
+        for (const source of shuffleArray(availableSources)) {
+          try {
+            const ai = getClientForSource(source.id);
+            if (!ai) {
+              throw new Error(
+                t("errors.missing-key", { provider: source.name }),
+              );
+            }
 
-          const res = parseSolveResponse(resText);
+            const traitsPrompt = source.traits
+              ? `\nUser defined traits:
+<traits>
+${source.traits}
+</traits>
+`
+              : "";
 
-          updateSolution(item.url, {
-            status: "success",
-            problems: res?.problems ?? [],
-          });
+            ai.setSystemPrompt(SOLVE_SYSTEM_PROMPT + traitsPrompt);
 
-          updateItemStatus(item.id, "success");
-        } catch (err) {
-          console.error(
-            `Failed to process ${item.id} after multiple retries:`,
-            err,
-          );
+            clearStreamedOutput(item.url);
 
-          const failureProblem: ProblemSolution = {
-            problem: t("errors.processing-failed.problem"),
-            answer: t("errors.processing-failed.answer"),
-            explanation: t("errors.processing-failed.explanation", {
-              error: String(err),
-            }),
-          };
+            const resText = await retryAsyncOperation(() =>
+              ai.sendMedia(
+                base64,
+                item.mimeType,
+                undefined,
+                source.model,
+                (text) => appendStreamedOutput(item.url, text),
+              ),
+            );
 
-          addSolution({
-            imageUrl: item.url,
-            status: "failed",
-            problems: [failureProblem],
-          });
+            const res = parseSolveResponse(resText);
+            if (!res) {
+              throw new Error(t("errors.parsing-failed"));
+            }
 
-          updateItemStatus(item.id, "failed");
+            updateSolution(item.url, {
+              status: "success",
+              problems: res.problems ?? [],
+              aiSourceId: source.id,
+            });
+
+            updateItemStatus(item.id, "success");
+            return;
+          } catch (error) {
+            lastError = error;
+            console.error(
+              `Source ${source.name} failed for ${item.id}`,
+              error,
+            );
+            clearStreamedOutput(item.url);
+          }
         }
+
+        throw lastError ?? new Error("All AI sources exhausted");
       };
 
-      // Create a worker pool to process images concurrently.
       let nextIndex = 0;
       const worker = async () => {
         while (true) {
           const i = nextIndex++;
           if (i >= n) break;
-          await processOne(itemsToProcess[i]);
+          try {
+            await processOne(itemsToProcess[i]);
+          } catch (err) {
+            const failureProblem: ProblemSolution = {
+              problem: t("errors.processing-failed.problem"),
+              answer: t("errors.processing-failed.answer"),
+              explanation: t("errors.processing-failed.explanation", {
+                error: String(err),
+              }),
+            };
+
+            updateSolution(itemsToProcess[i].url, {
+              status: "failed",
+              problems: [failureProblem],
+              aiSourceId: undefined,
+            });
+            clearStreamedOutput(itemsToProcess[i].url);
+
+            updateItemStatus(itemsToProcess[i].id, "failed");
+          }
         }
       };
 
@@ -341,6 +403,7 @@ ${geminiTraits}
             startScan={startScan}
             totalBytes={totalBytes}
             items={items}
+            allowPdfUploads={allowPdfUploads}
           />
 
           <PreviewCard

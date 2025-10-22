@@ -1,9 +1,13 @@
 import { motion } from "framer-motion";
 import { Sparkles, ShieldCheck, Camera, Rocket } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { useGeminiStore } from "@/store/gemini-store";
+import {
+  DEFAULT_GEMINI_BASE_URL,
+  DEFAULT_OPENAI_BASE_URL,
+  useAiStore,
+} from "@/store/ai-store";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Accordion,
@@ -15,11 +19,25 @@ import { Label } from "../ui/label";
 import { Trans, useTranslation } from "react-i18next";
 
 export default function InitPage() {
-  const [key, setKey] = useState("");
-  const setGeminiKey = useGeminiStore((s) => s.setGeminiKey);
-  const geminiBaseUrl = useGeminiStore((s) => s.geminiBaseUrl);
-  const setGeminiBaseUrl = useGeminiStore((s) => s.setGeminiBaseUrl);
-  const [baseUrl, setBaseUrl] = useState<string | undefined>(geminiBaseUrl);
+  const sources = useAiStore((s) => s.sources);
+  const activeSourceId = useAiStore((s) => s.activeSourceId);
+  const setActiveSource = useAiStore((s) => s.setActiveSource);
+  const updateSource = useAiStore((s) => s.updateSource);
+
+  const activeSource = useMemo(
+    () => sources.find((source) => source.id === activeSourceId) ?? sources[0],
+    [sources, activeSourceId],
+  );
+
+  const [key, setKey] = useState(activeSource?.apiKey ?? "");
+  const [baseUrl, setBaseUrl] = useState<string | undefined>(
+    activeSource?.baseUrl,
+  );
+
+  useEffect(() => {
+    setKey(activeSource?.apiKey ?? "");
+    setBaseUrl(activeSource?.baseUrl);
+  }, [activeSource]);
 
   const navigate = useNavigate();
   const location = useLocation() as { state?: { from?: Location } };
@@ -27,14 +45,20 @@ export default function InitPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!key.trim()) return;
-    if (!baseUrl) {
-      // use default url if the custom url inputbox is empty
-      setGeminiBaseUrl("https://generativelanguage.googleapis.com");
-    } else {
-      setGeminiBaseUrl(baseUrl);
-    }
-    setGeminiKey(key.trim());
+    if (!activeSource) return;
+    const trimmedKey = key.trim();
+    if (!trimmedKey) return;
+
+    const trimmedBase = (baseUrl ?? "").trim();
+    updateSource(activeSource.id, {
+      apiKey: trimmedKey || null,
+      baseUrl:
+        trimmedBase ||
+        (activeSource.provider === "gemini"
+          ? DEFAULT_GEMINI_BASE_URL
+          : DEFAULT_OPENAI_BASE_URL),
+      enabled: true,
+    });
     const to = location.state?.from?.pathname ?? "/";
     navigate(to, { replace: true });
   };
@@ -125,12 +149,32 @@ export default function InitPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.24 }}
-              className="mt-8"
+              className="mt-8 space-y-4"
             >
+              <div className="w-full max-w-md">
+                <Label htmlFor="provider" className="mb-1 block text-xs">
+                  {t("form.provider.label")}
+                </Label>
+                <select
+                  id="provider"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  value={activeSource?.id}
+                  onChange={(event) => setActiveSource(event.target.value)}
+                >
+                  {sources.map((source) => (
+                    <option key={source.id} value={source.id}>
+                      {source.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="flex w-full max-w-md items-center gap-3">
                 <Input
                   type="password"
-                  placeholder={t("form.key-placeholder")}
+                  placeholder={t("form.key-placeholder", {
+                    provider: activeSource?.name ?? "",
+                  })}
                   value={key}
                   onChange={(e) => setKey(e.target.value)}
                   className="h-11 flex-1 focus-visible:ring-indigo-500"
@@ -148,20 +192,27 @@ export default function InitPage() {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-2 mx-1">
-                      {/* Input for custom Gemini API Base URL */}
+                      {/* Input for custom API Base URL */}
                       <Label htmlFor="base-url" className="text-xs">
                         {t("form.advanced.base-url-label")}
                       </Label>
                       <Input
                         id="base-url"
                         type="url"
-                        placeholder={t("form.advanced.base-url-placeholder")}
+                        placeholder={t(
+                          "form.advanced.base-url-placeholder",
+                          {
+                            provider: activeSource?.name ?? "",
+                          },
+                        )}
                         value={baseUrl ?? ""}
                         onChange={(e) => setBaseUrl(e.target.value)}
                         className="placeholder:text-slate-500 focus-visible:ring-indigo-500"
                       />
                       <p className="text-xs text-slate-400">
-                        {t("form.advanced.base-url-helper")}
+                        {t("form.advanced.base-url-helper", {
+                          provider: activeSource?.name ?? "",
+                        })}
                       </p>
                     </div>
                   </AccordionContent>
@@ -170,18 +221,33 @@ export default function InitPage() {
               {/* END: Advanced settings section */}
             </motion.form>
             <p className="mt-3 text-xs text-slate-400">
-              <Trans
-                t={t}
-                i18nKey="form.api-hint"
-                components={{
-                  link: (
-                    <a
-                      href="https://aistudio.google.com/api-keys"
-                      className="underline"
-                    />
-                  ),
-                }}
-              />
+              {activeSource?.provider === "gemini" ? (
+                <Trans
+                  t={t}
+                  i18nKey="form.api-hint"
+                  components={{
+                    link: (
+                      <a
+                        href="https://aistudio.google.com/api-keys"
+                        className="underline"
+                      />
+                    ),
+                  }}
+                />
+              ) : (
+                <Trans
+                  t={t}
+                  i18nKey="form.api-hint-openai"
+                  components={{
+                    link: (
+                      <a
+                        href="https://platform.openai.com/settings/organization/api-keys"
+                        className="underline"
+                      />
+                    ),
+                  }}
+                />
+              )}
             </p>
 
             <p className="mt-3 text-xs text-slate-400">

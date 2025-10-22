@@ -14,6 +14,7 @@ import {
   type FileItem,
   type Solution,
 } from "@/store/problems-store";
+import { useAiStore } from "@/store/ai-store";
 import ProblemList from "../ProblemList";
 import SolutionViewer from "../SolutionViewer";
 import type { ImproveResponse } from "@/ai/response";
@@ -39,6 +40,10 @@ export default function SolutionsArea() {
     updateProblem,
     isWorking,
   } = useProblemsStore((s) => s);
+  const aiSources = useAiStore((s) => s.sources);
+  const aiSourceNames = useMemo(() => {
+    return new Map(aiSources.map((source) => [source.id, source.name]));
+  }, [aiSources]);
   const viewerRef = useRef<HTMLElement | null>(null);
 
   // Build a solutions list that matches the visual order of the uploaded items.
@@ -146,6 +151,16 @@ export default function SolutionsArea() {
   };
 
   const renderStatusMessage = (entry: OrderedSolution) => {
+    if (entry.solutions.status === "success") {
+      const providerName = entry.solutions.aiSourceId
+        ? aiSourceNames.get(entry.solutions.aiSourceId)
+        : null;
+      if (providerName) {
+        return t("status.success-with-provider", { provider: providerName });
+      }
+      return t("status.success");
+    }
+
     switch (entry.item.status) {
       case "success":
         return t("status.success");

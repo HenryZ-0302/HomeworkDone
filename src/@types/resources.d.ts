@@ -20,8 +20,12 @@ interface Resources {
           "title": "Failed to improve your solution"
         },
         "no-key": {
-          "description": "You need to set your API key in settings to use the AI.",
+          "description": "Please set an API key for {{provider}} in Settings to continue.",
           "title": "You're almost there"
+        },
+        "no-source": {
+          "description": "Enable at least one AI provider in Settings before improving a solution.",
+          "title": "No AI sources"
         },
         "processing": {
           "description": "Improving your solution with AI...Please wait for a while...",
@@ -42,13 +46,17 @@ interface Resources {
       },
       "form": {
         "advanced": {
-          "base-url-helper": "Leave blank to use the default Google API endpoint.",
-          "base-url-label": "Gemini API Base URL (optional)",
-          "base-url-placeholder": "https://generativelanguage.googleapis.com",
+          "base-url-helper": "Leave blank to use the default endpoint for {{provider}}.",
+          "base-url-label": "API Base URL (optional)",
+          "base-url-placeholder": "Default endpoint for {{provider}}",
           "title": "Advanced"
         },
         "api-hint": "Get an API key at <link>Google AI Studio</link>.",
-        "key-placeholder": "Gemini API Key",
+        "api-hint-openai": "Get an API key at <link>OpenAI Dashboard</link>.",
+        "key-placeholder": "{{provider}} API Key",
+        "provider": {
+          "label": "AI provider"
+        },
         "storage-note": "We store your key locally using encrypted browser storage and never send it to our servers.",
         "submit": "Get My Time Back!"
       },
@@ -87,7 +95,9 @@ interface Resources {
           "answer": "Please check the console for errors and try again.",
           "explanation": "{{error}}",
           "problem": "Processing failed after multiple retries."
-        }
+        },
+        "missing-key": "Missing API key for {{provider}}.",
+        "parsing-failed": "Failed to parse the AI response."
       },
       "footer": {
         "license": "Licensed under GPL-3.0.",
@@ -110,16 +120,23 @@ interface Resources {
           "title": "An unexpected error occurred"
         },
         "no-key": {
-          "description": "Please set a Gemini API key before you scan your homework.",
+          "description": "Please set an API key for {{provider}} in Settings.",
           "title": "You're almost there"
         },
         "no-model": {
-          "description": "Please specify a Gemini model in settings to start skidding!",
-          "title": "You're almost there"
+          "description": "Please choose a model for {{provider}} in Settings before scanning.",
+          "title": "Model required"
+        },
+        "no-source": {
+          "description": "Enable at least one AI provider with an API key in Settings before scanning.",
+          "title": "No AI sources configured"
+        },
+        "pdf-blocked": {
+          "description": "Enable a Gemini source to process PDF files.",
+          "title": "PDF uploads disabled"
         },
         "working": {
-          "description_one": "Sending {{count}} file to Gemini... Your time is being saved...",
-          "description_other": "Sending {{count}} files to Gemini... Your time is being saved...",
+          "description": "Sending {{count}} file(s) to your AI sources...",
           "title": "Working..."
         }
       }
@@ -127,10 +144,11 @@ interface Resources {
     "settings-page": {
       "advanced": {
         "custom-base-url": {
-          "placeholder": "https://generativelanguage.googleapis.com",
-          "title": "Custom Gemini API base URL"
+          "helper": "Leave blank to use the default endpoint for {{provider}}.",
+          "placeholder": "https://example.com/v1",
+          "title": "Custom API base URL"
         },
-        "desc": "Please make sure you know what you are doing.",
+        "desc": "Extras that affect uploads and the interface.",
         "image-post-processing": {
           "binarizing": "Enable binarizing",
           "title": "Image Post-processing"
@@ -142,36 +160,90 @@ interface Resources {
         }
       },
       "api-credentials": {
-        "desc": "Enter your Google AI Studio API key to connect to Gemini.",
-        "label": "Gemini API Key",
-        "placeholder": "Enter your API key here",
-        "status": {
-          "set": "Your API key is set and stored securely.",
-          "unset": "Your API key is not set."
+        "applied": "API key saved.",
+        "desc": "Store API keys locally for each AI provider. They never leave your browser.",
+        "label": "API Key",
+        "name": {
+          "label": "Source name",
+          "placeholder": "Friendly name shown in the app"
         },
+        "placeholder": "Enter your {{provider}} API key",
         "title": "API Credentials"
       },
       "back": "Back",
       "clear-input": "Clear",
       "heading": "SkidHomework Settings",
       "model": {
-        "desc": "Choose the model and define the AI's behavior.",
+        "desc": "Choose or type the model name used for requests.",
+        "fetch": {
+          "error": "Failed to fetch models for {{provider}}. Check your API key or base URL."
+        },
+        "manual": {
+          "desc": "Enter a model name manually if it is not listed.",
+          "placeholder": "Model identifier",
+          "title": "Custom model"
+        },
+        "refresh": "Refresh models",
         "sel": {
-          "empty": "Select a model...",
-          "no-model-available": "No available models",
-          "search-placeholder": "Search model...",
-          "title": "Model",
-          "unknown": "Unknown model ({{name, string}})"
+          "empty": "No models found.",
+          "none": "No model selected",
+          "search": "Search model...",
+          "unknown": "Unknown model ({{name}})"
         },
         "title": "Model Configuration"
       },
+      "openai": {
+        "poll-interval": {
+          "desc": "How long to wait between response status checks.",
+          "title": "Polling interval (ms)"
+        },
+        "poll-timeout": {
+          "desc": "Maximum time to wait for a response before failing.",
+          "title": "Polling timeout (ms)"
+        }
+      },
+      "reset": "Reset",
+      "sources": {
+        "add": {
+          "cancel": "Cancel",
+          "confirm": "Add source",
+          "label": "Add AI source",
+          "name": "Display name (optional)",
+          "name-placeholder": "e.g. Classroom Gemini",
+          "provider": "Provider",
+          "success": "Added {{name}}.",
+          "title": "Add AI source"
+        },
+        "active": {
+          "badge": "Active",
+          "label": "Active source"
+        },
+        "desc": "Manage enabled AI providers and choose which one to configure.",
+        "enabled": {
+          "label": "Enabled sources",
+          "toggle": "Enabled"
+        },
+        "make-active": "Set active",
+        "option": "{{name}} • {{provider}}",
+        "providers": {
+          "gemini": "Gemini",
+          "openai": "OpenAI"
+        },
+        "remove": {
+          "error": "Keep at least one AI source.",
+          "label": "Remove source",
+          "success": "Removed {{name}}."
+        },
+        "title": "AI Sources"
+      },
       "thinking": {
-        "default": "Default: 8192 Tokens",
-        "title": "Thinking Budget",
-        "tokens-unit": "Tokens"
+        "budget": "Thinking budget",
+        "desc": "Adjust advanced thinking parameters for supported providers.",
+        "title": "Thinking Settings",
+        "tokens-unit": "tokens"
       },
       "traits": {
-        "desc": "Define the AI's personality, role, or instructions",
+        "desc": "Define the assistant's persona or extra instructions.",
         "placeholder": "e.g., You are a helpful assistant that speaks in a friendly and professional tone.",
         "title": "System Prompt (Traits)"
       }
@@ -212,7 +284,8 @@ interface Resources {
         "failed": "Failed to process this image. Please try again.",
         "pending": "Processing in progress...",
         "stream": "Reasoning...",
-        "success": "No problems were detected for this image."
+        "success": "No problems were detected for this image.",
+        "success-with-provider": "Solved by {{provider}}."
       },
       "streaming": {
         "placeholder": "AI is thinking...",
@@ -236,9 +309,10 @@ interface Resources {
         "tips": ["Prefer natural light and avoid glare.", "Fill the frame with the problem. Keep text sharp.", "One question per shot yields better recognition."],
         "title": "Taking photos on different devices"
       },
+      "pdf-disabled": "PDF uploads are available only when a Gemini source is enabled.",
       "take-photo": "Take Photo",
       "upload": "Upload Files",
-      "upload-tip": "PDF and image files are supported"
+      "upload-tip": "Images are supported. PDFs require an active Gemini source."
     },
     "uploads-info": {
       "selected": "Selected"
