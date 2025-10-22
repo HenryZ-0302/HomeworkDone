@@ -20,28 +20,29 @@ function normalizeBaseUrl(baseUrl?: string) {
     : `${normalized}${OPENAI_PATH_SUFFIX}`;
 }
 
-type OpenAiResponse = OpenAI.Responses.Response;
+type ResponseOutputContent = {
+  text?: string;
+};
 
-function collectOutputText(
-  output: OpenAI.Responses.ResponseOutput[] | undefined,
-): string {
+type ResponseOutput = {
+  content?: ResponseOutputContent[];
+};
+
+type FinalResponse = {
+  output_text?: string;
+  output?: ResponseOutput[];
+};
+
+function collectOutputText(output?: ResponseOutput[]): string {
   if (!output) return "";
   return output
-    .flatMap((item) => ("content" in item ? item.content : []))
-    .map((contentPart) => {
-      if (contentPart.type === "output_text" || contentPart.type === "text") {
-        return contentPart.text ?? "";
-      }
-      if ("delta" in contentPart && contentPart.type === "output_text.delta") {
-        return contentPart.delta ?? "";
-      }
-      return "";
-    })
+    .flatMap((item) => item.content ?? [])
+    .map((contentPart) => contentPart.text ?? "")
     .join("")
     .trim();
 }
 
-function extractTextFromResponse(response: OpenAiResponse): string {
+function extractTextFromResponse(response: FinalResponse): string {
   if (response.output_text && response.output_text.length > 0) {
     return response.output_text.trim();
   }
@@ -82,24 +83,34 @@ export class OpenAiClient {
         role: "system" as const,
         content: [
           {
-            type: "text" as const,
+            type: "input_text" as const,
             text: this.systemPrompt,
           },
         ],
       });
     }
 
-    const userContent = [];
+    const userContent: Array<
+      | {
+          type: "input_text";
+          text: string;
+        }
+      | {
+          type: "input_image";
+          image_url: string;
+          detail: "auto" | "low" | "high";
+        }
+    > = [];
     if (prompt) {
       userContent.push({
-        type: "text" as const,
+        type: "input_text",
         text: prompt,
       });
     }
     userContent.push({
-      type: "input_image" as const,
-      image_base64: media,
-      mime_type: mimeType,
+      type: "input_image",
+      image_url: `data:${mimeType};base64,${media}`,
+      detail: "auto",
     });
 
     input.push({
@@ -123,14 +134,20 @@ export class OpenAiClient {
     const startTime = Date.now();
 
     for await (const event of stream) {
+      const eventType = (event as { type?: string }).type;
+
       if (
-        event.type === "response.output_text.delta" &&
-        typeof event.delta === "string"
+        eventType === "response.output_text.delta" &&
+        typeof (event as { delta?: unknown }).delta === "string"
       ) {
-        aggregated += event.delta;
-        callback?.(event.delta);
-      } else if (event.type === "response.error") {
-        throw new Error(event.error.message);
+        const delta = (event as { delta: string }).delta;
+        aggregated += delta;
+        callback?.(delta);
+      } else if (eventType === "response.error") {
+        const message =
+          ((event as { error?: { message?: string } }).error?.message) ??
+          "OpenAI streaming error";
+        throw new Error(message);
       }
 
       if (Date.now() - startTime > this.config.maxPollMs) {
@@ -139,7 +156,7 @@ export class OpenAiClient {
       }
     }
 
-    const finalResponse = await stream.finalResponse();
+    const finalResponse = (await stream.finalResponse()) as unknown as FinalResponse;
     if (!aggregated) {
       aggregated = extractTextFromResponse(finalResponse);
     }
