@@ -120,7 +120,7 @@ export class OpenAiClient {
 
     const controller = new AbortController();
 
-    const stream = await this.client.responses.stream(
+    const stream = this.client.responses.stream(
       {
         model,
         input,
@@ -145,7 +145,7 @@ export class OpenAiClient {
         callback?.(delta);
       } else if (eventType === "response.error") {
         const message =
-          ((event as { error?: { message?: string } }).error?.message) ??
+          (event as { error?: { message?: string } }).error?.message ??
           "OpenAI streaming error";
         throw new Error(message);
       }
@@ -156,7 +156,8 @@ export class OpenAiClient {
       }
     }
 
-    const finalResponse = (await stream.finalResponse()) as unknown as FinalResponse;
+    const finalResponse =
+      (await stream.finalResponse()) as unknown as FinalResponse;
     if (!aggregated) {
       aggregated = extractTextFromResponse(finalResponse);
     }
