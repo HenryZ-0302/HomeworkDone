@@ -660,7 +660,7 @@ export default function SettingsPage() {
           <CardDescription>{t("model.desc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <Popover open={modelPopoverOpen} onOpenChange={setModelPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -707,7 +707,7 @@ export default function SettingsPage() {
                 </Command>
               </PopoverContent>
             </Popover>
-            <Button variant="outline" onClick={loadModels}>
+            <Button variant="outline" onClick={loadModels} className="flex-1">
               {t("model.refresh")}
             </Button>
           </div>
