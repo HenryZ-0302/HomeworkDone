@@ -105,6 +105,33 @@
     "streaming": {
       "title": "AI Output",
       "placeholder": "AI is thinking..."
+    },
+    "export": {
+      "button": "Export as Markdown",
+      "filename-prefix": "homework-solutions",
+      "document-title": "Homework Solutions",
+      "page-heading": "Page {{index}} · {{name}}",
+      "problem-heading": "Problem {{index}}",
+      "problem-label": "Problem",
+      "answer-label": "Answer",
+      "explanation-label": "Explanation",
+      "placeholders": {
+        "problem": "_No problem content provided._",
+        "answer": "_No answer provided._",
+        "explanation": "_No explanation provided._"
+      },
+      "empty": {
+        "title": "Nothing to export",
+        "description": "Run a scan and wait for results before exporting."
+      },
+      "success": {
+        "title": "Markdown downloaded",
+        "description": "Your solutions file is ready."
+      },
+      "error": {
+        "title": "Export failed",
+        "description": "Something went wrong while creating the markdown file."
+      }
     }
   },
   "upload-area": {

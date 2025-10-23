@@ -1,5 +1,11 @@
 import { TabsTrigger } from "@radix-ui/react-tabs";
-import { Card, CardContent, CardTitle } from "../ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 import { Tabs, TabsContent, TabsList } from "../ui/tabs";
 import {
   Collapsible,
@@ -31,6 +37,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useDrag } from "@use-gesture/react";
 import { animated, to, useSpring } from "@react-spring/web";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { toast } from "sonner";
 
 export interface OrderedSolution {
   item: FileItem;
@@ -40,6 +47,11 @@ export interface OrderedSolution {
 export default function SolutionsArea() {
   const { t } = useTranslation("commons", { keyPrefix: "solutions" });
   const { t: tCommon } = useTranslation("commons");
+  const translate = useCallback(
+    (key: string, options?: Record<string, unknown>) =>
+      t(key as never, options as never) as unknown as string,
+    [t],
+  );
   const {
     imageItems: items,
     imageSolutions,
@@ -82,6 +94,110 @@ export default function SolutionsArea() {
   const currentBundle =
     currentImageIdx >= 0 ? orderedSolutions[currentImageIdx] : null;
   const problems = currentBundle?.solutions.problems ?? [];
+
+  const exportableSolutions = useMemo(
+    () => orderedSolutions.filter((entry) => entry.solutions.problems.length),
+    [orderedSolutions],
+  );
+
+  const buildMarkdownDocument = useCallback(() => {
+    const lines: string[] = [];
+    lines.push(`# ${translate("export.document-title")}`);
+    lines.push("");
+
+    exportableSolutions.forEach((entry, pageIndex) => {
+      const displayName = entry.item.file.name
+        ? entry.item.file.name
+        : t("tabs.fallback", { index: pageIndex + 1 });
+
+      lines.push(
+        `## ${translate("export.page-heading", {
+          index: pageIndex + 1,
+          name: displayName,
+        })}`,
+      );
+      lines.push("");
+
+      entry.solutions.problems.forEach((problem, problemIdx) => {
+        lines.push(
+          `### ${translate("export.problem-heading", { index: problemIdx + 1 })}`,
+        );
+        lines.push("");
+
+        const hasContent = (value: string | undefined | null) =>
+          Boolean(value && value.replace(/\s+/g, "").length);
+
+        const ensureContent = (value: string | undefined | null, fallback: string) =>
+          hasContent(value) ? value! : fallback;
+
+        lines.push(`**${translate("export.problem-label")}**`);
+        lines.push("");
+        lines.push(
+          ensureContent(
+            problem.problem,
+            translate("export.placeholders.problem"),
+          ),
+        );
+        lines.push("");
+
+        lines.push(`**${translate("export.answer-label")}**`);
+        lines.push("");
+        lines.push(
+          ensureContent(
+            problem.answer,
+            translate("export.placeholders.answer"),
+          ),
+        );
+        lines.push("");
+
+        lines.push(`**${translate("export.explanation-label")}**`);
+        lines.push("");
+        lines.push(
+          ensureContent(
+            problem.explanation,
+            translate("export.placeholders.explanation"),
+          ),
+        );
+        lines.push("");
+      });
+    });
+
+    return lines.join("\n");
+  }, [exportableSolutions, t, translate]);
+
+  const handleExportMarkdown = useCallback(() => {
+    if (!exportableSolutions.length) {
+      toast.error(translate("export.empty.title"), {
+        description: translate("export.empty.description"),
+      });
+      return;
+    }
+
+    try {
+      const markdown = buildMarkdownDocument();
+      const blob = new Blob([markdown], {
+        type: "text/markdown;charset=utf-8",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      link.href = url;
+      link.download = `${translate("export.filename-prefix")}-${timestamp}.md`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+
+      toast.success(translate("export.success.title"), {
+        description: translate("export.success.description"),
+      });
+    } catch (error) {
+      console.error("Failed to export markdown", error);
+      toast.error(translate("export.error.title"), {
+        description: translate("export.error.description"),
+      });
+    }
+  }, [buildMarkdownDocument, exportableSolutions.length, translate]);
 
   const [{ x }, api] = useSpring(() => ({ x: 0 }));
 
@@ -247,9 +363,23 @@ export default function SolutionsArea() {
 
   return (
     <>
-      <Card className="rounded-2xl p-4 shadow">
-        <CardTitle>{t("title")}</CardTitle>
-        <CardContent>
+      <Card className="rounded-2xl shadow">
+        <CardHeader className="px-6 pb-0">
+          <CardTitle className="text-lg font-semibold">
+            {t("title")}
+          </CardTitle>
+          <CardAction>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportMarkdown}
+              disabled={!exportableSolutions.length}
+            >
+              {translate("export.button")}
+            </Button>
+          </CardAction>
+        </CardHeader>
+        <CardContent className="pt-2">
           {/* Focusable region to capture keyboard shortcuts for navigation. */}
           <animated.div
             tabIndex={0}
