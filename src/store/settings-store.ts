@@ -46,7 +46,7 @@ export interface SettingsState {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      imageBinarizing: true,
+      imageBinarizing: false,
       showDonateBtn: true,
       theme: "system",
       language: DEFAULT_LANGUAGE,
