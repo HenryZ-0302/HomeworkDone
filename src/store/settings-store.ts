@@ -69,7 +69,7 @@ export const useSettingsStore = create<SettingsState>()(
       name: "skidhw-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        imagePostprocessing: state.imageBinarizing,
+        imageBinarizing: state.imageBinarizing,
         showDonateBtn: state.showDonateBtn,
         theme: state.theme,
         language: state.language,
