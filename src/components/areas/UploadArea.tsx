@@ -1,6 +1,6 @@
 import { Camera, Info, Upload } from "lucide-react";
 import { Button } from "../ui/button";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,12 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { useHotkeys } from "react-hotkeys-hook";
 import { useProblemsStore, type FileItem } from "@/store/problems-store";
-import { Kbd } from "../ui/kbd";
 import { Trans, useTranslation } from "react-i18next";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
+import { useShortcut } from "@/hooks/use-shortcut";
+import { ShortcutHint } from "../ShortcutHint";
 
 export type UploadAreaProps = {
   appendFiles: (files: File[] | FileList, source: FileItem["source"]) => void;
@@ -39,19 +39,27 @@ export default function UploadArea({
   const uploadBtnRef = useRef<HTMLButtonElement | null>(null);
   const cameraBtnRef = useRef<HTMLButtonElement | null>(null);
 
-  const handleUploadBtnClicked = () => {
+  const handleUploadBtnClicked = useCallback(() => {
     if (isWorking) return;
     uploadInputRef.current?.click();
-  };
+  }, [isWorking]);
 
-  const handleCameraBtnClicked = () => {
+  const handleCameraBtnClicked = useCallback(() => {
     if (isWorking) return;
     cameraInputRef.current?.click();
-  };
+  }, [isWorking]);
 
-  // Add keybindings
-  useHotkeys("ctrl+1", handleUploadBtnClicked);
-  useHotkeys("ctrl+2", handleCameraBtnClicked);
+  const uploadShortcut = useShortcut(
+    "upload",
+    () => handleUploadBtnClicked(),
+    [handleUploadBtnClicked],
+  );
+
+  const cameraShortcut = useShortcut(
+    "camera",
+    () => handleCameraBtnClicked(),
+    [handleCameraBtnClicked],
+  );
 
   const fileAccept = allowPdf ? "image/*,application/pdf" : "image/*";
 
@@ -94,7 +102,7 @@ export default function UploadArea({
             <Upload className="h-5 w-5" />
             {t("upload")}
           </span>
-          {!isCompact && <Kbd>Ctrl+1</Kbd>}
+          {!isCompact && <ShortcutHint shortcut={uploadShortcut} />}
         </Button>
       </div>
       <div className={cn("flex gap-2", isCompact && "flex-col")}>
@@ -126,7 +134,7 @@ export default function UploadArea({
             <Camera className="h-5 w-5" />
             {t("take-photo")}
           </span>
-          {!isCompact && <Kbd>Ctrl+2</Kbd>}
+          {!isCompact && <ShortcutHint shortcut={cameraShortcut} />}
         </Button>
         <Button
           variant="ghost"

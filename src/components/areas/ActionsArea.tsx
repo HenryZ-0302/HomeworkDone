@@ -1,11 +1,11 @@
 import { Loader2Icon, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
-import { useEffect, useRef, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useProblemsStore } from "@/store/problems-store";
-import { Kbd } from "../ui/kbd";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useShortcut } from "@/hooks/use-shortcut";
+import { ShortcutHint } from "../ShortcutHint";
 
 export type ActionsAreaProps = {
   startScan: () => Promise<void>;
@@ -24,27 +24,24 @@ export default function ActionsArea({
   const isMobileLayout = layout === "mobile";
 
   const isWorking = useProblemsStore((s) => s.isWorking);
-  const handleSkidBtnClicked = () => {
+  const handleSkidBtnClicked = useCallback(() => {
     if (isWorking) return;
     startScan();
-  };
+  }, [isWorking, startScan]);
 
   const clearAllBtnRef = useRef<HTMLButtonElement | null>(null);
   const skidBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const [confirmedClear, setConfirmedClear] = useState(false);
 
-  useHotkeys("ctrl+3", () => skidBtnRef.current?.click());
-  useHotkeys("ctrl+4", () => clearAllBtnRef.current?.click());
-
-  const handleClearAll = () => {
+  const handleClearAll = useCallback(() => {
     if (confirmedClear) {
       clearAll();
       setConfirmedClear(false);
     } else {
       setConfirmedClear(true);
     }
-  };
+  }, [clearAll, confirmedClear]);
 
   useEffect(() => {
     if (!confirmedClear) return; // do not modify the variable if it is already false
@@ -55,6 +52,18 @@ export default function ActionsArea({
       clearTimeout(timeoutId);
     };
   }, [confirmedClear, setConfirmedClear]);
+
+  const scanShortcut = useShortcut(
+    "startScan",
+    () => skidBtnRef.current?.click(),
+    [],
+  );
+
+  const clearShortcut = useShortcut(
+    "clearAll",
+    () => clearAllBtnRef.current?.click(),
+    [confirmedClear],
+  );
 
   return (
     <div
@@ -75,7 +84,7 @@ export default function ActionsArea({
           <Trash2 className="h-5 w-5 shrink-0" />
           {!confirmedClear ? t("clear-all") : t("clear-confirmation")}
         </span>
-        {!isMobileLayout && <Kbd>Ctrl+4</Kbd>}
+        {!isMobileLayout && <ShortcutHint shortcut={clearShortcut} />}
       </Button>
       <Button
         ref={skidBtnRef}
@@ -93,7 +102,7 @@ export default function ActionsArea({
           </>
         ) : (
           <>
-            {t("scan")} {!isMobileLayout && <Kbd>Ctrl+3</Kbd>}
+            {t("scan")} {!isMobileLayout && <ShortcutHint shortcut={scanShortcut} />}
           </>
         )}
       </Button>

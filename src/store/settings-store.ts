@@ -3,6 +3,22 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 export type ThemePreference = "light" | "dark" | "system";
 export type LanguagePreference = "en" | "zh";
+export type ShortcutAction =
+  | "upload"
+  | "camera"
+  | "startScan"
+  | "clearAll"
+  | "openSettings";
+
+export type ShortcutMap = Record<ShortcutAction, string>;
+
+const DEFAULT_SHORTCUTS: ShortcutMap = {
+  upload: "ctrl+1",
+  camera: "ctrl+2",
+  startScan: "ctrl+3",
+  clearAll: "ctrl+4",
+  openSettings: "ctrl+5",
+};
 
 const DEFAULT_LANGUAGE: LanguagePreference =
   typeof window !== "undefined" && window.navigator.language.startsWith("zh")
@@ -21,6 +37,10 @@ export interface SettingsState {
 
   language: LanguagePreference;
   setLanguage: (language: LanguagePreference) => void;
+
+  keybindings: ShortcutMap;
+  setKeybinding: (action: ShortcutAction, binding: string) => void;
+  resetKeybindings: () => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -30,11 +50,20 @@ export const useSettingsStore = create<SettingsState>()(
       showDonateBtn: true,
       theme: "system",
       language: DEFAULT_LANGUAGE,
+      keybindings: { ...DEFAULT_SHORTCUTS },
 
       setImageBinarizing: (state) => set({ imageBinarizing: state }),
       setShowDonateBtn: (state) => set({ showDonateBtn: state }),
       setThemePreference: (theme) => set({ theme }),
       setLanguage: (language) => set({ language }),
+      setKeybinding: (action, binding) =>
+        set((state) => ({
+          keybindings: {
+            ...state.keybindings,
+            [action]: binding,
+          },
+        })),
+      resetKeybindings: () => set({ keybindings: { ...DEFAULT_SHORTCUTS } }),
     }),
     {
       name: "skidhw-storage",
@@ -44,8 +73,33 @@ export const useSettingsStore = create<SettingsState>()(
         showDonateBtn: state.showDonateBtn,
         theme: state.theme,
         language: state.language,
+        keybindings: state.keybindings,
       }),
-      version: 2,
+      version: 3,
+      migrate: (persistedState, version) => {
+        const data =
+          persistedState && typeof persistedState === "object"
+            ? { ...persistedState }
+            : {};
+
+        if (version < 3) {
+          return {
+            ...data,
+            keybindings: { ...DEFAULT_SHORTCUTS },
+          };
+        }
+
+        const existing = (data as { keybindings?: ShortcutMap }).keybindings;
+
+        return {
+          ...data,
+          keybindings: existing
+            ? { ...DEFAULT_SHORTCUTS, ...existing }
+            : { ...DEFAULT_SHORTCUTS },
+        };
+      },
     },
   ),
 );
+
+export const getDefaultShortcuts = () => ({ ...DEFAULT_SHORTCUTS });

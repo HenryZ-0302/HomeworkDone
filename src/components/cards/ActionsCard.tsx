@@ -1,4 +1,5 @@
 import type { FileItem } from "@/store/problems-store";
+import { useCallback } from "react";
 import ActionsArea from "../areas/ActionsArea";
 import InfoArea from "../UploadsInfo";
 import { Button } from "../ui/button";
@@ -6,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Separator } from "../ui/separator";
 import UploadArea from "../areas/UploadArea";
 import { useNavigate } from "react-router-dom";
-import { useHotkeys } from "react-hotkeys-hook";
-import { Kbd } from "../ui/kbd";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useShortcut } from "@/hooks/use-shortcut";
+import { ShortcutHint } from "../ShortcutHint";
 
 export type ActionsCardProps = {
   items: FileItem[];
@@ -35,11 +36,15 @@ export default function ActionsCard({
   const { t } = useTranslation("commons", { keyPrefix: "actions" });
   const navigate = useNavigate();
 
-  const handleSettingsBtnClick = () => {
+  const handleSettingsBtnClick = useCallback(() => {
     navigate("/settings");
-  };
+  }, [navigate]);
 
-  useHotkeys("ctrl+5", handleSettingsBtnClick);
+  const settingsShortcut = useShortcut(
+    "openSettings",
+    () => handleSettingsBtnClick(),
+    [handleSettingsBtnClick],
+  );
 
   return (
     <Card
@@ -89,7 +94,8 @@ export default function ActionsCard({
           variant="secondary"
           onClick={handleSettingsBtnClick}
         >
-          {t("settings")} {layout !== "mobile" && <Kbd>Ctrl+5</Kbd>}
+          {t("settings")}{" "}
+          {layout !== "mobile" && <ShortcutHint shortcut={settingsShortcut} />}
         </Button>
       </CardContent>
     </Card>

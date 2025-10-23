@@ -11,6 +11,7 @@ import {
   useSettingsStore,
   type LanguagePreference,
   type ThemePreference,
+  type ShortcutAction,
 } from "@/store/settings-store";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -50,6 +51,7 @@ import {
 } from "../ui/dialog";
 import { toast } from "sonner";
 import { useTheme } from "../theme-provider";
+import ShortcutRecorder from "../ShortcutRecorder";
 
 const DEFAULT_BASE_BY_PROVIDER: Record<AiProvider, string> = {
   gemini: DEFAULT_GEMINI_BASE_URL,
@@ -77,6 +79,9 @@ export default function SettingsPage() {
     setThemePreference,
     language,
     setLanguage,
+    keybindings,
+    setKeybinding,
+    resetKeybindings,
   } = useSettingsStore((s) => s);
   const { theme: activeTheme, setTheme } = useTheme();
 
@@ -203,6 +208,51 @@ export default function SettingsPage() {
   useEffect(() => {
     loadModels();
   }, [loadModels]);
+
+  const translateSettings = useCallback(
+    (key: string) => t(key as never) as string,
+    [t],
+  );
+
+  const shortcutItems = useMemo(() => {
+    return [
+      {
+        action: "upload" as ShortcutAction,
+        label: translateSettings("shortcuts.actions.upload.label"),
+        description: translateSettings("shortcuts.actions.upload.description"),
+      },
+      {
+        action: "camera" as ShortcutAction,
+        label: translateSettings("shortcuts.actions.camera.label"),
+        description: translateSettings("shortcuts.actions.camera.description"),
+      },
+      {
+        action: "startScan" as ShortcutAction,
+        label: translateSettings("shortcuts.actions.startScan.label"),
+        description: translateSettings(
+          "shortcuts.actions.startScan.description",
+        ),
+      },
+      {
+        action: "clearAll" as ShortcutAction,
+        label: translateSettings("shortcuts.actions.clearAll.label"),
+        description: translateSettings(
+          "shortcuts.actions.clearAll.description",
+        ),
+      },
+      {
+        action: "openSettings" as ShortcutAction,
+        label: translateSettings("shortcuts.actions.openSettings.label"),
+        description: translateSettings(
+          "shortcuts.actions.openSettings.description",
+        ),
+      },
+    ];
+  }, [translateSettings]);
+
+  const shortcutsTitle = translateSettings("shortcuts.title");
+  const shortcutsDesc = translateSettings("shortcuts.desc");
+  const shortcutsResetLabel = translateSettings("shortcuts.reset");
 
   const handleNameBlur = () => {
     if (!activeSource) return;
@@ -572,6 +622,35 @@ export default function SettingsPage() {
               {t("appearance.language.desc")}
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{shortcutsTitle}</CardTitle>
+          <CardDescription>{shortcutsDesc}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {shortcutItems.map((item) => (
+            <div
+              key={item.action}
+              className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div>
+                <p className="font-medium">{item.label}</p>
+                <p className="text-sm text-muted-foreground">
+                  {item.description}
+                </p>
+              </div>
+              <ShortcutRecorder
+                value={keybindings[item.action] ?? ""}
+                onChange={(combo) => setKeybinding(item.action, combo)}
+              />
+            </div>
+          ))}
+          <Button variant="ghost" onClick={resetKeybindings} className="mt-2">
+            {shortcutsResetLabel}
+          </Button>
         </CardContent>
       </Card>
 

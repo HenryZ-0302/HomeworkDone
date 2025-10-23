@@ -197,6 +197,40 @@
         }
       }
     },
+    "shortcuts": {
+      "title": "键盘快捷键",
+      "desc": "为常用操作自定义快捷键，留空则表示禁用该快捷键。",
+      "recording": "请按键…",
+      "unassigned": "未设置",
+      "clear": "清除",
+      "manual": {
+        "placeholder": "手动输入组合（如 Ctrl+1）",
+        "invalid": "请输入包含修饰键和按键的有效组合。"
+      },
+      "reset": "恢复默认",
+      "actions": {
+        "upload": {
+          "label": "上传文件",
+          "description": "打开文件选择器，挑选图片或 PDF。"
+        },
+        "camera": {
+          "label": "拍照",
+          "description": "调用设备相机拍摄作业。"
+        },
+        "startScan": {
+          "label": "开始识别",
+          "description": "将所有待处理的文件发送给 AI 源。"
+        },
+        "clearAll": {
+          "label": "清空全部",
+          "description": "移除所有已上传的文件与结果。"
+        },
+        "openSettings": {
+          "label": "打开设置",
+          "description": "从任意页面快速进入设置。"
+        }
+      }
+    },
     "model": {
       "title": "模型配置",
       "desc": "选择或手动填写请求所使用的模型。",

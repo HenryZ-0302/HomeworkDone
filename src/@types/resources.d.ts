@@ -236,6 +236,40 @@ interface Resources {
         }
       },
       "reset": "Reset",
+      "shortcuts": {
+        "actions": {
+          "camera": {
+            "description": "Launches the device camera to capture homework.",
+            "label": "Take photo"
+          },
+          "clearAll": {
+            "description": "Removes every uploaded item and solution.",
+            "label": "Clear all"
+          },
+          "openSettings": {
+            "description": "Opens this settings page from anywhere in the app.",
+            "label": "Open settings"
+          },
+          "startScan": {
+            "description": "Sends all pending items to your AI sources.",
+            "label": "Start scan"
+          },
+          "upload": {
+            "description": "Opens the file picker for selecting images or PDFs.",
+            "label": "Upload files"
+          }
+        },
+        "clear": "Clear",
+        "desc": "Customize the keys used for common actions. Leave blank to disable a shortcut.",
+        "manual": {
+          "invalid": "Enter a valid shortcut using modifier keys plus a key.",
+          "placeholder": "Type shortcut (e.g. Ctrl+1)"
+        },
+        "recording": "Press keys…",
+        "reset": "Reset to defaults",
+        "title": "Keyboard shortcuts",
+        "unassigned": "Unassigned"
+      },
       "sources": {
         "active": {
           "badge": "Active",
@@ -311,7 +345,7 @@ interface Resources {
     "solutions": {
       "analyzing": "Analyzing... extracting problems and solutions from your images.",
       "focus-region-aria": "Solutions keyboard focus region (Tab/Shift+Tab for problems, Space/Shift+Space for images)",
-      "gesture-hint": "Swipe left or right to switch files, swipe up or down to change problems.",
+      "gesture-hint": "Swipe left or right to switch problems.",
       "idle": "No solutions yet. Add images and click \"Let's Skid\" to see results here.",
       "photo-label": "Photo {{index}} • {{source}}",
       "status": {
