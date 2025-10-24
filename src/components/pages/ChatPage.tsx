@@ -868,7 +868,7 @@ export default function ChatPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-3 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex w-full max-w-[80%] items-center justify-between gap-3 px-3 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-1 items-center gap-3">
             <Button
               variant="outline"
@@ -923,7 +923,7 @@ export default function ChatPage() {
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-3 py-4 sm:px-6 sm:py-6 lg:flex-row lg:gap-8 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[80%] flex-1 flex-col gap-6 px-3 py-4 sm:px-6 sm:py-6 lg:flex-row lg:gap-8 lg:px-8">
         {!sidebarCollapsed && (
           <aside className="hidden w-full max-w-md lg:flex lg:flex-col">
             <div className="sticky top-[96px] flex h-[calc(100vh-160px)] flex-1 flex-col rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm">
@@ -936,7 +936,7 @@ export default function ChatPage() {
           <section className="flex h-full min-h-[480px] flex-1 flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/80 shadow-lg">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 px-4 py-3 sm:px-6">
               <div className="min-w-0">
-                <h2 className="truncate text-lg font-semibold sm:text-xl">
+                <h2 className="truncate text-lg font-semibold sm:text-xl w-xl">
                   {activeThread
                     ? activeThread.title
                     : t("conversation.empty-title")}
@@ -970,13 +970,16 @@ export default function ChatPage() {
                   >
                     <div
                       className={cn(
-                        "max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm sm:max-w-[72%]",
+                        "max-w-[40%] rounded-2xl px-4 py-3 text-sm shadow-sm sm:max-w-[72%]",
                         message.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted",
                       )}
                     >
-                      <MemoizedMarkdown source={message.content || "..."} />
+                      <MemoizedMarkdown
+                        source={message.content || "..."}
+                        wrapText
+                      />
                     </div>
                   </div>
                 ))
