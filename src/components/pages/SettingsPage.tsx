@@ -41,7 +41,7 @@ import {
   CommandItem,
   CommandList,
 } from "../ui/command";
-import { Check, ChevronsUpDown, MessageSquare, Plus, Trash2 } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -126,12 +126,9 @@ export default function SettingsPage() {
   }, [activeSource]);
 
   const navigate = useNavigate();
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     navigate("/");
-  };
-  const handleOpenChat = () => {
-    navigate("/chat");
-  };
+  }, [navigate]);
   useHotkeys("esc", handleBack);
 
   useEffect(() => {
@@ -248,6 +245,13 @@ export default function SettingsPage() {
         label: translateSettings("shortcuts.actions.openSettings.label"),
         description: translateSettings(
           "shortcuts.actions.openSettings.description",
+        ),
+      },
+      {
+        action: "openChat" as ShortcutAction,
+        label: translateSettings("shortcuts.actions.openChat.label"),
+        description: translateSettings(
+          "shortcuts.actions.openChat.description",
         ),
       },
     ];
@@ -429,14 +433,6 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button className="w-full sm:flex-1" onClick={handleBack}>
           {t("back")} <Kbd>ESC</Kbd>
-        </Button>
-        <Button
-          variant="secondary"
-          className="w-full sm:flex-1"
-          onClick={handleOpenChat}
-        >
-          <MessageSquare className="mr-2 h-4 w-4" />
-          {t("open-chat", { defaultValue: "Open Chat" })}
         </Button>
       </div>
 

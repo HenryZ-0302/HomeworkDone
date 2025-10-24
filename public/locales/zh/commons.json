@@ -297,6 +297,10 @@
         "openSettings": {
           "label": "打开设置",
           "description": "从任意页面快速进入设置。"
+        },
+        "openChat": {
+          "label": "打开聊天",
+          "description": "随时切换到聊天工作区。"
         }
       }
     },

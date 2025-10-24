@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -8,7 +9,10 @@ import {
   ChevronsUpDown,
   Check,
   Menu,
+  X,
   GitFork,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -30,6 +34,7 @@ import type { AiChatMessage } from "@/ai/chat-types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Checkbox } from "../ui/checkbox";
+import { Kbd } from "../ui/kbd";
 
 const BASE_CHAT_SYSTEM_PROMPT =
   "You are a helpful AI tutor. Provide clear, encouraging explanations and show your reasoning when helpful.";
@@ -112,6 +117,7 @@ export default function ChatPage() {
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [forkingChatId, setForkingChatId] = useState<string | null>(null);
   const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     if (!isHydrated) {
@@ -583,7 +589,7 @@ export default function ChatPage() {
     }
   };
 
-  const handleNewChat = () => {
+  const handleNewChat = useCallback(() => {
     setActiveChat(undefined);
     if (resolvedSource) {
       setModelInput(resolvedSource.model);
@@ -593,12 +599,18 @@ export default function ChatPage() {
     setMessageInput("");
     setSeedData(null);
     clearSelection();
-  };
+  }, [
+    clearSelection,
+    resolvedSource,
+    setActiveChat,
+    setMessageInput,
+    setModelInput,
+    setSeedData,
+  ]);
 
   const currentSourceLabel = resolvedSource
     ? resolvedSource.name
     : t("source.select.placeholder");
-
   const activeThreadModel = activeThread?.model?.trim();
   const currentModelInput = modelInput.trim();
   const activeModelName =
@@ -829,6 +841,30 @@ export default function ChatPage() {
     </div>
   );
 
+  useHotkeys(
+    "esc",
+    (event) => {
+      event.preventDefault();
+      navigate("/");
+    },
+    {
+      enableOnFormTags: true,
+    },
+    [navigate],
+  );
+
+  useHotkeys(
+    ["ctrl+shift+o"],
+    (event) => {
+      event.preventDefault();
+      handleNewChat();
+    },
+    {
+      enableOnFormTags: true,
+    },
+    [handleNewChat],
+  );
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b border-border/60 bg-background/80 backdrop-blur">
@@ -845,6 +881,23 @@ export default function ChatPage() {
             >
               <Menu className="h-5 w-5" />
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden lg:flex"
+              onClick={() => setSidebarCollapsed((prev) => !prev)}
+              aria-label={
+                sidebarCollapsed
+                  ? translate("sidebar.show", { defaultValue: "Show sidebar" })
+                  : translate("sidebar.hide", { defaultValue: "Hide sidebar" })
+              }
+            >
+              {sidebarCollapsed ? (
+                <PanelLeftOpen className="h-5 w-5" />
+              ) : (
+                <PanelLeftClose className="h-5 w-5" />
+              )}
+            </Button>
             <div className="flex min-w-0 flex-col gap-1">
               <h1 className="truncate text-2xl font-semibold tracking-tight sm:text-3xl">
                 {t("title")}
@@ -855,6 +908,7 @@ export default function ChatPage() {
           <div className="flex shrink-0 items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => navigate("/")}>
               {t("actions.back")}
+              <Kbd>ESC</Kbd>
             </Button>
             <Button
               size="sm"
@@ -870,11 +924,13 @@ export default function ChatPage() {
       </header>
 
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-3 py-4 sm:px-6 sm:py-6 lg:flex-row lg:gap-8 lg:px-8">
-        <aside className="hidden w-full flex-[0.5] lg:flex lg:flex-col">
-          <div className="sticky top-[96px] flex h-[calc(100vh-160px)] flex-1 flex-col rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm">
-            {sidebarContent}
-          </div>
-        </aside>
+        {!sidebarCollapsed && (
+          <aside className="hidden w-full max-w-md lg:flex lg:flex-col">
+            <div className="sticky top-[96px] flex h-[calc(100vh-160px)] flex-1 flex-col rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm">
+              {sidebarContent}
+            </div>
+          </aside>
+        )}
 
         <main className="flex flex-1 flex-col">
           <section className="flex h-full min-h-[480px] flex-1 flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/80 shadow-lg">
@@ -961,14 +1017,21 @@ export default function ChatPage() {
 
       <Dialog open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <DialogContent className="flex max-h-[90vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl p-4 sm:max-w-md">
-          {/* Header */}
           <div className="flex items-center justify-between border-b pb-2">
             <DialogTitle className="text-base font-semibold leading-none tracking-tight">
               {translate("sidebar.mobile-title", { defaultValue: "Chat menu" })}
             </DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarOpen(false)}
+              aria-label={translate("sidebar.close", {
+                defaultValue: "Close chat menu",
+              })}
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
-
-          {/* Content */}
           <div className="flex-1 overflow-y-auto pt-4">{sidebarContent}</div>
         </DialogContent>
       </Dialog>

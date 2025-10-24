@@ -297,6 +297,10 @@
         "openSettings": {
           "label": "Open settings",
           "description": "Opens this settings page from anywhere in the app."
+        },
+        "openChat": {
+          "label": "Open chat",
+          "description": "Jump straight to the chat workspace."
         }
       }
     },

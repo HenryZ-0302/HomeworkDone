@@ -50,6 +50,10 @@ export default function ActionsCard({
     [handleSettingsBtnClick],
   );
 
+  const chatShortcut = useShortcut("openChat", () => handleChatBtnClick(), [
+    handleChatBtnClick,
+  ]);
+
   return (
     <Card
       className={cn(
@@ -60,9 +64,7 @@ export default function ActionsCard({
       )}
     >
       <CardHeader
-        className={cn(
-          layout === "mobile" ? "px-5 pb-2 pt-5" : undefined,
-        )}
+        className={cn(layout === "mobile" ? "px-5 pb-2 pt-5" : undefined)}
       >
         <CardTitle
           className={cn(
@@ -74,10 +76,7 @@ export default function ActionsCard({
         </CardTitle>
       </CardHeader>
       <CardContent
-        className={cn(
-          "space-y-4",
-          layout === "mobile" && "px-5 pb-5 pt-1",
-        )}
+        className={cn("space-y-4", layout === "mobile" && "px-5 pb-5 pt-1")}
       >
         <UploadArea appendFiles={appendFiles} allowPdf={allowPdfUploads} />
 
@@ -92,34 +91,26 @@ export default function ActionsCard({
           layout={layout}
         />
 
-        <div
-          className={cn(
-            "flex gap-2",
-            layout === "mobile" && "flex-col",
-          )}
-        >
+        <div className={cn("flex gap-2", layout === "mobile" && "flex-col")}>
           <Button
-            className={cn(
-              "flex-1",
-              layout === "mobile" && "py-6 text-base",
-            )}
-            size={layout === "mobile" ? "lg" : "default"}
-            variant="outline"
-            onClick={handleChatBtnClick}
-          >
-            {t("chat")}
-          </Button>
-          <Button
-            className={cn(
-              "flex-1",
-              layout === "mobile" && "py-6 text-base",
-            )}
+            className={cn("flex-1", layout === "mobile" && "py-6 text-base")}
             size={layout === "mobile" ? "lg" : "default"}
             variant="secondary"
             onClick={handleSettingsBtnClick}
           >
             {t("settings")}{" "}
-            {layout !== "mobile" && <ShortcutHint shortcut={settingsShortcut} />}
+            {layout !== "mobile" && (
+              <ShortcutHint shortcut={settingsShortcut} />
+            )}
+          </Button>
+          <Button
+            className={cn("flex-1", layout === "mobile" && "py-6 text-base")}
+            size={layout === "mobile" ? "lg" : "default"}
+            variant="secondary"
+            onClick={handleChatBtnClick}
+          >
+            {t("chat")}
+            {layout !== "mobile" && <ShortcutHint shortcut={chatShortcut} />}
           </Button>
         </div>
       </CardContent>

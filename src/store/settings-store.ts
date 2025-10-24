@@ -8,7 +8,8 @@ export type ShortcutAction =
   | "camera"
   | "startScan"
   | "clearAll"
-  | "openSettings";
+  | "openSettings"
+  | "openChat";
 
 export type ShortcutMap = Record<ShortcutAction, string>;
 
@@ -18,6 +19,7 @@ const DEFAULT_SHORTCUTS: ShortcutMap = {
   startScan: "ctrl+3",
   clearAll: "ctrl+4",
   openSettings: "ctrl+5",
+  openChat: "ctrl+6",
 };
 
 const DEFAULT_LANGUAGE: LanguagePreference =

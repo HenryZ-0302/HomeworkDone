@@ -21,9 +21,12 @@ import { useTranslation } from "react-i18next";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+import { useShortcut } from "@/hooks/use-shortcut";
 
 export default function ScanPage() {
   const { t } = useTranslation("commons", { keyPrefix: "scan-page" });
+  const navigate = useNavigate();
   // Destructure all necessary state and new semantic actions from the store.
   const {
     imageItems: items,
@@ -69,6 +72,15 @@ export default function ScanPage() {
   const isMobile = useMediaQuery("(max-width: 640px)");
   const [activeTab, setActiveTab] = useState<"capture" | "preview">(
     items.length ? "preview" : "capture",
+  );
+
+  useShortcut(
+    "openChat",
+    (event) => {
+      event.preventDefault();
+      navigate("/chat");
+    },
+    [navigate],
   );
 
   useEffect(() => {
