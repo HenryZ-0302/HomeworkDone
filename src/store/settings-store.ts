@@ -19,7 +19,7 @@ const DEFAULT_SHORTCUTS: ShortcutMap = {
   startScan: "ctrl+3",
   clearAll: "ctrl+4",
   openSettings: "ctrl+5",
-  openChat: "ctrl+6",
+  openChat: "ctrl+e",
 };
 
 const DEFAULT_LANGUAGE: LanguagePreference =
