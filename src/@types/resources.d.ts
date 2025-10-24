@@ -1,13 +1,54 @@
 interface Resources {
   "commons": {
     "actions": {
+      "chat": "Chat",
       "clear-all": "Clear All",
       "clear-confirmation": "Click again to clear",
       "processing": "Processing...",
       "scan": "Let's Skid",
-      "chat": "Chat",
       "settings": "Settings",
       "title": "Add Images"
+    },
+    "chat-page": {
+      "actions": {
+        "back": "Back to Scanner",
+        "delete-chat": "Delete Chat",
+        "new-chat": "New Chat"
+      },
+      "composer": {
+        "placeholder": "Ask a question or paste a problem...",
+        "send": "Send",
+        "sending": "Sending..."
+      },
+      "conversation": {
+        "empty": "Select a chat or start a new one to begin.",
+        "empty-title": "No conversation selected"
+      },
+      "errors": {
+        "missing-key": "{{provider}} needs an API key before you can chat.",
+        "no-model": "Please set a model name before chatting.",
+        "no-source": "Please enable at least one source with an API key in Settings.",
+        "send-failed": "Failed to send message: {{error}}",
+        "unsupported": "The selected model does not support conversations."
+      },
+      "history": {
+        "empty": "No chats yet. Start a conversation.",
+        "title": "History",
+        "unknown-source": "Unknown provider",
+        "untitled": "New chat"
+      },
+      "source": {
+        "empty": "No models found.",
+        "model": "Model name",
+        "model-placeholder": "gpt-4.1-mini or models/gemini-2.5-pro",
+        "search": "Search model...",
+        "section": "Model",
+        "select": {
+          "placeholder": "Select a model"
+        }
+      },
+      "subtitle": "Discuss problems with your configured models.",
+      "title": "Chat"
     },
     "improve-dialog": {
       "description": "Generate a more detailed solution using the current solution and your prompt.",
@@ -316,49 +357,35 @@ interface Resources {
         "title": "System Prompt (Traits)"
       }
     },
-    "chat-page": {
-      "title": "Chat",
-      "subtitle": "Discuss problems with your configured models.",
-      "actions": {
-        "back": "Back to Scanner",
-        "new-chat": "New Chat",
-        "delete-chat": "Delete Chat"
-      },
-      "source": {
-        "section": "Model",
-        "search": "Search model...",
-        "empty": "No models found.",
-        "select": {
-          "placeholder": "Select a model"
-        },
-        "model": "Model name",
-        "model-placeholder": "gpt-4.1-mini or models/gemini-2.5-pro"
-      },
-      "history": {
-        "title": "History",
-        "empty": "No chats yet. Start a conversation.",
-        "unknown-source": "Unknown provider",
-        "untitled": "New chat"
-      },
-      "conversation": {
-        "empty-title": "No conversation selected",
-        "empty": "Select a chat or start a new one to begin."
-      },
-      "composer": {
-        "placeholder": "Ask a question or paste a problem...",
-        "send": "Send",
-        "sending": "Sending..."
-      },
-      "errors": {
-        "no-source": "Please enable at least one source with an API key in Settings.",
-        "missing-key": "{{provider}} needs an API key before you can chat.",
-        "no-model": "Please set a model name before chatting.",
-        "unsupported": "The selected model does not support conversations.",
-        "send-failed": "Failed to send message: {{error}}"
-      }
-    },
     "solution-viewer": {
       "answer": "Answer",
+      "chat": {
+        "button": "Chat about this",
+        "context": {
+          "answer": "Answer:\n{{answer}}",
+          "explanation": "Explanation:\n{{explanation}}",
+          "intro": "The learner is reviewing the following work:",
+          "problem": "Problem:\n{{problem}}"
+        },
+        "default-title": "Homework chat",
+        "fallback": {
+          "answer": "Answer not available.",
+          "explanation": "Explanation not available.",
+          "problem": "Problem not available."
+        },
+        "no-problem": {
+          "description": "Choose a problem before starting a chat.",
+          "title": "Select a problem first"
+        },
+        "no-source": {
+          "description": "Configure an AI source with an API key in Settings to chat.",
+          "title": "No model available"
+        },
+        "prefill": {
+          "intro": "I'd like help understanding this problem.",
+          "outro": "Can you walk me through it step by step?"
+        }
+      },
       "copy": {
         "button": "Copy answer",
         "failed": {
@@ -382,37 +409,37 @@ interface Resources {
         "prefix": "Problem",
         "suffix": "of {{total}}"
       },
-      "source-image": "Source image:",
-      "chat": {
-        "button": "Chat about this",
-        "default-title": "Homework chat",
-        "no-problem": {
-          "title": "Select a problem first",
-          "description": "Choose a problem before starting a chat."
-        },
-        "no-source": {
-          "title": "No model available",
-          "description": "Configure an AI source with an API key in Settings to chat."
-        },
-        "context": {
-          "intro": "The learner is reviewing the following work:",
-          "problem": "Problem:\n{{problem}}",
-          "answer": "Answer:\n{{answer}}",
-          "explanation": "Explanation:\n{{explanation}}"
-        },
-        "prefill": {
-          "intro": "I'd like help understanding this problem.",
-          "outro": "Can you walk me through it step by step?"
-        },
-        "fallback": {
-          "problem": "Problem not available.",
-          "answer": "Answer not available.",
-          "explanation": "Explanation not available."
-        }
-      }
+      "source-image": "Source image:"
     },
     "solutions": {
       "analyzing": "Analyzing... extracting problems and solutions from your images.",
+      "export": {
+        "answer-label": "Answer",
+        "button": "Export as Markdown",
+        "document-title": "Homework Solutions",
+        "empty": {
+          "description": "Run a scan and wait for results before exporting.",
+          "title": "Nothing to export"
+        },
+        "error": {
+          "description": "Something went wrong while creating the markdown file.",
+          "title": "Export failed"
+        },
+        "explanation-label": "Explanation",
+        "filename-prefix": "homework-solutions",
+        "page-heading": "Page {{index}} · {{name}}",
+        "placeholders": {
+          "answer": "_No answer provided._",
+          "explanation": "_No explanation provided._",
+          "problem": "_No problem content provided._"
+        },
+        "problem-heading": "Problem {{index}}",
+        "problem-label": "Problem",
+        "success": {
+          "description": "Your solutions file is ready.",
+          "title": "Markdown downloaded"
+        }
+      },
       "focus-region-aria": "Solutions keyboard focus region (Tab/Shift+Tab for problems, Space/Shift+Space for images)",
       "gesture-hint": "Swipe left or right to switch problems.",
       "idle": "No solutions yet. Add images and click \"Let's Skid\" to see results here.",
