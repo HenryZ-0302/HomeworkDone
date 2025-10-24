@@ -716,9 +716,9 @@ export default function ChatPage() {
                           setActiveChat(thread.id);
                           setSidebarOpen(false);
                         }}
-                        className="flex flex-1 flex-col text-left"
+                        className="flex flex-1 flex-col text-left overflow-hidden"
                       >
-                        <span className="truncate text-sm font-medium">
+                        <span className="truncate text-sm font-medium overflow-ellipsis">
                           {thread.title}
                         </span>
                         <span className="truncate text-xs text-muted-foreground">
