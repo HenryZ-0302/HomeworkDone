@@ -7,16 +7,22 @@ import "katex/dist/katex.min.css";
 
 type MemoizedMarkdownProps = {
   source: string;
+  wrapText?: boolean;
 };
 
-const MarkdownRenderer = ({ source }: MemoizedMarkdownProps) => {
+const MarkdownRenderer = ({
+  source,
+  wrapText = false,
+}: MemoizedMarkdownProps) => {
   return (
-    <Markdown
-      remarkPlugins={[remarkGfm, remarkMath]}
-      rehypePlugins={[[rehypeKatex, { output: "html" }]]}
-    >
-      {source}
-    </Markdown>
+    <div className={wrapText ? "whitespace-pre-wrap break-words" : undefined}>
+      <Markdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[[rehypeKatex, { output: "html" }]]}
+      >
+        {source}
+      </Markdown>
+    </div>
   );
 };
 
