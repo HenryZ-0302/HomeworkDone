@@ -7,7 +7,6 @@ import PreviewCard from "../cards/PreviewCard";
 import { SOLVE_SYSTEM_PROMPT } from "@/ai/prompts";
 import { uint8ToBase64 } from "@/utils/encoding";
 import { parseSolveResponse } from "@/ai/response";
-import { shuffleArray } from "@/utils/shuffle";
 
 import {
   useProblemsStore,
@@ -207,7 +206,7 @@ export default function ScanPage() {
    * It polls through the configured AI sources until one succeeds per item.
    */
   const startScan = async () => {
-    const availableSources = shuffleArray(enabledSources);
+    const availableSources = enabledSources;
 
     if (!availableSources.length) {
       toast(t("toasts.no-source.title"), {
@@ -282,7 +281,7 @@ export default function ScanPage() {
 
         let lastError: unknown = null;
 
-        for (const source of shuffleArray(availableSources)) {
+        for (const source of availableSources) {
           try {
             const ai = getClientForSource(source.id);
             if (!ai) {

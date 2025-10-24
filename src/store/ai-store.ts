@@ -2,6 +2,7 @@ import { GeminiAi } from "@/ai/gemini";
 import { OpenAiClient } from "@/ai/openai";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import type { AiChatMessage } from "@/ai/chat-types";
 
 export type AiProvider = "gemini" | "openai";
 
@@ -34,6 +35,11 @@ export interface AiClient {
     callback?: (text: string) => void,
   ) => Promise<string>;
   getAvailableModels?: () => Promise<AiModelSummary[]>;
+  sendChat?: (
+    messages: AiChatMessage[],
+    model?: string,
+    callback?: (text: string) => void,
+  ) => Promise<string>;
 }
 
 export const DEFAULT_GEMINI_MODEL = "models/gemini-2.5-flash";
@@ -201,13 +207,23 @@ export const useAiStore = create<AiStore>()(
 
       getActiveSource: () => {
         const state = get();
-        const enabled = state.sources.filter(
-          (source) => source.enabled && source.apiKey,
+        const explicit = state.sources.find(
+          (source) =>
+            source.id === state.activeSourceId &&
+            source.enabled &&
+            Boolean(source.apiKey),
         );
-        if (enabled.length > 0) {
-          const index = Math.floor(Math.random() * enabled.length);
-          return enabled[index];
+        if (explicit) {
+          return explicit;
         }
+
+        const firstEnabled = state.sources.find(
+          (source) => source.enabled && Boolean(source.apiKey),
+        );
+        if (firstEnabled) {
+          return firstEnabled;
+        }
+
         return state.sources[0] ?? null;
       },
 
@@ -235,13 +251,11 @@ export const useAiStore = create<AiStore>()(
           return explicitSource ? createClientForSource(explicitSource) : null;
         }
 
-        const enabled = state.getEnabledSources();
-        const fallbackSources = enabled.length > 0 ? enabled : state.sources;
-        if (!fallbackSources.length) return null;
-
-        const randomIndex = Math.floor(Math.random() * fallbackSources.length);
-        const chosen = fallbackSources[randomIndex];
-        return createClientForSource(chosen);
+        const active = state.getActiveSource();
+        if (!active) {
+          return null;
+        }
+        return createClientForSource(active);
       },
     }),
     {

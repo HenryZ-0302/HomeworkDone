@@ -5,6 +5,7 @@ interface Resources {
       "clear-confirmation": "Click again to clear",
       "processing": "Processing...",
       "scan": "Let's Skid",
+      "chat": "Chat",
       "settings": "Settings",
       "title": "Add Images"
     },
@@ -315,6 +316,47 @@ interface Resources {
         "title": "System Prompt (Traits)"
       }
     },
+    "chat-page": {
+      "title": "Chat",
+      "subtitle": "Discuss problems with your configured models.",
+      "actions": {
+        "back": "Back to Scanner",
+        "new-chat": "New Chat",
+        "delete-chat": "Delete Chat"
+      },
+      "source": {
+        "section": "Model",
+        "search": "Search model...",
+        "empty": "No models found.",
+        "select": {
+          "placeholder": "Select a model"
+        },
+        "model": "Model name",
+        "model-placeholder": "gpt-4.1-mini or models/gemini-2.5-pro"
+      },
+      "history": {
+        "title": "History",
+        "empty": "No chats yet. Start a conversation.",
+        "unknown-source": "Unknown provider",
+        "untitled": "New chat"
+      },
+      "conversation": {
+        "empty-title": "No conversation selected",
+        "empty": "Select a chat or start a new one to begin."
+      },
+      "composer": {
+        "placeholder": "Ask a question or paste a problem...",
+        "send": "Send",
+        "sending": "Sending..."
+      },
+      "errors": {
+        "no-source": "Please enable at least one source with an API key in Settings.",
+        "missing-key": "{{provider}} needs an API key before you can chat.",
+        "no-model": "Please set a model name before chatting.",
+        "unsupported": "The selected model does not support conversations.",
+        "send-failed": "Failed to send message: {{error}}"
+      }
+    },
     "solution-viewer": {
       "answer": "Answer",
       "copy": {
@@ -340,7 +382,34 @@ interface Resources {
         "prefix": "Problem",
         "suffix": "of {{total}}"
       },
-      "source-image": "Source image:"
+      "source-image": "Source image:",
+      "chat": {
+        "button": "Chat about this",
+        "default-title": "Homework chat",
+        "no-problem": {
+          "title": "Select a problem first",
+          "description": "Choose a problem before starting a chat."
+        },
+        "no-source": {
+          "title": "No model available",
+          "description": "Configure an AI source with an API key in Settings to chat."
+        },
+        "context": {
+          "intro": "The learner is reviewing the following work:",
+          "problem": "Problem:\n{{problem}}",
+          "answer": "Answer:\n{{answer}}",
+          "explanation": "Explanation:\n{{explanation}}"
+        },
+        "prefill": {
+          "intro": "I'd like help understanding this problem.",
+          "outro": "Can you walk me through it step by step?"
+        },
+        "fallback": {
+          "problem": "Problem not available.",
+          "answer": "Answer not available.",
+          "explanation": "Explanation not available."
+        }
+      }
     },
     "solutions": {
       "analyzing": "Analyzing... extracting problems and solutions from your images.",

@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import type { AiChatMessage } from "./chat-types";
 
 export type OpenAiModel = {
   name: string;
@@ -117,6 +118,94 @@ export class OpenAiClient {
       role: "user" as const,
       content: userContent,
     });
+
+    const controller = new AbortController();
+
+    const stream = this.client.responses.stream(
+      {
+        model,
+        input,
+      },
+      {
+        signal: controller.signal,
+      },
+    );
+
+    let aggregated = "";
+    const startTime = Date.now();
+
+    for await (const event of stream) {
+      const eventType = (event as { type?: string }).type;
+
+      if (
+        eventType === "response.output_text.delta" &&
+        typeof (event as { delta?: unknown }).delta === "string"
+      ) {
+        const delta = (event as { delta: string }).delta;
+        aggregated += delta;
+        callback?.(delta);
+      } else if (eventType === "response.error") {
+        const message =
+          (event as { error?: { message?: string } }).error?.message ??
+          "OpenAI streaming error";
+        throw new Error(message);
+      }
+
+      if (Date.now() - startTime > this.config.maxPollMs) {
+        controller.abort();
+        throw new Error("OpenAI response polling timed out");
+      }
+    }
+
+    const finalResponse =
+      (await stream.finalResponse()) as unknown as FinalResponse;
+    if (!aggregated) {
+      aggregated = extractTextFromResponse(finalResponse);
+    }
+
+    return aggregated.trim();
+  }
+
+  async sendChat(
+    messages: AiChatMessage[],
+    model = "gpt-4.1-mini",
+    callback?: (text: string) => void,
+  ) {
+    const input = [];
+
+    if (this.systemPrompt) {
+      input.push({
+        role: "system" as const,
+        content: [
+          {
+            type: "input_text" as const,
+            text: this.systemPrompt,
+          },
+        ],
+      });
+    }
+
+    for (const message of messages) {
+      const trimmed = message.content?.trim();
+      if (!trimmed) continue;
+
+      const role =
+        message.role === "assistant"
+          ? ("assistant" as const)
+          : message.role === "system"
+            ? ("system" as const)
+            : ("user" as const);
+
+      input.push({
+        role,
+        content: [
+          {
+            type: "input_text" as const,
+            text: trimmed,
+          },
+        ],
+      });
+    }
 
     const controller = new AbortController();
 

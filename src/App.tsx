@@ -5,6 +5,7 @@ import InitPage from "./components/pages/InitPage";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
 import SettingsPage from "./components/pages/SettingsPage";
+import ChatPage from "./components/pages/ChatPage";
 import { useEffect } from "react";
 import { useSettingsStore } from "./store/settings-store";
 import i18n from "./i18n";
@@ -31,6 +32,14 @@ function App() {
             }
           />
 
+          <Route
+            path="/chat"
+            element={
+              <RequireAiKey fallback="/init">
+                <ChatPage />
+              </RequireAiKey>
+            }
+          />
           <Route path="/init" element={<InitPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>

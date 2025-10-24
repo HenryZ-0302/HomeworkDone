@@ -20,7 +20,6 @@ import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import { renderImproveXml } from "@/ai/request";
 import { IMPROVE_SYSTEM_PROMPT } from "@/ai/prompts";
 import { uint8ToBase64 } from "@/utils/encoding";
-import { shuffleArray } from "@/utils/shuffle";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
@@ -97,7 +96,7 @@ export const ImproveSolutionDialog = forwardRef<
 
       let lastError: unknown = null;
 
-      for (const source of shuffleArray(enabledSources)) {
+      for (const source of enabledSources) {
         const ai = getClientForSource(source.id);
         if (!ai) {
           lastError = new Error(t("toasts.no-key.description", { provider: source.name }));

@@ -40,6 +40,10 @@ export default function ActionsCard({
     navigate("/settings");
   }, [navigate]);
 
+  const handleChatBtnClick = useCallback(() => {
+    navigate("/chat");
+  }, [navigate]);
+
   const settingsShortcut = useShortcut(
     "openSettings",
     () => handleSettingsBtnClick(),
@@ -88,15 +92,36 @@ export default function ActionsCard({
           layout={layout}
         />
 
-        <Button
-          className={cn("w-full", layout === "mobile" && "py-6 text-base")}
-          size={layout === "mobile" ? "lg" : "default"}
-          variant="secondary"
-          onClick={handleSettingsBtnClick}
+        <div
+          className={cn(
+            "flex gap-2",
+            layout === "mobile" && "flex-col",
+          )}
         >
-          {t("settings")}{" "}
-          {layout !== "mobile" && <ShortcutHint shortcut={settingsShortcut} />}
-        </Button>
+          <Button
+            className={cn(
+              "flex-1",
+              layout === "mobile" && "py-6 text-base",
+            )}
+            size={layout === "mobile" ? "lg" : "default"}
+            variant="outline"
+            onClick={handleChatBtnClick}
+          >
+            {t("chat")}
+          </Button>
+          <Button
+            className={cn(
+              "flex-1",
+              layout === "mobile" && "py-6 text-base",
+            )}
+            size={layout === "mobile" ? "lg" : "default"}
+            variant="secondary"
+            onClick={handleSettingsBtnClick}
+          >
+            {t("settings")}{" "}
+            {layout !== "mobile" && <ShortcutHint shortcut={settingsShortcut} />}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

@@ -17,6 +17,9 @@ import {
   type ImproveSolutionDialogHandle,
 } from "./dialogs/ImproveSolutionDialog";
 import { useTranslation } from "react-i18next";
+import { useAiStore } from "@/store/ai-store";
+import { useNavigate } from "react-router-dom";
+import { MessageSquare } from "lucide-react";
 
 export type SolutionViewerProps = {
   entry: OrderedSolution;
@@ -40,6 +43,9 @@ export default function SolutionViewer({
 }: SolutionViewerProps) {
   const selectedProblem = useProblemsStore((s) => s.selectedProblem);
   const { t } = useTranslation("commons", { keyPrefix: "solution-viewer" });
+  const sources = useAiStore((s) => s.sources);
+  const activeSourceId = useAiStore((s) => s.activeSourceId);
+  const navigate = useNavigate();
 
   const viewerRef = useRef<HTMLElement | null>(null);
 
@@ -87,6 +93,93 @@ export default function SolutionViewer({
       e.preventDefault();
       copyToClipboard(activeProblem.answer);
     }
+  };
+
+  const handleStartChat = () => {
+    if (!activeProblem) {
+      toast.error(t("chat.no-problem.title"), {
+        description: t("chat.no-problem.description"),
+      });
+      return;
+    }
+
+    const availableSources = sources.filter(
+      (source) => source.enabled && source.apiKey,
+    );
+    if (availableSources.length === 0) {
+      toast.error(t("chat.no-source.title"), {
+        description: t("chat.no-source.description"),
+      });
+      return;
+    }
+
+    const preferredSourceId =
+      entry.solutions.aiSourceId ?? activeSourceId ?? availableSources[0].id;
+    const preferredSource =
+      sources.find((source) => source.id === preferredSourceId) ??
+      availableSources[0];
+
+    const problemText = activeProblem.problem?.trim() ?? "";
+    const answerText = activeProblem.answer?.trim() ?? "";
+    const explanationText = activeProblem.explanation?.trim() ?? "";
+
+    const titleSource = problemText.replace(/\s+/g, " ").trim();
+  const chatTitle =
+    titleSource.length === 0
+      ? t("chat.default-title")
+      : titleSource.length > 60
+        ? `${titleSource.slice(0, 60)}...`
+        : titleSource;
+
+    const contextSections: string[] = [
+      t("chat.context.problem", {
+        problem: problemText || t("chat.fallback.problem"),
+      }),
+    ];
+    if (answerText) {
+      contextSections.push(
+        t("chat.context.answer", {
+          answer: answerText,
+        }),
+      );
+    }
+    if (explanationText) {
+      contextSections.push(
+        t("chat.context.explanation", {
+          explanation: explanationText,
+        }),
+      );
+    }
+    const contextMessage = [t("chat.context.intro"), ...contextSections].join(
+      "\n\n",
+    );
+
+    const prefillLines: string[] = [
+      t("chat.prefill.intro"),
+      "",
+      "**Problem**",
+      problemText || t("chat.fallback.problem"),
+    ];
+    if (answerText) {
+      prefillLines.push("", "**Answer**", answerText);
+    }
+    if (explanationText) {
+      prefillLines.push("", "**Explanation**", explanationText);
+    }
+    prefillLines.push("", t("chat.prefill.outro"));
+    const prefillMessage = prefillLines.join("\n");
+
+    navigate("/chat", {
+      state: {
+        seedChat: {
+          title: chatTitle,
+          prefillMessage,
+          contextMessage,
+          sourceId: preferredSource.id,
+          model: preferredSource.model,
+        },
+      },
+    });
   };
 
   return (
@@ -144,12 +237,22 @@ export default function SolutionViewer({
             </div>
           </div>
 
-          <ImproveSolutionDialog
-            ref={dialogRef}
-            entry={entry}
-            activeProblem={activeProblem}
-            updateSolution={updateSolution}
-          />
+          <div className="flex flex-wrap gap-2">
+            <ImproveSolutionDialog
+              ref={dialogRef}
+              entry={entry}
+              activeProblem={activeProblem}
+              updateSolution={updateSolution}
+            />
+            <Button
+              type="button"
+              onClick={handleStartChat}
+              disabled={!activeProblem}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              {t("chat.button")}
+            </Button>
+          </div>
 
           {/* Navigation controls for problems and images. */}
           <div className="flex items-center justify-between pt-2">

@@ -1,4 +1,5 @@
 import { GoogleGenAI, HarmBlockThreshold, HarmCategory } from "@google/genai";
+import type { AiChatMessage } from "./chat-types";
 
 export interface GeminiModel {
   name: string;
@@ -154,5 +155,50 @@ export class GeminiAi {
       name: it.name!,
       displayName: it.displayName ?? it.name!,
     }));
+  }
+
+  async sendChat(
+    messages: AiChatMessage[],
+    model = "gemini-2.5-pro",
+    callback?: (text: string) => void,
+  ) {
+    const contents = [];
+
+    if (this.systemPrompt) {
+      contents.push({
+        role: "user",
+        parts: [{ text: this.systemPrompt }],
+      });
+    }
+
+    for (const message of messages) {
+      const trimmed = message.content?.trim();
+      if (!trimmed) continue;
+
+      const role = message.role === "assistant" ? "model" : "user";
+
+      contents.push({
+        role,
+        parts: [{ text: trimmed }],
+      });
+    }
+
+    const response = await this.ai.models.generateContentStream({
+      model,
+      config: {
+        thinkingConfig: { thinkingBudget: this.config.thinkingBudget },
+        safetySettings: this.config.safetySettings,
+      },
+      contents,
+    });
+
+    let result = "";
+    for await (const chunk of response) {
+      if (chunk.text) {
+        result += chunk.text;
+        callback?.(chunk.text);
+      }
+    }
+    return result.trim();
   }
 }
