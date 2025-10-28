@@ -1,7 +1,7 @@
 // src/components/PasswordGate.tsx
 import React, { useEffect, useState } from "react";
 
-const PASSWORD = "1234"; // 先用明文，等跑通再升级。把 1234 换成你想要的密码
+const PASSWORD = "Madebyhenry"; // 先用明文，等跑通再升级。把 1234 换成你想要的密码
 
 export default function PasswordGate({ children }: { children: React.ReactNode }) {
   const [ok, setOk] = useState(false);
@@ -39,7 +39,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
         />
         {err && <div style={{color:"#d33",marginTop:8,fontSize:12}}>{err}</div>}
         <button type="submit" style={{marginTop:12,width:"100%",padding:"10px 12px",borderRadius:8,background:"#111",color:"#fff"}}>进入</button>
-        <div style={{marginTop:8,color:"#888",fontSize:12}}>正确后会在本机记住登录状态。</div>
+        <div style={{marginTop:8,color:"#888",fontSize:12}}>请询问网站创建者Henry以获取密码</div>
       </form>
     </div>
   );
