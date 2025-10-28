@@ -9,7 +9,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    const s = localStorage.getItem("site_unlocked_v1"); // 改密码时把 v1 改成 v2 可强制全员重新登录
+    const s = localStorage.getItem("site_unlocked_v2"); // 改密码时把 v1 改成 v2 可强制全员重新登录
     if (s === "1") setOk(true);
   }, []);
 
