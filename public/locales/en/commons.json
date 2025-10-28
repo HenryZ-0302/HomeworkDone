@@ -261,7 +261,6 @@
         "label": "Language",
         "desc": "Switch the interface language.",
         "options": {
-          "en": "English",
           "zh": "中文"
         }
       }
