@@ -22,6 +22,7 @@
     "drop-cancel": "Drag here to cancel"
   },
   "scan-page": {
+    "donate-btn": "Donate now",
     "title": "Scan your homework",
     "tip": "We never upload without your action.",
     "mobile": {
