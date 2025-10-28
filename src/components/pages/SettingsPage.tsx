@@ -158,10 +158,6 @@ export default function SettingsPage() {
   const languageOptions = useMemo(
     () => [
       {
-        value: "en" as LanguagePreference,
-        label: t("appearance.language.options.en"),
-      },
-      {
         value: "zh" as LanguagePreference,
         label: t("appearance.language.options.zh"),
       },
