@@ -22,6 +22,7 @@
     "drop-cancel": "拖到这里取消"
   },
   "scan-page": {
+    "donate-btn": "点击获得1000积分",
     "title": "扫描你的作业",
     "tip": "我们不会在未经授权时上传您的文件",
     "mobile": {
