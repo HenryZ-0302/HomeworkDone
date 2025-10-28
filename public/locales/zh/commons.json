@@ -80,7 +80,7 @@
       "parsing-failed": "解析 AI 返回内容失败。"
     },
     "footer": {
-      "license": "基于 GPL-3.0 许可发布，由 Henry 制作",
+      "license": "基于 GPL-3.0 许可发布 由 Henry 制作",
       "slogan": "朱亮杰的时间很宝贵",
       "source": " "
     }
@@ -399,7 +399,7 @@
       "hints": "提示"
     },
     "footer": {
-      "notice": "基于 GPLv3 许可，由 Henry 制作",
+      "notice": "基于 GPLv3 许可 由 Henry 制作",
       "source": " "
     }
   },
