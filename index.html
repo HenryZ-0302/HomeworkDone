@@ -1,19 +1,37 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/skid-homework.svg" />
-    <meta
-      property="og:title"
-      content="Skid Homework - AI Powered Homework Solver"
-    />
-    <meta
-      property="og:description"
-      content="The open source workaround for self-learners. Time-saving, no telemetry, free."
-    />
+
+    <!-- 站点标题/分享，改成你的品牌中文 -->
+    <title>HomeworkDone - 作业助手</title>
+    <meta property="og:title" content="HomeworkDone - 作业助手" />
+    <meta property="og:description" content="开源、无遥测、节省时间。贴上 API Key 即可开始。" />
+    <meta name="description" content="HomeworkDone：更省心的作业助手，尊重隐私、开箱即用。" />
+    <meta property="og:locale" content="zh_CN" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SkidHomework - AI Powered Homework Solver</title>
+
+    <!-- ⭐ 关键热修补：默认把语言固定为中文；如果曾被设为英文，一律改回中文。
+         放在 main.tsx 之前，确保 i18n 初始化前就写入本地偏好。 -->
+    <script>
+      try {
+        var KEY = "i18nextLng";
+        var qs = new URLSearchParams(location.search);
+        var q = qs.get("lng"); // 支持 ?lng=zh / ?lng=en 手动切换
+        if (q) {
+          localStorage.setItem(KEY, q);
+        } else {
+          var v = localStorage.getItem(KEY);
+          if (!v || String(v).toLowerCase().startsWith("en")) {
+            localStorage.setItem(KEY, "zh");
+          }
+        }
+      } catch (e) {}
+    </script>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
