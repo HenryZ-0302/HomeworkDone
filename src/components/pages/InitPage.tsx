@@ -95,7 +95,7 @@ export default function InitPage() {
         <div className="flex items-center gap-2">
           <Sparkles className="h-6 w-6" />
           <span className="text-lg font-semibold tracking-tight">
-            SkidHomework
+            HomeworkDone
           </span>
         </div>
         <div className="text-sm">{t("tagline")}</div>
