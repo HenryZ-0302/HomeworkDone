@@ -3,7 +3,7 @@
     "clear-all": "清空所有文件",
     "clear-confirmation": "再点击一次",
     "processing": "处理中...",
-    "scan": "开始扫描",
+    "scan": "开始打滑",
     "chat": "聊天",
     "settings": "设置",
     "title": "上传照片"
@@ -82,10 +82,11 @@
     "footer": {
       "license": "基于 GPL-3.0 许可发布。",
       "slogan": "学生的时间很宝贵",
+      "source": "源代码"
     }
   },
   "chat-page": {
-    "title": "开始作业聊天",
+    "title": "打滑作业聊天",
     "subtitle": "与已配置的模型一起讨论作业。",
     "actions": {
       "back": "返回扫描页",
@@ -127,7 +128,7 @@
   },
   "solutions": {
     "analyzing": "正在分析... 正在从你的图片中提取问题和解决方案",
-    "idle": "点击\"开始处理\"将图片发送给AI以在这里查看结果",
+    "idle": "点击\"开始打滑\"将图片发送给AI以在这里查看结果",
     "title": "解决方案",
     "gesture-hint": "左右滑动切换题目。",
     "status": {
@@ -367,10 +368,10 @@
   "init-page": {
     "tagline": "本地 • 私密 • 免费",
     "headline": {
-      "highlight": "欢迎来到 HomeworkDone",
+      "highlight": "欢迎来到 SkidHomework",
       "subtitle": "摆脱作业内卷。"
     },
-    "intro": "喜欢可汗学院式的自学，却常被堆积如山的作业拖住脚步？HomeworkDone 本地运行，尊重你的隐私，让你把精力放在学习上，而不是重复劳动。",
+    "intro": "喜欢可汗学院式的自学，却常被堆积如山的作业拖住脚步？SkidHomework 本地运行，尊重你的隐私，让你把精力放在学习上，而不是重复劳动。",
     "features": {
       "telemetry": "无遥测、无骚扰请求，只使用 Gemini API。",
       "camera": "拍下作业，立刻获得逐步讲解。",
@@ -400,6 +401,7 @@
     },
     "footer": {
       "notice": "基于 GPLv3 许可，由 cubewhy 创建。",
+      "source": "源代码"
     }
   },
   "solution-viewer": {
