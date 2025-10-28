@@ -82,7 +82,7 @@
     "footer": {
       "license": "基于 GPL-3.0 许可发布。",
       "slogan": "学生的时间很宝贵",
-      "source": "源代码"
+      "source": " "
     }
   },
   "chat-page": {
@@ -401,7 +401,7 @@
     },
     "footer": {
       "notice": "基于 GPLv3 许可，由 cubewhy 创建。",
-      "source": "源代码"
+      "source": " "
     }
   },
   "solution-viewer": {
