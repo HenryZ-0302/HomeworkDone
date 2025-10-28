@@ -368,13 +368,13 @@
     "tagline": "本地 • 私密 • 免费",
     "headline": {
       "highlight": "欢迎来到 HomeworkDone",
-      "subtitle": "摆脱作业内卷。"
+      "subtitle": "摆脱作业内卷"
     },
-    "intro": "喜欢可汗学院式的自学，却常被堆积如山的作业拖住脚步？HomeworkDone 本地运行，尊重你的隐私，让你把精力放在学习上，而不是重复劳动。",
+    "intro": "喜欢可汗学院式的自学，却常被堆积如山的作业拖住脚步？HomeworkDone 本地运行，尊重你的隐私，让你把精力放在学习上，而不是重复劳动",
     "features": {
-      "telemetry": "无遥测、无骚扰请求，只使用 Gemini API。",
-      "camera": "拍下作业，立刻获得逐步讲解。",
-      "setup": "快速上手——粘贴 Gemini API Key 就能开始。"
+      "telemetry": "无遥测、无骚扰请求，只使用 Gemini API",
+      "camera": "拍下作业，立刻获得逐步讲解",
+      "setup": "快速上手——粘贴 Gemini API Key 就能开始"
     },
     "form": {
       "key-placeholder": "{{provider}} API 密钥",
@@ -383,14 +383,14 @@
         "title": "高级选项",
         "base-url-label": "API 基础地址（可选）",
         "base-url-placeholder": "{{provider}} 的默认接口地址",
-        "base-url-helper": "留空将使用 {{provider}} 的默认地址。"
+        "base-url-helper": "留空将使用 {{provider}} 的默认地址"
       },
-      "api-hint": "在 <link>Google AI Studio</link> 申请 API Key。",
-      "storage-note": "我们使用加密浏览器存储在本地保存你的密钥，绝不会上传到服务器。",
+      "api-hint": "在 <link>Google AI Studio</link> 申请 API Key",
+      "storage-note": "我们使用加密浏览器存储在本地保存你的密钥，绝不会上传到服务器",
       "provider": {
         "label": "AI 提供商"
       },
-      "api-hint-openai": "在 <link>OpenAI 控制台</link> 申请 API Key。"
+      "api-hint-openai": "在 <link>OpenAI 控制台</link> 申请 API Key"
     },
     "preview": {
       "title": "作业相机",
