@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from "react";
 
 // ① 固定一个版本化键名（换全员重登时，把 _v2 改成 _v3）
-const STORAGE_KEY = "site_unlocked_v2"; // ← 现在就用这个，不要每次发布都换
-const COOKIE_NAME = "site_unlocked_v2";
+const STORAGE_KEY = "site_unlocked_v3"; // ← 现在就用这个，不要每次发布都换
+const COOKIE_NAME = "site_unlocked_v3";
 
 // ② 简单密码（先跑通；要改就改这里）
-const PASSWORD = "1234";
+const PASSWORD = "Henry";
 
 // 读/写 Cookie（前端可读）——双保险：有任意一个命中就算已登录
 function getCookie(name: string) {
