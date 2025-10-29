@@ -11,83 +11,81 @@ async function sha256Hex(text: string) {
 
 type Config = { version: number; passwordHash: string };
 
+// 加一个带超时的 fetch，便于判断是哪一步挂了
+async function fetchJSONWithTimeout(url: string, ms: number) {
+  const ctrl = new AbortController();
+  const t = setTimeout(function(){ ctrl.abort(); }, ms);
+  try {
+    const res = await fetch(url, { cache: 'no-store', signal: ctrl.signal });
+    const text = await res.text(); // 先读文本，方便打印错误
+    if (!res.ok) {
+      throw new Error('HTTP ' + String(res.status) + ' ' + text.slice(0, 200));
+    }
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      throw new Error('JSON parse error: ' + text.slice(0, 200));
+    }
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 export default function PasswordGate(props: { children: React.ReactNode }) {
   const [config, setConfig] = useState<Config | null>(null);
   const [ok, setOk] = useState(false);
   const [pwd, setPwd] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
+  const [detail, setDetail] = useState(''); // 额外错误细节，方便你排查
 
-  // 封装获取配置
   async function loadConfig() {
     setLoading(true);
     setErr('');
+    setDetail('');
     try {
-      const res = await fetch('/config?ts=' + String(Date.now()), { cache: 'no-store' });
-      if (!res.ok) {
-        throw new Error('HTTP ' + String(res.status));
-      }
-      const data = (await res.json()) as Config;
-
+      // 注意：这里必须是相对路径 /config，确保命中同域 Worker 路由
+      const data = await fetchJSONWithTimeout('/config?ts=' + String(Date.now()), 8000);
       // 基本校验
-      if (
-        !data ||
-        typeof data.version !== 'number' ||
-        !data.passwordHash ||
-        typeof data.passwordHash !== 'string'
-      ) {
+      if (!data || typeof data.version !== 'number' || !data.passwordHash) {
         throw new Error('Bad config format');
       }
+      setConfig(data as Config);
 
-      setConfig(data);
-
-      // 命中相同版本的已登录记录则直接放行
-      const key = 'site_unlocked_v' + String(data.version);
+      // 本地已有同版本登录记录则直接放行
+      const key = 'site_unlocked_v' + String((data as Config).version);
       if (localStorage.getItem(key) === '1') {
         setOk(true);
       }
-    } catch (e) {
+    } catch (e: any) {
+      console.error('配置拉取失败:', e);
       setErr('配置加载失败，请稍后再试。');
+      setDetail(String(e && e.message ? e.message : e));
     } finally {
       setLoading(false);
     }
   }
 
-  // 启动时拉配置
-  useEffect(function () {
-    loadConfig();
-  }, []);
+  useEffect(function () { loadConfig(); }, []);
 
-  // 提交密码
   async function submit(e?: React.FormEvent) {
     if (e) e.preventDefault();
     if (!config) {
-      setErr('配置未就绪，请刷新页面重试。');
+      setErr('配置未就绪，请先重试加载。');
       return;
     }
-
     try {
       const inputHash = (await sha256Hex(pwd)).toLowerCase();
-      const target = (config.passwordHash || '')
-        .replace(/^sha256:/, '')
-        .toLowerCase();
-
+      const target = (config.passwordHash || '').replace(/^sha256:/, '').toLowerCase();
       if (target.length === 0) {
         setErr('配置无效：缺少密码哈希。');
         return;
       }
-
       if (inputHash === target) {
         const key = 'site_unlocked_v' + String(config.version);
-        try {
-          localStorage.setItem(key, '1');
-        } catch (_) { /* ignore */ }
-        // 写一个 30 天有效的 Cookie（无需模板字符串）
+        try { localStorage.setItem(key, '1'); } catch (_) {}
         document.cookie =
-          key +
-          '=1; Max-Age=' +
-          String(60 * 60 * 24 * 30) +
-          '; Path=/; SameSite=Lax; Secure';
+          key + '=1; Max-Age=' + String(60 * 60 * 24 * 30) + '; Path=/; SameSite=Lax; Secure';
         setOk(true);
         setPwd('');
         setErr('');
@@ -99,18 +97,14 @@ export default function PasswordGate(props: { children: React.ReactNode }) {
     }
   }
 
-  // 已验证通过
   if (ok) return <>{props.children}</>;
-
-  // 配置加载中：不渲染，避免闪一下
   if (loading && !err) return null;
 
-  // 弹窗界面
   return (
     <div
       style={{
         position: 'fixed',
-        inset: 0 as unknown as number, // 兼容 TS 的行内样式类型
+        inset: 0 as unknown as number,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -124,30 +118,57 @@ export default function PasswordGate(props: { children: React.ReactNode }) {
           background: '#fff',
           padding: 24,
           borderRadius: 12,
-          width: 320,
+          width: 360,
           boxShadow: '0 10px 30px rgba(0,0,0,.2)'
         }}
       >
         <h3 style={{ marginTop: 0 }}>请输入访问密码</h3>
 
-        {/* 如果配置加载失败，显示错误和重试按钮 */}
-        {err && config === null ? (
+        {config === null ? (
           <>
-            <div style={{ color: '#d33', marginTop: 8, fontSize: 12 }}>{err}</div>
-            <button
-              type="button"
-              onClick={function () { loadConfig(); }}
-              style={{
-                marginTop: 12,
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: 8,
-                background: '#111',
-                color: '#fff'
-              }}
-            >
-              重新加载配置
-            </button>
+            <div style={{ color: '#d33', marginTop: 8, fontSize: 12 }}>{err || '配置加载失败'}</div>
+            {detail ? (
+              <pre
+                style={{
+                  marginTop: 8,
+                  padding: 8,
+                  background: '#f7f7f7',
+                  border: '1px solid #eee',
+                  maxHeight: 150,
+                  overflow: 'auto',
+                  fontSize: 12
+                }}
+              >
+                {detail}
+              </pre>
+            ) : null}
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button
+                type="button"
+                onClick={function () { loadConfig(); }}
+                style={{ flex: 1, padding: '10px 12px', borderRadius: 8, background: '#111', color: '#fff' }}
+              >
+                重新加载配置
+              </button>
+              <a
+                href="/config"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  flex: 1,
+                  display: 'inline-block',
+                  textAlign: 'center',
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  background: '#eee',
+                  color: '#111',
+                  textDecoration: 'none',
+                  lineHeight: '22px'
+                }}
+              >
+                打开 /config
+              </a>
+            </div>
           </>
         ) : (
           <>
